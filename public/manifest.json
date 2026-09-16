@@ -1,0 +1,22 @@
+{
+  "name": "Semestr — Academic OS",
+  "short_name": "Semestr",
+  "description": "Daily Academic Companion Mahasiswa Informatika Telkom University Purwokerto",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#0F172A",
+  "theme_color": "#007AFF",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

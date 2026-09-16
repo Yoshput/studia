@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String     @id @default(cuid())
+  nama          String
+  email         String     @unique
+  password_hash String
+  nim           String?    @default("103112430026")
+  kelas         String?    @default("S1IF-12-06")
+  prodi         String?    @default("S1 Teknik Informatika - Kampus Purwokerto")
+  avatar_url    String?    @db.LongText
+  presensi      Presensi[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Semester {
+  id            String         @id @default(cuid())
+  nama_semester String
+  tahun_ajaran  String
+  ipk           Float?
+  is_active     Boolean        @default(true)
+  matkul        Matkul[]
+  khs_items     KhsMatkul[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@map("semester")
+}
+
+model KhsMatkul {
+  id            String   @id @default(cuid())
+  semester_id   String
+  semester      Semester @relation(fields: [semester_id], references: [id], onDelete: Cascade)
+  kode_matkul   String
+  nama_matkul   String
+  sks           Int
+  nilai_huruf   String
+  nilai_indeks  Float
+  createdAt     DateTime @default(now())
+
+  @@map("khs_matkul")
+}
+
+model Matkul {
+  id          String           @id @default(cuid())
+  semester_id String
+  semester    Semester         @relation(fields: [semester_id], references: [id], onDelete: Cascade)
+  nama        String
+  kode        String?
+  dosen       String
+  sks         Int
+  hari        String
+  jam_mulai   String
+  jam_selesai String
+  ruang       String
+  warna       String?          @default("#007AFF")
+  progress    ProgressHarian[]
+  bobot_nilai NilaiBobot[]
+  nilai       Nilai[]
+  tugas       TugasDeadline[]
+  presensi    Presensi[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@map("matkul")
+}
+
+model ProgressHarian {
+  id                String   @id @default(cuid())
+  matkul_id         String
+  matkul            Matkul   @relation(fields: [matkul_id], references: [id], onDelete: Cascade)
+  tanggal           DateTime
+  materi_dipelajari String
+  catatan           String?  @db.Text
+  tingkat_pemahaman Int      @default(3)
+  lampiran_url      String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@map("progress_harian")
+}
+
+model NilaiBobot {
+  id           String   @id @default(cuid())
+  matkul_id    String
+  matkul       Matkul   @relation(fields: [matkul_id], references: [id], onDelete: Cascade)
+  kategori     String
+  bobot_persen Float
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([matkul_id, kategori])
+  @@map("nilai_bobot")
+}
+
+model Nilai {
+  id        String   @id @default(cuid())
+  matkul_id String
+  matkul    Matkul   @relation(fields: [matkul_id], references: [id], onDelete: Cascade)
+  kategori  String
+  nama_item String
+  nilai     Float
+  tanggal   DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("nilai")
+}
+
+model TugasDeadline {
+  id        String   @id @default(cuid())
+  matkul_id String
+  matkul    Matkul   @relation(fields: [matkul_id], references: [id], onDelete: Cascade)
+  judul     String
+  deskripsi String?  @db.Text
+  deadline  DateTime
+  status    String   @default("belum")
+  prioritas String   @default("sedang")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("tugas_deadline")
+}
+
+model Presensi {
+  id           String   @id @default(cuid())
+  user_id      String
+  user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  matkul_id    String
+  matkul       Matkul   @relation(fields: [matkul_id], references: [id], onDelete: Cascade)
+  tanggal      DateTime @default(now())
+  hari         String
+  jam          String
+  status       String   @default("Hadir Tepat Waktu")
+  foto_base64  String   @db.LongText
+  deteksi_info String?  @db.Text
+  catatan      String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@map("presensi")
+}

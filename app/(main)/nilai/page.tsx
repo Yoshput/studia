@@ -1,0 +1,761 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Sheet } from "@/components/ui/Sheet";
+import { Input, Select } from "@/components/ui/Input";
+import { BadgeStatus } from "@/components/ui/BadgeStatus";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import {
+  GraduationCap,
+  Plus,
+  Trash2,
+  SlidersHorizontal,
+  BarChart2,
+  TrendingUp,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+} from "lucide-react";
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Cell,
+  CartesianGrid,
+} from "recharts";
+import { formatShortDateIndo, calculateEstimatedGrade } from "@/lib/utils";
+import { Matkul, Nilai } from "@/types";
+
+const KATEGORI_OPTIONS = ["Quiz", "Tugas", "UTS", "UAS", "Project", "Tubes"] as const;
+
+interface KhsItem {
+  id: string;
+  kode_matkul: string;
+  nama_matkul: string;
+  sks: number;
+  nilai_huruf: string;
+  nilai_indeks: number;
+}
+
+interface SemesterData {
+  id: string;
+  nama_semester: string;
+  tahun_ajaran: string;
+  ipk: number | null;
+  is_active: boolean;
+  khs_items?: KhsItem[];
+}
+
+export default function NilaiPage() {
+  const [tabView, setTabView] = useState<"aktif" | "khs" | "tren">("aktif");
+  const [matkulList, setMatkulList] = useState<Matkul[]>([]);
+  const [semestersList, setSemestersList] = useState<SemesterData[]>([]);
+  const [selectedMatkulId, setSelectedMatkulId] = useState<string>("");
+  const [selectedKhsSemester, setSelectedKhsSemester] = useState<string>("Semester 1");
+  const [loading, setLoading] = useState(true);
+
+  // Sheet states
+  const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
+  const [isBobotSheetOpen, setIsBobotSheetOpen] = useState(false);
+
+  // Form add nilai
+  const [kategori, setKategori] = useState<string>("Quiz");
+  const [namaItem, setNamaItem] = useState("");
+  const [nilaiAngka, setNilaiAngka] = useState<number | "">(85);
+  const [tanggal, setTanggal] = useState(new Date().toISOString().slice(0, 10));
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Bobot editing state
+  const [editBobotList, setEditBobotList] = useState<{ kategori: string; bobot_persen: number }[]>([]);
+  const [bobotError, setBobotError] = useState("");
+  const [isSubmittingBobot, setIsSubmittingBobot] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [mRes, sRes] = await Promise.all([
+        fetch("/api/matkul"),
+        fetch("/api/semester"),
+      ]);
+      const mData = await mRes.json();
+      const sData = await sRes.json();
+
+      if (mData.matkul) {
+        setMatkulList(mData.matkul);
+        if (mData.matkul.length > 0 && !selectedMatkulId) {
+          setSelectedMatkulId(mData.matkul[0].id);
+        }
+      }
+
+      if (sData.semesters) {
+        setSemestersList(sData.semesters);
+      }
+    } catch (err) {
+      console.error("Failed to load grades:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const currentMatkul = matkulList.find((m) => m.id === selectedMatkulId) || matkulList[0];
+
+  const estimated = currentMatkul
+    ? calculateEstimatedGrade(currentMatkul.nilai || [], currentMatkul.bobot_nilai || [])
+    : { currentScore: 0, totalWeightEntered: 0, letter: "-", gpa: 0 };
+
+  // Current semester course comparison chart data
+  const comparisonChartData = matkulList.map((m) => {
+    const est = calculateEstimatedGrade(m.nilai || [], m.bobot_nilai || []);
+    return {
+      name: m.nama.length > 10 ? `${m.nama.slice(0, 8)}...` : m.nama,
+      fullName: m.nama,
+      nilai: est.currentScore,
+      warna: m.warna || "#007AFF",
+    };
+  });
+
+  // GPA Trend Chart Data across semesters
+  const gpaTrendData = [
+    { name: "Sem 1", ips: 3.63, label: "2024/2025 Ganjil (3.63)" },
+    { name: "Sem 2", ips: 3.73, label: "2024/2025 Genap (3.73)" },
+    { name: "Sem 3", ips: 3.61, label: "2025/2026 Ganjil (3.61)" },
+    { name: "Sem 4", ips: 3.61, label: "2025/2026 Genap (3.61)" },
+    { name: "Sem 5", ips: 3.64, label: "2026/2027 Ganjil (IPK 3.64)" },
+  ];
+
+  const handleOpenAdd = () => {
+    setKategori("Quiz");
+    setNamaItem("");
+    setNilaiAngka(85);
+    setTanggal(new Date().toISOString().slice(0, 10));
+    setIsAddSheetOpen(true);
+  };
+
+  const handleOpenBobot = () => {
+    if (!currentMatkul) return;
+    const initialBobot =
+      currentMatkul.bobot_nilai && currentMatkul.bobot_nilai.length > 0
+        ? currentMatkul.bobot_nilai.map((b) => ({
+            kategori: b.kategori,
+            bobot_persen: b.bobot_persen,
+          }))
+        : [
+            { kategori: "Quiz", bobot_persen: 15 },
+            { kategori: "Tugas", bobot_persen: 20 },
+            { kategori: "UTS", bobot_persen: 25 },
+            { kategori: "UAS", bobot_persen: 25 },
+            { kategori: "Tubes", bobot_persen: 15 },
+          ];
+    setEditBobotList(initialBobot);
+    setBobotError("");
+    setIsBobotSheetOpen(true);
+  };
+
+  const handleSaveNilai = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedMatkulId || !namaItem.trim() || nilaiAngka === "") return;
+
+    setIsSubmitting(true);
+    try {
+      const res = await fetch("/api/nilai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matkul_id: selectedMatkulId,
+          kategori,
+          nama_item: namaItem,
+          nilai: Number(nilaiAngka),
+          tanggal: new Date(tanggal).toISOString(),
+        }),
+      });
+
+      if (res.ok) {
+        setIsAddSheetOpen(false);
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Save error:", err);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleSaveBobot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const sum = editBobotList.reduce((acc, b) => acc + Number(b.bobot_persen), 0);
+    if (Math.abs(sum - 100) > 0.01) {
+      setBobotError(`Total bobot harus berjumlah 100% (saat ini ${sum}%)`);
+      return;
+    }
+
+    setIsSubmittingBobot(true);
+    try {
+      const res = await fetch("/api/nilai/bobot", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          matkul_id: selectedMatkulId,
+          bobot: editBobotList,
+        }),
+      });
+
+      if (res.ok) {
+        setIsBobotSheetOpen(false);
+        fetchData();
+      } else {
+        const err = await res.json();
+        setBobotError(err.error || "Gagal menyimpan bobot");
+      }
+    } catch {
+      setBobotError("Terjadi kendala server saat menyimpan bobot");
+    } finally {
+      setIsSubmittingBobot(false);
+    }
+  };
+
+  const handleDeleteNilai = async (id: string, namaNilai: string) => {
+    if (!confirm(`Hapus nilai "${namaNilai}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/nilai?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchData();
+      }
+    } catch (err) {
+      console.error("Delete error:", err);
+    }
+  };
+
+  const currentKhsSemester = semestersList.find(
+    (s) => s.nama_semester === selectedKhsSemester
+  ) || semestersList[0];
+
+  return (
+    <div className="space-y-4 pt-2">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-[26px] font-bold text-ios-textPrimary tracking-tight">
+            Transkrip &amp; Nilai
+          </h1>
+          <p className="text-[13px] text-ios-textSecondary">
+            IPK Kumulatif: <strong className="text-ios-accent">3.64</strong> (84 SKS Resmi Tel-U)
+          </p>
+        </div>
+
+        {tabView === "aktif" && (
+          <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5">
+            <Plus className="w-4 h-4" />
+            <span>Input Nilai</span>
+          </Button>
+        )}
+      </div>
+
+      {/* Main View Switcher */}
+      <SegmentedControl
+        name="nilai-main-tabs"
+        options={[
+          { value: "aktif", label: "Semester Berjalan", icon: <GraduationCap className="w-3.5 h-3.5" /> },
+          { value: "khs", label: "KHS Resmi Tel-U", icon: <FileText className="w-3.5 h-3.5" /> },
+          { value: "tren", label: "Tren IPK", icon: <TrendingUp className="w-3.5 h-3.5" /> },
+        ]}
+        value={tabView}
+        onChange={(v) => setTabView(v as "aktif" | "khs" | "tren")}
+      />
+
+      {/* VIEW 1: ACTIVE SEMESTER */}
+      {tabView === "aktif" && (
+        <div className="space-y-4">
+          {/* Overview Bar Chart */}
+          <Card className="p-4">
+            <h2 className="text-[15px] font-bold text-ios-textPrimary flex items-center gap-1.5 mb-3">
+              <BarChart2 className="w-4 h-4 text-ios-accent" />
+              <span>Nilai Berjalan Semester 5 (2026/2027 Ganjil)</span>
+            </h2>
+
+            <div className="h-44 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={comparisonChartData} margin={{ top: 10, right: 5, left: -25, bottom: 0 }}>
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 10, fill: "var(--text-secondary)" }}
+                    axisLine={{ stroke: "var(--border)" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    tick={{ fontSize: 10, fill: "var(--text-secondary)" }}
+                    axisLine={{ stroke: "var(--border)" }}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const d = payload[0].payload;
+                        return (
+                          <div className="bg-ios-surface border border-ios-border rounded-lg p-2 shadow-md text-[12px]">
+                            <p className="font-semibold text-ios-textPrimary">{d.fullName}</p>
+                            <p className="text-ios-accent mt-0.5">
+                              Skor Berjalan: {d.nilai > 0 ? d.nilai : "Belum diinput"}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Bar dataKey="nilai" radius={[6, 6, 0, 0]}>
+                    {comparisonChartData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.warna} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+
+          {/* Matkul Selector */}
+          <div>
+            <label className="block text-[13px] font-medium text-ios-textSecondary mb-2">
+              Pilih Mata Kuliah untuk Detail Asesmen &amp; Bobot
+            </label>
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {matkulList.map((m) => (
+                <button
+                  key={m.id}
+                  type="button"
+                  onClick={() => setSelectedMatkulId(m.id)}
+                  className={`px-3 py-1.5 rounded-full text-[13px] font-semibold flex-shrink-0 transition-all border ${
+                    selectedMatkulId === m.id
+                      ? "bg-ios-accent text-white border-ios-accent shadow-sm"
+                      : "bg-ios-surfaceSecondary text-ios-textSecondary border-ios-border hover:bg-ios-surface"
+                  }`}
+                >
+                  {m.nama}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {currentMatkul && (
+            <div className="space-y-3">
+              {/* Estimated Grade Summary Card */}
+              <Card className="p-4 border-l-4" style={{ borderLeftColor: currentMatkul.warna || "#007AFF" }}>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="text-[11px] font-mono font-semibold text-ios-textSecondary">
+                      {currentMatkul.kode || "MATKUL"} • {currentMatkul.sks} SKS
+                    </span>
+                    <h3 className="text-[18px] font-bold text-ios-textPrimary mt-0.5">
+                      {currentMatkul.nama}
+                    </h3>
+                    <p className="text-[13px] text-ios-textSecondary">
+                      Dosen: {currentMatkul.dosen}
+                    </p>
+                  </div>
+
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={handleOpenBobot}
+                    className="gap-1.5"
+                  >
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
+                    <span>Atur Bobot</span>
+                  </Button>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-ios-border grid grid-cols-3 gap-2 text-center">
+                  <div className="p-2 rounded-lg bg-ios-surfaceSecondary">
+                    <span className="text-[11px] text-ios-textSecondary block">
+                      Nilai Berjalan
+                    </span>
+                    <span className="text-[22px] font-bold text-ios-textPrimary leading-tight">
+                      {estimated.currentScore > 0 ? estimated.currentScore : "-"}
+                    </span>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-ios-surfaceSecondary">
+                    <span className="text-[11px] text-ios-textSecondary block">
+                      Estimasi Huruf
+                    </span>
+                    <span className="text-[22px] font-bold text-ios-accent leading-tight">
+                      {estimated.letter}
+                    </span>
+                  </div>
+
+                  <div className="p-2 rounded-lg bg-ios-surfaceSecondary">
+                    <span className="text-[11px] text-ios-textSecondary block">
+                      Bobot Masuk
+                    </span>
+                    <span className="text-[22px] font-bold text-ios-textPrimary leading-tight">
+                      {estimated.totalWeightEntered}%
+                    </span>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Component assessment list */}
+              <div className="space-y-2 pt-1">
+                <h4 className="text-[14px] font-bold text-ios-textPrimary">
+                  Komponen Penilaian Terdaftar ({currentMatkul.nilai?.length || 0})
+                </h4>
+
+                {(!currentMatkul.nilai || currentMatkul.nilai.length === 0) ? (
+                  <Card className="p-6 text-center">
+                    <p className="text-[14px] text-ios-textPrimary font-semibold">
+                      Belum ada nilai yang diinput untuk mata kuliah ini
+                    </p>
+                    <p className="text-[12px] text-ios-textSecondary mt-0.5">
+                      Gunakan tombol "Input Nilai" untuk mencatat hasil Quiz atau Tugas.
+                    </p>
+                  </Card>
+                ) : (
+                  currentMatkul.nilai.map((n) => (
+                    <Card key={n.id} className="p-3.5 flex items-center justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <BadgeStatus size="sm" variant="aman">
+                            {n.kategori}
+                          </BadgeStatus>
+                          <span className="text-[11px] text-ios-textSecondary">
+                            {formatShortDateIndo(n.tanggal)}
+                          </span>
+                        </div>
+                        <h5 className="text-[14px] font-semibold text-ios-textPrimary mt-0.5 truncate">
+                          {n.nama_item}
+                        </h5>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <span className="text-[20px] font-black text-ios-textPrimary">
+                          {n.nilai}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteNilai(n.id, n.nama_item)}
+                          className="p-1.5 rounded-md text-ios-textSecondary hover:text-ios-danger transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </Card>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* VIEW 2: HISTORICAL KHS TELKOM UNIVERSITY */}
+      {tabView === "khs" && (
+        <div className="space-y-4">
+          {/* Semester Selector */}
+          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {semestersList
+              .filter((s) => s.khs_items && s.khs_items.length > 0)
+              .map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => setSelectedKhsSemester(s.nama_semester)}
+                  className={`px-3.5 py-1.5 rounded-full text-[13px] font-bold flex-shrink-0 transition-all border ${
+                    selectedKhsSemester === s.nama_semester
+                      ? "bg-ios-accent text-white border-ios-accent shadow-sm"
+                      : "bg-ios-surfaceSecondary text-ios-textSecondary border-ios-border hover:bg-ios-surface"
+                  }`}
+                >
+                  {s.nama_semester} ({s.ipk ? `IPS ${s.ipk.toFixed(2)}` : ""})
+                </button>
+              ))}
+          </div>
+
+          {currentKhsSemester && (
+            <Card className="p-4 space-y-3">
+              <div className="flex items-start justify-between border-b border-ios-border pb-3">
+                <div>
+                  <h3 className="text-[17px] font-bold text-ios-textPrimary">
+                    {currentKhsSemester.nama_semester} — {currentKhsSemester.tahun_ajaran}
+                  </h3>
+                  <p className="text-[12px] text-ios-textSecondary font-mono">
+                    Telkom University • S1 Teknik Informatika
+                  </p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] uppercase font-bold text-ios-textSecondary block">
+                    Indeks Semester (IPS)
+                  </span>
+                  <span className="text-[24px] font-black text-ios-accent">
+                    {currentKhsSemester.ipk?.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Table of courses in this semester */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-[13px]">
+                  <thead>
+                    <tr className="border-b border-ios-border text-ios-textSecondary font-semibold text-[11px] uppercase tracking-wider">
+                      <th className="py-2">Kode</th>
+                      <th className="py-2">Mata Kuliah</th>
+                      <th className="py-2 text-center">SKS</th>
+                      <th className="py-2 text-center">Nilai</th>
+                      <th className="py-2 text-right">Indeks</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-ios-border/60">
+                    {(currentKhsSemester.khs_items || []).map((item) => (
+                      <tr key={item.id} className="hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                        <td className="py-2.5 font-mono text-[11px] font-semibold text-ios-textSecondary">
+                          {item.kode_matkul}
+                        </td>
+                        <td className="py-2.5 font-medium text-ios-textPrimary">
+                          {item.nama_matkul}
+                        </td>
+                        <td className="py-2.5 text-center font-semibold text-ios-textSecondary">
+                          {item.sks}
+                        </td>
+                        <td className="py-2.5 text-center">
+                          <span
+                            className={`inline-block px-2 py-0.5 rounded font-bold text-[12px] ${
+                              item.nilai_huruf === "A"
+                                ? "bg-[#34C759]/15 text-[#34C759]"
+                                : item.nilai_huruf === "AB"
+                                ? "bg-[#007AFF]/15 text-[#007AFF]"
+                                : "bg-[#FF9500]/15 text-[#FF9500]"
+                            }`}
+                          >
+                            {item.nilai_huruf}
+                          </span>
+                        </td>
+                        <td className="py-2.5 text-right font-mono font-bold text-ios-textPrimary">
+                          {item.nilai_indeks.toFixed(1)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* VIEW 3: GPA PROGRESSION TREND */}
+      {tabView === "tren" && (
+        <div className="space-y-4">
+          <Card className="p-4">
+            <h2 className="text-[15px] font-bold text-ios-textPrimary mb-1 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-ios-success" />
+              <span>Grafik Pertumbuhan IPK (Semester 1 s.d. 5)</span>
+            </h2>
+            <p className="text-[12px] text-ios-textSecondary mb-4">
+              Performa akademik konsisten dengan IPK kumulatif 3.64 di tingkat aktif.
+            </p>
+
+            <div className="h-56 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={gpaTrendData} margin={{ top: 15, right: 15, left: -25, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.6} />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                    axisLine={{ stroke: "var(--border)" }}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    domain={[3.0, 4.0]}
+                    tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                    axisLine={{ stroke: "var(--border)" }}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    content={({ active, payload }) => {
+                      if (active && payload && payload.length) {
+                        const d = payload[0].payload;
+                        return (
+                          <div className="bg-ios-surface border border-ios-border rounded-lg p-2.5 shadow-md text-[12px]">
+                            <p className="font-bold text-ios-textPrimary">{d.label}</p>
+                            <p className="text-ios-success font-black text-[14px] mt-0.5">
+                              IP: {d.ips.toFixed(2)}
+                            </p>
+                          </div>
+                        );
+                      }
+                      return null;
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="ips"
+                    stroke="#34C759"
+                    strokeWidth={3}
+                    dot={{ fill: "#34C759", r: 5 }}
+                    activeDot={{ r: 7 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </Card>
+        </div>
+      )}
+
+      {/* Sheet Input Nilai */}
+      <Sheet
+        isOpen={isAddSheetOpen}
+        onClose={() => setIsAddSheetOpen(false)}
+        title="Input Komponen Nilai"
+        description="Catat hasil evaluasi mata kuliah semester aktif."
+      >
+        <form onSubmit={handleSaveNilai} className="space-y-3.5">
+          <Select
+            label="Mata Kuliah"
+            value={selectedMatkulId}
+            onChange={(e) => setSelectedMatkulId(e.target.value)}
+            required
+          >
+            {matkulList.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nama}
+              </option>
+            ))}
+          </Select>
+
+          <Select
+            label="Kategori Nilai"
+            value={kategori}
+            onChange={(e) => setKategori(e.target.value)}
+            required
+          >
+            {KATEGORI_OPTIONS.map((k) => (
+              <option key={k} value={k}>
+                {k}
+              </option>
+            ))}
+          </Select>
+
+          <Input
+            label="Nama Asesmen / Item"
+            placeholder="Contoh: Quiz 2 — Asymmetric Key & RSA"
+            value={namaItem}
+            onChange={(e) => setNamaItem(e.target.value)}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Nilai Angka (0-100)"
+              type="number"
+              min={0}
+              max={100}
+              step={0.5}
+              value={nilaiAngka}
+              onChange={(e) => setNilaiAngka(e.target.value === "" ? "" : Number(e.target.value))}
+              required
+            />
+            <Input
+              label="Tanggal"
+              type="date"
+              value={tanggal}
+              onChange={(e) => setTanggal(e.target.value)}
+              required
+            />
+          </div>
+
+          <div className="pt-3">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              isLoading={isSubmitting}
+            >
+              Simpan Nilai
+            </Button>
+          </div>
+        </form>
+      </Sheet>
+
+      {/* Sheet Atur Bobot */}
+      <Sheet
+        isOpen={isBobotSheetOpen}
+        onClose={() => setIsBobotSheetOpen(false)}
+        title="Pengaturan Bobot Nilai"
+        description={`Sesuaikan bobot penilaian untuk ${currentMatkul?.nama}. Total harus 100%.`}
+      >
+        <form onSubmit={handleSaveBobot} className="space-y-3.5">
+          {bobotError && (
+            <div className="p-3 rounded-btn bg-ios-danger/10 border border-ios-danger/25 text-ios-danger text-[13px] font-medium flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+              <span>{bobotError}</span>
+            </div>
+          )}
+
+          <div className="space-y-2.5">
+            {editBobotList.map((b, idx) => (
+              <div
+                key={b.kategori}
+                className="flex items-center justify-between p-3 rounded-btn bg-ios-surfaceSecondary border border-ios-border"
+              >
+                <span className="text-[14px] font-medium text-ios-textPrimary">
+                  {b.kategori}
+                </span>
+                <div className="flex items-center gap-1.5 w-28">
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={b.bobot_persen}
+                    onChange={(e) => {
+                      const val = Number(e.target.value);
+                      const updated = [...editBobotList];
+                      updated[idx].bobot_persen = val;
+                      setEditBobotList(updated);
+                    }}
+                    className="w-full px-2.5 py-1.5 text-right font-semibold rounded-md border border-ios-border bg-ios-surface text-[14px] focus:outline-none focus:border-ios-accent"
+                  />
+                  <span className="text-[13px] text-ios-textSecondary font-semibold">%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="p-3 rounded-btn bg-ios-surface border border-ios-border flex items-center justify-between text-[14px] font-semibold">
+            <span>Total Bobot:</span>
+            <span
+              className={
+                Math.abs(editBobotList.reduce((acc, b) => acc + Number(b.bobot_persen), 0) - 100) < 0.01
+                  ? "text-ios-success"
+                  : "text-ios-danger"
+              }
+            >
+              {editBobotList.reduce((acc, b) => acc + Number(b.bobot_persen), 0)}%
+            </span>
+          </div>
+
+          <div className="pt-3">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full"
+              isLoading={isSubmittingBobot}
+            >
+              Simpan Perubahan Bobot
+            </Button>
+          </div>
+        </form>
+      </Sheet>
+    </div>
+  );
+}
