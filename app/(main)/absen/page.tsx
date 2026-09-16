@@ -16,6 +16,8 @@ import {
   ShieldAlert,
   Calendar,
   FlipHorizontal,
+  ShieldCheck,
+  Lock,
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo } from "@/lib/utils";
 import { Matkul } from "@/types";
@@ -54,6 +56,7 @@ export default function AbsenPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [showConsentModal, setShowConsentModal] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -130,6 +133,21 @@ export default function AbsenPage() {
         "Kamera tidak dapat diakses atau izin ditolak. Pastikan izin kamera telah diberikan di browser."
       );
     }
+  };
+
+  const handleRequestCamera = () => {
+    const hasConsented = localStorage.getItem("semestr-biometric-consent");
+    if (!hasConsented) {
+      setShowConsentModal(true);
+    } else {
+      startCamera();
+    }
+  };
+
+  const handleAcceptConsent = () => {
+    localStorage.setItem("semestr-biometric-consent", "true");
+    setShowConsentModal(false);
+    startCamera();
   };
 
   const stopCamera = () => {
@@ -357,7 +375,7 @@ export default function AbsenPage() {
           {!isCameraActive ? (
             <Button
               variant="primary"
-              onClick={startCamera}
+              onClick={handleRequestCamera}
               className="gap-2 px-6"
             >
               <Camera className="w-4 h-4" />
@@ -384,6 +402,58 @@ export default function AbsenPage() {
           )}
         </div>
       </Card>
+
+      {/* Biometric Privacy Consent Modal */}
+      {showConsentModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-3xl bg-ios-surface border border-ios-border p-6 shadow-2xl space-y-4 text-left">
+            <div className="w-12 h-12 rounded-2xl bg-ios-accent/15 text-ios-accent flex items-center justify-center">
+              <ShieldCheck className="w-6 h-6" />
+            </div>
+
+            <div>
+              <h3 className="text-[18px] font-bold text-ios-textPrimary">
+                Persetujuan Privasi Biometrik Presensi
+              </h3>
+              <p className="text-[13px] text-ios-textSecondary mt-1 leading-relaxed">
+                Sebelum mengaktifkan kamera, mohon konfirmasi bahwa Anda menyetujui pemrosesan data kehadiran di Semestr:
+              </p>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-ios-surfaceSecondary border border-ios-border space-y-2 text-[12.5px] text-ios-textSecondary">
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-ios-success flex-shrink-0 mt-0.5" />
+                <span>Kamera hanya aktif untuk mengambil foto kehadiran pribadi Anda.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <Lock className="w-4 h-4 text-ios-accent flex-shrink-0 mt-0.5" />
+                <span>Data dienkripsi dan tidak dibagikan ke pihak ketiga mana pun.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-ios-success flex-shrink-0 mt-0.5" />
+                <span>Anda dapat menghapus riwayat presensi Anda kapan saja.</span>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                variant="secondary"
+                className="flex-1 text-[13px]"
+                onClick={() => setShowConsentModal(false)}
+              >
+                Batal
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1 font-bold text-[13px]"
+                onClick={handleAcceptConsent}
+              >
+                Setuju &amp; Aktifkan Kamera
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Attendance History Log & Gallery */}
       <div className="space-y-3 pt-2">
