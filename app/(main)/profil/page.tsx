@@ -21,6 +21,7 @@ import {
   Upload,
   ExternalLink,
   CheckCircle2,
+  Loader2,
 } from "lucide-react";
 
 interface UserProfile {
@@ -115,65 +116,102 @@ export default function ProfilPage() {
   };
 
   const [avatarUploadError, setAvatarUploadError] = useState<string | null>(null);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState<string>("");
 
   // Client-side automatic image compression to prevent Vercel 413 Payload Too Large
-  const compressImage = (file: File): Promise<string> => {
+  const compressImage = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
+      const objectUrl = URL.createObjectURL(blob);
       const img = new Image();
-      const reader = new FileReader();
-
-      reader.onload = (e) => {
-        img.src = e.target?.result as string;
-      };
-      reader.onerror = reject;
 
       img.onload = () => {
-        const canvas = document.createElement("canvas");
-        const MAX_SIZE = 400; // 400x400 max resolution for crisp circular avatar
-        let width = img.width;
-        let height = img.height;
+        try {
+          const canvas = document.createElement("canvas");
+          const MAX_SIZE = 480; // 480x480 max resolution for crisp circular avatar
+          let width = img.naturalWidth || img.width;
+          let height = img.naturalHeight || img.height;
 
-        if (width > height) {
-          if (width > MAX_SIZE) {
-            height = Math.round((height * MAX_SIZE) / width);
-            width = MAX_SIZE;
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
           }
-        } else {
-          if (height > MAX_SIZE) {
-            width = Math.round((width * MAX_SIZE) / height);
-            height = MAX_SIZE;
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext("2d");
+          if (!ctx) {
+            URL.revokeObjectURL(objectUrl);
+            reject(new Error("Peramban web tidak dapat menginisialisasi kanvas gambar"));
+            return;
           }
-        }
 
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext("2d");
-        if (!ctx) {
-          resolve(img.src);
-          return;
+          ctx.drawImage(img, 0, 0, width, height);
+          URL.revokeObjectURL(objectUrl);
+          // Compress to high-quality JPEG (~40KB payload)
+          const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
+          resolve(compressedBase64);
+        } catch (err) {
+          URL.revokeObjectURL(objectUrl);
+          reject(err);
         }
-
-        ctx.drawImage(img, 0, 0, width, height);
-        // Compress to high-quality JPEG (~40KB payload)
-        const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
-        resolve(compressedBase64);
       };
 
-      reader.readAsDataURL(file);
+      img.onerror = () => {
+        URL.revokeObjectURL(objectUrl);
+        reject(
+          new Error("Format foto tidak dapat dibaca oleh browser. Pastikan file berupa JPG, PNG, atau HEIC yang valid.")
+        );
+      };
+
+      img.src = objectUrl;
     });
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const processSelectedFile = async (file: File) => {
+    setIsProcessingImage(true);
     setAvatarUploadError(null);
+    setProcessingStatus("Membaca berkas foto...");
+
     try {
-      const compressed = await compressImage(file);
+      const fileNameLower = file.name.toLowerCase();
+      const isHeic =
+        fileNameLower.endsWith(".heic") ||
+        fileNameLower.endsWith(".heif") ||
+        file.type === "image/heic" ||
+        file.type === "image/heif";
+
+      let rawBlob: Blob = file;
+
+      if (isHeic) {
+        setProcessingStatus("Mengonversi format Apple HEIC ke JPEG...");
+        const heic2any = (await import("heic2any")).default;
+        const converted = await heic2any({
+          blob: file,
+          toType: "image/jpeg",
+          quality: 0.88,
+        });
+        rawBlob = Array.isArray(converted) ? converted[0] : converted;
+      }
+
+      setProcessingStatus("Mengompresi & menyiapkan pratinjau...");
+      const compressed = await compressImage(rawBlob);
       setAvatarPreview(compressed);
-    } catch (err) {
-      console.error("Compression error:", err);
-      setAvatarUploadError("Format gambar tidak valid atau file rusak.");
+    } catch (err: any) {
+      console.error("File processing error:", err);
+      setAvatarUploadError(
+        err?.message || "Format gambar tidak valid atau file rusak."
+      );
+    } finally {
+      setIsProcessingImage(false);
+      setProcessingStatus("");
     }
   };
 
@@ -214,12 +252,15 @@ export default function ProfilPage() {
 
   return (
     <div className="space-y-4 pt-2">
-      {/* Hidden File Input */}
+      {/* Hidden File Input with broad image + Apple HEIC support */}
       <input
         type="file"
         ref={fileInputRef}
-        accept="image/*"
-        onChange={handleFileChange}
+        accept="image/*,.heic,.heif,.jpg,.jpeg,.png,.webp"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) processSelectedFile(file);
+        }}
         className="hidden"
       />
 
@@ -433,14 +474,29 @@ export default function ProfilPage() {
         description="Pilih foto profil terbaik Anda untuk kartu identitas mahasiswa."
       >
         <form onSubmit={handleSaveAvatar} className="space-y-4">
-          <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-ios-border rounded-2xl bg-ios-surfaceSecondary">
-            {avatarPreview ? (
+          <div
+            onDragOver={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
+            onDrop={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              const file = e.dataTransfer.files?.[0];
+              if (file) processSelectedFile(file);
+            }}
+            className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-ios-border rounded-2xl bg-ios-surfaceSecondary transition-colors hover:border-ios-accent/50"
+          >
+            {isProcessingImage ? (
+              <div className="w-24 h-24 rounded-full bg-ios-surface border border-ios-border flex flex-col items-center justify-center mb-3 shadow-inner">
+                <Loader2 className="w-8 h-8 text-ios-accent animate-spin" />
+              </div>
+            ) : avatarPreview ? (
               <div className="relative mb-3">
                 <img
                   src={avatarPreview}
                   alt="Preview Avatar"
                   className="w-24 h-24 rounded-full object-cover border-2 border-ios-accent shadow-md"
-                  onError={() => setAvatarPreview("/avatars/yossika.jpg")}
                 />
               </div>
             ) : (
@@ -453,14 +509,34 @@ export default function ProfilPage() {
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() => fileInputRef.current?.click()}
+              disabled={isProcessingImage || isSubmittingAvatar}
+              onClick={() => {
+                if (fileInputRef.current) fileInputRef.current.value = "";
+                fileInputRef.current?.click();
+              }}
               className="gap-2"
             >
-              <Upload className="w-4 h-4" />
-              <span>{avatarPreview ? "Ganti Berkas Foto" : "Pilih dari Perangkat"}</span>
+              {isProcessingImage ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin text-ios-accent" />
+                  <span>Memproses...</span>
+                </>
+              ) : (
+                <>
+                  <Upload className="w-4 h-4" />
+                  <span>{avatarPreview ? "Ganti Berkas Foto" : "Pilih dari Perangkat"}</span>
+                </>
+              )}
             </Button>
+
+            {isProcessingImage && processingStatus && (
+              <p className="text-[12px] font-medium text-ios-accent mt-2 animate-pulse">
+                {processingStatus}
+              </p>
+            )}
+
             <p className="text-[11px] text-ios-textSecondary mt-2">
-              Format JPG, PNG, atau WebP (Otomatis dioptimasi &amp; dikompresi)
+              Mendukung JPG, PNG, WebP &amp; Apple HEIC (Otomatis dikompresi)
             </p>
           </div>
 
