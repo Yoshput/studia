@@ -16,17 +16,18 @@
 }
 
 .dark {
-  --bg: #000000;
-  --surface: #1C1C1E;
-  --surface-secondary: #2C2C2E;
-  --border: #38383A;
-  --text-primary: #FFFFFF;
-  --text-secondary: #8E8E93;
-  --accent: #0A84FF;
+  --bg: #0B0F19;
+  --surface: #111827;
+  --surface-secondary: #1F2937;
+  --border: #2D3748;
+  --text-primary: #F3F4F6;
+  --text-secondary: #9CA3AF;
+  --accent: #3B82F6;
   --success: #34C759;
   --warning: #FF9F0A;
   --danger: #FF3B30;
 }
+
 
 * {
   box-sizing: border-box;
