@@ -30,12 +30,12 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 4" }: NavbarP
         </Link>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-2">
           {onOpenAssistant && (
             <button
               type="button"
               onClick={onOpenAssistant}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-btn bg-ios-surfaceSecondary hover:bg-ios-surface border border-ios-border text-ios-accent text-[12px] font-semibold transition-all shadow-sm active:scale-95 min-h-[36px]"
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-btn bg-ios-surfaceSecondary hover:bg-ios-surface border border-ios-border text-ios-accent text-[12px] font-semibold transition-all shadow-sm active:scale-95 min-h-[34px]"
               title="Tanya Asisten AI"
             >
               <Sparkles className="w-3.5 h-3.5 stroke-[2.2]" />
@@ -44,6 +44,18 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 4" }: NavbarP
           )}
 
           <ThemeToggle />
+
+          <Link
+            href="/profil"
+            className="w-8 h-8 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-accent/10 flex-shrink-0 active:scale-95 transition-transform"
+            title="Profil Mahasiswa"
+          >
+            <img
+              src="/avatars/yossika.jpg"
+              alt="Profil"
+              className="w-full h-full object-cover"
+            />
+          </Link>
         </div>
       </div>
     </header>

@@ -58,22 +58,32 @@ export default function DashboardPage() {
   const [tugasPrioritas, setTugasPrioritas] = useState<"rendah" | "sedang" | "tinggi">("sedang");
   const [submittingTugas, setSubmittingTugas] = useState(false);
 
+  const [userProfile, setUserProfile] = useState<{
+    nama: string;
+    nim: string | null;
+    kelas: string | null;
+    prodi: string | null;
+  } | null>(null);
+
   const todayDate = new Date();
   const todayDayName = DAYS_ID[todayDate.getDay()];
 
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [matkulRes, semRes, tugasRes] = await Promise.all([
+      const [matkulRes, semRes, tugasRes, userRes] = await Promise.all([
         fetch("/api/matkul"),
         fetch("/api/semester"),
         fetch("/api/tugas"),
+        fetch("/api/user/profile"),
       ]);
 
       const matkulData = await matkulRes.json();
       const semData = await semRes.json();
-      const tugasData = await tugasRes.json();
+      const tugasData = await userRes.json ? await tugasRes.json() : {};
+      const userData = await userRes.json();
 
+      if (userData.user) setUserProfile(userData.user);
       if (matkulData.matkul) setMatkulList(matkulData.matkul);
       if (semData.activeSemester) setSemesterInfo(semData.activeSemester);
       if (tugasData.tugas) {
@@ -210,13 +220,13 @@ export default function DashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <p className="text-[12px] font-mono font-semibold text-ios-accent">
-              NIM: 103112430026 • S1IF-12-06
+              NIM: {userProfile?.nim || "103112430026"} • {userProfile?.kelas || "S1IF-12-06"}
             </p>
             <h1 className="text-[26px] sm:text-[30px] font-bold text-ios-textPrimary tracking-tight mt-0.5">
-              Halo, Yossika Putra Erlangga
+              Halo, {userProfile?.nama || "Mahasiswa"}
             </h1>
             <p className="text-[13px] text-ios-textSecondary">
-              {formatDateIndo(todayDate)} • S1 Teknik Informatika Telkom University Purwokerto
+              {formatDateIndo(todayDate)} • {userProfile?.prodi || "S1 Teknik Informatika Telkom University Purwokerto"}
             </p>
           </div>
 

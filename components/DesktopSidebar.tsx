@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -56,6 +56,46 @@ export function DesktopSidebar({
   onOpenLiveVoice,
 }: DesktopSidebarProps) {
   const pathname = usePathname();
+  const [avatarUrl, setAvatarUrl] = useState<string>("/avatars/yossika.jpg");
+  const [studentName, setStudentName] = useState<string>("Yossika Putra E.");
+  const [studentNim, setStudentNim] = useState<string>("103112430026");
+  const [studentClass, setStudentClass] = useState<string>("S1IF-12-06");
+
+  useEffect(() => {
+    // Initial check from localStorage for instant display
+    const cached = localStorage.getItem("semestr-user-avatar");
+    if (cached) setAvatarUrl(cached);
+
+    // Fetch latest profile from server
+    fetch("/api/user/profile")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.user) {
+          if (d.user.avatar_url) {
+            setAvatarUrl(d.user.avatar_url);
+            localStorage.setItem("semestr-user-avatar", d.user.avatar_url);
+          }
+          if (d.user.nama) setStudentName(d.user.nama);
+          if (d.user.nim) setStudentNim(d.user.nim);
+          if (d.user.kelas) setStudentClass(d.user.kelas);
+        }
+      })
+      .catch(() => {});
+
+    // Listen for instant avatar update event
+    const handleAvatarUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ avatar_url: string }>;
+      if (customEvent.detail?.avatar_url) {
+        setAvatarUrl(customEvent.detail.avatar_url);
+      } else {
+        const saved = localStorage.getItem("semestr-user-avatar");
+        if (saved) setAvatarUrl(saved);
+      }
+    };
+
+    window.addEventListener("avatar-updated", handleAvatarUpdated);
+    return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
+  }, []);
 
   // Hide on landing, login, signup
   if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
@@ -87,15 +127,24 @@ export function DesktopSidebar({
       {/* 2. Student Identity Mini Banner */}
       <div className="p-3.5 mx-3 mt-3 rounded-2xl bg-ios-surfaceSecondary/60 border border-ios-border/70">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-[14px] shadow-inner flex-shrink-0">
-            Y
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-[14px] shadow-inner flex-shrink-0 overflow-hidden border border-ios-border">
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt={studentName}
+                className="w-full h-full object-cover"
+                onError={() => setAvatarUrl("/avatars/yossika.jpg")}
+              />
+            ) : (
+              studentName.charAt(0) || "Y"
+            )}
           </div>
           <div className="min-w-0 flex-1">
             <p className="text-[13px] font-bold text-ios-textPrimary truncate leading-snug">
-              Yossika Putra E.
+              {studentName}
             </p>
             <p className="text-[11px] text-ios-textSecondary truncate">
-              103112430026 • S1IF-12-06
+              {studentNim} • {studentClass}
             </p>
           </div>
         </div>
@@ -191,7 +240,12 @@ export function DesktopSidebar({
 
         <button
           type="button"
-          onClick={() => signOut({ callbackUrl: "/login" })}
+          onClick={async () => {
+            try {
+              await signOut({ redirect: false });
+            } catch (e) {}
+            window.location.href = "/?logged_out=1";
+          }}
           className="flex items-center gap-1 text-[11.5px] font-medium text-ios-textSecondary hover:text-ios-danger px-2.5 py-1.5 rounded-btn hover:bg-ios-danger/10 transition-colors"
           title="Keluar dari akun"
         >

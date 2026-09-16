@@ -24,6 +24,7 @@ import {
   Check,
   UserCheck,
   BrainCircuit,
+  LogOut,
 } from 'lucide-react';
 import gsap from 'gsap';
 
@@ -39,6 +40,18 @@ export default function LandingPage() {
 
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Check for logout redirect
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('logged_out') === '1') {
+        setShowLogoutModal(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+  }, []);
 
   // Scroll listener for sticky blur navbar
   useEffect(() => {
@@ -1179,6 +1192,45 @@ export default function LandingPage() {
           </p>
         </div>
       </footer>
+
+      {/* Interactive Logout Success Modal */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="w-full max-w-md rounded-3xl bg-ios-surface border border-ios-border p-6 shadow-2xl space-y-4 text-center">
+            <div className="w-14 h-14 rounded-full bg-blue-500/15 text-ios-accent flex items-center justify-center mx-auto shadow-inner">
+              <LogOut className="w-7 h-7" />
+            </div>
+
+            <div className="space-y-1.5">
+              <h3 className="text-[20px] font-bold text-ios-textPrimary">
+                Anda Telah Berhasil Keluar
+              </h3>
+              <p className="text-[13.5px] text-ios-textSecondary leading-relaxed">
+                Sesi autentikasi Anda telah berakhir dengan aman. Untuk mengakses dashboard portal mahasiswa kembali, silakan masuk dengan email dan kata sandi Anda.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-2.5">
+              <Button
+                variant="secondary"
+                className="flex-1 font-semibold text-[13px]"
+                onClick={() => setShowLogoutModal(false)}
+              >
+                Tutup
+              </Button>
+              <Link href="/login" className="flex-1">
+                <Button
+                  variant="primary"
+                  className="w-full font-bold text-[13px] shadow-sm shadow-blue-500/25"
+                >
+                  <span>Masuk Kembali</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1" />
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
