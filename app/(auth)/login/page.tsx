@@ -12,8 +12,8 @@ import { ArrowRight, ArrowLeft } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [email, setEmail] = useState("yossika@telkomuniversity.ac.id");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -84,7 +84,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@telkomuniversity.ac.id"
+                placeholder="nama@email.com"
                 required
                 autoComplete="email"
               />
@@ -113,20 +113,13 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-5 pt-4 border-t border-ios-border space-y-3 text-center">
+          <div className="mt-5 pt-4 border-t border-ios-border text-center">
             <p className="text-[13px] text-ios-textSecondary">
               Belum memiliki akun?{" "}
               <Link href="/signup" className="text-ios-accent font-semibold hover:underline">
                 Daftar Mahasiswa Baru
               </Link>
             </p>
-
-            <div className="p-2.5 rounded-lg bg-ios-surfaceSecondary border border-ios-border text-[11px] text-ios-textSecondary text-left">
-              <span className="font-semibold text-ios-textPrimary block mb-0.5">
-                Kredensial Default (Yossika Putra Erlangga):
-              </span>
-              <code>yossika@telkomuniversity.ac.id</code> • <code>password123</code>
-            </div>
           </div>
         </Card>
       </div>

@@ -25,14 +25,21 @@ export async function GET() {
   }
 }
 
+import bcrypt from "bcryptjs";
+
 export async function PUT(req: NextRequest) {
   try {
     const body = await req.json();
-    const { nama, avatar_url, nim, kelas, prodi } = body;
+    const { nama, avatar_url, nim, kelas, prodi, new_password } = body;
 
     const user = await db.user.findFirst();
     if (!user) {
       return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 });
+    }
+
+    let password_hash: string | undefined;
+    if (new_password && typeof new_password === "string" && new_password.length >= 6) {
+      password_hash = await bcrypt.hash(new_password, 10);
     }
 
     const updated = await db.user.update({
@@ -43,6 +50,7 @@ export async function PUT(req: NextRequest) {
         ...(nim ? { nim } : {}),
         ...(kelas ? { kelas } : {}),
         ...(prodi ? { prodi } : {}),
+        ...(password_hash ? { password_hash } : {}),
       },
       select: {
         id: true,
@@ -55,7 +63,7 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    return NextResponse.json({ user: updated });
+    return NextResponse.json({ user: updated, message: "Profil berhasil diperbarui" });
   } catch (error) {
     console.error("Error updating profile:", error);
     return NextResponse.json(

@@ -13,8 +13,8 @@ export default function SignupPage() {
   const router = useRouter();
   const [nama, setNama] = useState("");
   const [nim, setNim] = useState("");
-  const [kelas, setKelas] = useState("S1IF-12-06");
-  const [prodi, setProdi] = useState("S1 Teknik Informatika - Kampus Purwokerto");
+  const [kelas, setKelas] = useState("");
+  const [prodi, setProdi] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

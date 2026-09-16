@@ -42,6 +42,37 @@ export default function ProfilPage() {
   const [isSubmittingAvatar, setIsSubmittingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const [newPassword, setNewPassword] = useState("");
+  const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 6) return;
+    setIsChangingPassword(true);
+    setPasswordMsg(null);
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ new_password: newPassword }),
+      });
+
+      if (res.ok) {
+        setPasswordMsg({ text: "Kata sandi berhasil diperbarui! Silakan gunakan sandi baru ini saat masuk berikutnya.", type: "success" });
+        setNewPassword("");
+      } else {
+        const d = await res.json();
+        setPasswordMsg({ text: d.error || "Gagal mengubah kata sandi", type: "error" });
+      }
+    } catch {
+      setPasswordMsg({ text: "Terjadi kesalahan saat menghubungi server", type: "error" });
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
   const fetchProfile = async () => {
     try {
       const res = await fetch("/api/user/profile");
@@ -221,7 +252,7 @@ export default function ProfilPage() {
             </span>
           </div>
           <span className="text-[12px] font-semibold text-ios-success px-2 py-0.5 rounded-full bg-ios-success/15">
-            MySQL Lokal (XAMPP 3306)
+            TiDB Cloud Serverless (AWS Singapore)
           </span>
         </div>
 
@@ -241,6 +272,52 @@ export default function ProfilPage() {
         </div>
       </Card>
 
+      {/* Security: Change Password */}
+      <div className="space-y-2">
+        <h3 className="text-[13px] font-semibold text-ios-textSecondary uppercase tracking-wider px-1">
+          Keamanan Akun
+        </h3>
+
+        <Card className="p-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-ios-accent" />
+            <span className="text-[13.5px] font-bold text-ios-textPrimary">
+              Ganti Kata Sandi Pribadi
+            </span>
+          </div>
+          <p className="text-[12px] text-ios-textSecondary">
+            Amankan akun Anda agar tidak dapat diakses orang lain.
+          </p>
+
+          <form onSubmit={handleUpdatePassword} className="space-y-3 pt-1">
+            <Input
+              label="Kata Sandi Baru"
+              type="password"
+              placeholder="Minimal 6 karakter"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              required
+            />
+
+            {passwordMsg && (
+              <p className={`text-[12px] font-medium ${passwordMsg.type === 'success' ? 'text-ios-success' : 'text-ios-danger'}`}>
+                {passwordMsg.text}
+              </p>
+            )}
+
+            <Button
+              type="submit"
+              variant="secondary"
+              size="sm"
+              isLoading={isChangingPassword}
+              disabled={newPassword.length < 6}
+            >
+              Simpan Kata Sandi Baru
+            </Button>
+          </form>
+        </Card>
+      </div>
+
       {/* Preferences Section */}
       <div className="space-y-2">
         <h3 className="text-[13px] font-semibold text-ios-textSecondary uppercase tracking-wider px-1">
@@ -252,7 +329,7 @@ export default function ProfilPage() {
             checked={theme === "dark"}
             onChange={handleToggleTheme}
             label="Mode Gelap (Dark Mode)"
-            description="Tampilan latar belakang hitam pekat yang nyaman di malam hari"
+            description="Tampilan latar belakang obsidian slate yang nyaman di mata"
           />
 
           <div className="pt-3 border-t border-ios-border">

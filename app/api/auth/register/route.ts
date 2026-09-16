@@ -7,9 +7,9 @@ const registerSchema = z.object({
   nama: z.string().min(2, "Nama lengkap minimal 2 karakter"),
   email: z.string().email("Format email tidak valid"),
   password: z.string().min(6, "Kata sandi minimal 6 karakter"),
-  nim: z.string().optional().default("103112430026"),
-  kelas: z.string().optional().default("S1IF-12-06"),
-  prodi: z.string().optional().default("S1 Teknik Informatika - Kampus Purwokerto"),
+  nim: z.string().optional().nullable(),
+  kelas: z.string().optional().nullable(),
+  prodi: z.string().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
