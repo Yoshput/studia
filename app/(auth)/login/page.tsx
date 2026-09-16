@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { MascotIcon } from "@/components/assistant/MascotIcon";
-import { ArrowRight, ArrowLeft } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,13 +32,16 @@ export default function LoginPage() {
 
       if (res?.error) {
         setError(res.error || "Email atau kata sandi tidak sesuai");
+        setIsLoading(false);
       } else {
-        router.push("/dashboard");
-        router.refresh();
+        setIsSuccess(true);
+        setIsLoading(false);
+        setTimeout(() => {
+          router.push("/dashboard?welcome=1");
+        }, 1100);
       }
     } catch {
       setError("Terjadi kendala saat menghubungi server login");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -71,56 +75,87 @@ export default function LoginPage() {
 
         {/* Login Card */}
         <Card className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="p-3 rounded-btn bg-ios-danger/10 border border-ios-danger/25 text-ios-danger text-[13px] font-medium">
-                {error}
+          {isSuccess ? (
+            <div className="py-6 text-center space-y-4 animate-in fade-in zoom-in-95 duration-300">
+              <div className="relative w-20 h-20 mx-auto">
+                <div className="absolute inset-0 rounded-full bg-emerald-500/20 animate-ping opacity-75" />
+                <div className="relative w-20 h-20 rounded-full bg-gradient-to-tr from-emerald-500 to-teal-400 text-white flex items-center justify-center shadow-lg shadow-emerald-500/30">
+                  <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+                </div>
               </div>
-            )}
 
-            <div>
-              <Input
-                label="Email Akun"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="nama@email.com"
-                required
-                autoComplete="email"
-              />
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[12px] font-bold">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Autentikasi Berhasil</span>
+                </div>
+                <h3 className="text-[20px] font-bold text-ios-textPrimary">
+                  Selamat Datang Kembali!
+                </h3>
+                <p className="text-[13px] text-ios-textSecondary">
+                  Menyiapkan agenda kuliah &amp; ruang kerja Anda...
+                </p>
+              </div>
+
+              {/* Progress pulse line */}
+              <div className="w-48 h-1.5 bg-ios-surfaceSecondary rounded-full mx-auto overflow-hidden">
+                <div className="h-full bg-gradient-to-r from-blue-500 via-indigo-500 to-emerald-500 animate-pulse w-full" />
+              </div>
             </div>
+          ) : (
+            <>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <div className="p-3 rounded-btn bg-ios-danger/10 border border-ios-danger/25 text-ios-danger text-[13px] font-medium">
+                    {error}
+                  </div>
+                )}
 
-            <div>
-              <Input
-                label="Kata Sandi"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                required
-                autoComplete="current-password"
-              />
-            </div>
+                <div>
+                  <Input
+                    label="Email Akun"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    required
+                    autoComplete="email"
+                  />
+                </div>
 
-            <Button
-              type="submit"
-              variant="primary"
-              className="w-full mt-2"
-              isLoading={isLoading}
-            >
-              <span>Masuk ke Akun</span>
-              <ArrowRight className="w-4 h-4 ml-1.5" />
-            </Button>
-          </form>
+                <div>
+                  <Input
+                    label="Kata Sandi"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    required
+                    autoComplete="current-password"
+                  />
+                </div>
 
-          <div className="mt-5 pt-4 border-t border-ios-border text-center">
-            <p className="text-[13px] text-ios-textSecondary">
-              Belum memiliki akun?{" "}
-              <Link href="/signup" className="text-ios-accent font-semibold hover:underline">
-                Daftar Mahasiswa Baru
-              </Link>
-            </p>
-          </div>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  className="w-full mt-2"
+                  isLoading={isLoading}
+                >
+                  <span>Masuk ke Akun</span>
+                  <ArrowRight className="w-4 h-4 ml-1.5" />
+                </Button>
+              </form>
+
+              <div className="mt-5 pt-4 border-t border-ios-border text-center">
+                <p className="text-[13px] text-ios-textSecondary">
+                  Belum memiliki akun?{" "}
+                  <Link href="/signup" className="text-ios-accent font-semibold hover:underline">
+                    Daftar Mahasiswa Baru
+                  </Link>
+                </p>
+              </div>
+            </>
+          )}
         </Card>
       </div>
     </div>

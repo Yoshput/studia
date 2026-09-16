@@ -20,6 +20,7 @@ import {
   CheckSquare,
   Sparkles,
   UserCheck,
+  X,
 } from "lucide-react";
 import {
   formatDateIndo,
@@ -63,7 +64,10 @@ export default function DashboardPage() {
     nim: string | null;
     kelas: string | null;
     prodi: string | null;
+    avatar_url?: string | null;
   } | null>(null);
+
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
 
   const todayDate = new Date();
   const todayDayName = DAYS_ID[todayDate.getDay()];
@@ -105,6 +109,16 @@ export default function DashboardPage() {
 
   useEffect(() => {
     fetchData();
+
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("welcome") === "1") {
+        setShowWelcomeModal(true);
+        // Clean URL cleanly without triggering re-render
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+    }
   }, []);
 
   // Filter today's classes
@@ -215,6 +229,118 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-6">
+      {/* Interactive Welcome Modal on Successful Login */}
+      {showWelcomeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="relative w-full max-w-md bg-white dark:bg-[#1c1c1e] rounded-3xl p-6 sm:p-7 shadow-2xl border border-ios-border/80 animate-in zoom-in-95 slide-in-from-bottom-4 duration-300 overflow-hidden">
+            {/* Ambient background glow */}
+            <div className="absolute -top-24 -left-24 w-48 h-48 bg-ios-accent/15 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowWelcomeModal(false)}
+              className="absolute top-4 right-4 p-2 text-ios-textSecondary hover:text-ios-textPrimary rounded-full hover:bg-ios-surfaceSecondary transition-colors"
+              aria-label="Tutup"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Header / Avatar badge */}
+            <div className="flex items-center gap-3.5 mb-5">
+              <div className="relative">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-ios-accent to-blue-500 p-0.5 shadow-md flex items-center justify-center">
+                  <div className="w-full h-full bg-white dark:bg-ios-card rounded-[14px] flex items-center justify-center overflow-hidden">
+                    {userProfile?.avatar_url ? (
+                      <img
+                        src={userProfile.avatar_url}
+                        alt="Avatar"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-xl font-bold text-ios-accent">
+                        {userProfile?.nama?.charAt(0) || "Y"}
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-emerald-500 rounded-full border-2 border-white dark:border-[#1c1c1e] flex items-center justify-center shadow-sm">
+                  <Sparkles className="w-2.5 h-2.5 text-white" />
+                </span>
+              </div>
+
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 mb-1">
+                  <CheckCircle2 className="w-3 h-3" />
+                  <span>Autentikasi Berhasil</span>
+                </div>
+                <h3 className="text-[19px] font-bold text-ios-textPrimary leading-snug">
+                  Selamat Datang, {userProfile?.nama?.split(" ")[0] || "Yossika"}! 👋
+                </h3>
+              </div>
+            </div>
+
+            {/* Brief body */}
+            <p className="text-[13px] text-ios-textSecondary leading-relaxed mb-5">
+              Sesi akademik Anda aktif. Agenda kuliah dan pantauan tugas untuk semester ini telah disinkronkan:
+            </p>
+
+            {/* Snapshot Cards */}
+            <div className="grid grid-cols-2 gap-2.5 mb-6">
+              <div className="p-3 bg-ios-surfaceSecondary/70 rounded-2xl border border-ios-border/60 flex flex-col justify-between">
+                <div className="flex items-center gap-2 text-ios-textSecondary text-[11.5px] font-medium mb-1">
+                  <Calendar className="w-3.5 h-3.5 text-ios-accent" />
+                  <span>Kuliah Hari Ini</span>
+                </div>
+                <div className="text-base font-bold text-ios-textPrimary">
+                  {todayClasses.length > 0 ? `${todayClasses.length} Kelas` : "Tidak ada kuliah"}
+                </div>
+                <div className="text-[11px] text-ios-textSecondary mt-0.5">
+                  {todayDayName}
+                </div>
+              </div>
+
+              <div className="p-3 bg-ios-surfaceSecondary/70 rounded-2xl border border-ios-border/60 flex flex-col justify-between">
+                <div className="flex items-center gap-2 text-ios-textSecondary text-[11.5px] font-medium mb-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Tugas Berjalan</span>
+                </div>
+                <div className="text-base font-bold text-ios-textPrimary">
+                  {tugasList.length} Tugas Aktif
+                </div>
+                <div className="text-[11px] text-amber-600 dark:text-amber-400 font-medium mt-0.5">
+                  {upcomingDeadlines.length > 0 ? "Perlu ditinjau" : "Semua beres"}
+                </div>
+              </div>
+            </div>
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row items-center gap-2">
+              <Link href="/absen" className="w-full sm:w-1/2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className="w-full justify-center gap-1.5 py-2.5 text-[13px] rounded-xl"
+                  onClick={() => setShowWelcomeModal(false)}
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  Presensi Hari Ini
+                </Button>
+              </Link>
+              <Button
+                variant="primary"
+                size="sm"
+                className="w-full sm:w-1/2 justify-center gap-1.5 py-2.5 text-[13px] rounded-xl shadow-md"
+                onClick={() => setShowWelcomeModal(false)}
+              >
+                <span>Mulai Hari Ini</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Greeting Header */}
       <div className="pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
