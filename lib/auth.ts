@@ -1,5 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
 
@@ -12,6 +13,16 @@ export const authOptions: NextAuthOptions = {
     signIn: "/login",
   },
   providers: [
+    // Google OAuth Provider (diaktifkan otomatis jika Client ID & Secret tersedia di env)
+    ...(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
+      ? [
+          GoogleProvider({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     CredentialsProvider({
       name: "Credentials",
       credentials: {
@@ -49,6 +60,47 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === "google") {
+        if (!user.email) return false;
+
+        try {
+          // Cek apakah user sudah terdaftar dengan email ini di database
+          let existingUser = await db.user.findUnique({
+            where: { email: user.email },
+          });
+
+          if (!existingUser) {
+            // Buat akun baru secara otomatis dari profil Google
+            const randomPassword = Math.random().toString(36).slice(-10) + Date.now();
+            const password_hash = await bcrypt.hash(randomPassword, 10);
+
+            existingUser = await db.user.create({
+              data: {
+                email: user.email,
+                nama: user.name || user.email.split("@")[0],
+                password_hash,
+                avatar_url: user.image || null,
+              },
+            });
+          } else if (user.image && !existingUser.avatar_url) {
+            // Update avatar bila akun lama belum memiliki avatar
+            await db.user.update({
+              where: { id: existingUser.id },
+              data: { avatar_url: user.image },
+            });
+          }
+
+          // Hubungkan ID database ke sesi user
+          user.id = existingUser.id;
+          return true;
+        } catch (error) {
+          console.error("Error signing in with Google:", error);
+          return false;
+        }
+      }
+      return true;
+    },
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
