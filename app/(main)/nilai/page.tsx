@@ -77,15 +77,23 @@ export default function NilaiPage() {
   const [bobotError, setBobotError] = useState("");
   const [isSubmittingBobot, setIsSubmittingBobot] = useState(false);
 
+  const [userProfile, setUserProfile] = useState<{ prodi?: string | null } | null>(null);
+
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [mRes, sRes] = await Promise.all([
+      const [mRes, sRes, uRes] = await Promise.all([
         fetch("/api/matkul"),
         fetch("/api/semester"),
+        fetch("/api/user/profile"),
       ]);
       const mData = await mRes.json();
       const sData = await sRes.json();
+      const uData = await uRes.json();
+
+      if (uData.user) {
+        setUserProfile(uData.user);
+      }
 
       if (mData.matkul) {
         setMatkulList(mData.matkul);
@@ -490,7 +498,7 @@ export default function NilaiPage() {
                     {currentKhsSemester.nama_semester} — {currentKhsSemester.tahun_ajaran}
                   </h3>
                   <p className="text-[12px] text-ios-textSecondary font-mono">
-                    Telkom University • S1 Teknik Informatika
+                    {userProfile?.prodi || "Kartu Hasil Studi Resmi"}
                   </p>
                 </div>
                 <div className="text-right">

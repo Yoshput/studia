@@ -69,7 +69,7 @@ export default function LoginPage() {
             Masuk ke Semestr
           </h1>
           <p className="text-[13px] text-ios-textSecondary mt-0.5">
-            Teknik Informatika • Telkom University Purwokerto
+            Platform Akademik &amp; Manajemen Studi Mahasiswa
           </p>
         </div>
 
