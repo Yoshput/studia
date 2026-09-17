@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   1. COLOR SCHEMES & DESIGN TOKENS
+   1. COLOR SCHEMES & DESIGN TOKENS (4 THEMES)
    ========================================================================== */
 
 /* --- 🌸 THEME 1: PASTEL PINK (DEFAULT) --- */
@@ -30,9 +30,9 @@
   --danger: #EF4444;
 }
 
-/* --- 🍷 THEME 2: MAROON X PUTIH (CLEAN LUXURY APPLE BURGUNDY & PURE WHITE) --- */
+/* --- 🍷 THEME 2: MAROON X PUTIH (CLEAN LUXURY APPLE BURGUNDY) --- */
 [data-theme="maroon"] {
-  --bg: #FDF9FA;                        /* Pristine pearl-white canvas with subtle velvet warm undertone */
+  --bg: #FDF9FA;                        /* Pristine pearl-white canvas */
   --nav-bg: rgba(253, 249, 250, 0.88);
   --surface: #FFFFFF;                   /* Crisp pure white iOS cards */
   --surface-secondary: #F8EDF1;         /* Soft rose-pearl inset surface */
@@ -54,7 +54,31 @@
   --danger: #E11D48;
 }
 
-/* --- 🌙 THEME 3: APPLE OBSIDIAN DARK --- */
+/* --- 🌿 THEME 3: HIJAU FRESH (PUTIH HIJAU • DUOLINGO VIBES • ADEM & CLEAN) --- */
+[data-theme="green"] {
+  --bg: #F4FBF7;                        /* Soothing mint-cream, zero eye strain */
+  --nav-bg: rgba(244, 251, 247, 0.88);
+  --surface: #FFFFFF;                   /* Crisp pure white cards */
+  --surface-secondary: #E8F7EE;         /* Fresh mint inset surface */
+  --border: rgba(22, 163, 74, 0.16);   /* Fresh leaf green hairline border */
+  --border-subtle: rgba(22, 163, 74, 0.08);
+  --text-primary: #0D2818;              /* Deep forest charcoal */
+  --text-secondary: #305440;            /* Muted pine stone */
+  --text-muted: #5B7E6B;
+
+  --accent: #16A34A;                    /* Duolingo fresh energetic green */
+  --accent-light: #DCFCE7;
+  --accent-dark: #15803D;
+  --accent-subtle: rgba(34, 197, 94, 0.09);
+  --accent-glow: rgba(34, 197, 94, 0.26);
+  --accent-border: rgba(34, 197, 94, 0.24);
+
+  --success: #16A34A;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+}
+
+/* --- 🌙 THEME 4: APPLE OBSIDIAN DARK --- */
 .dark,
 [data-theme="dark"] {
   --bg: #090A0F;                        /* True Apple OLED Obsidian */
@@ -138,6 +162,14 @@ body {
   color: transparent !important;
 }
 
+[data-theme="green"] .headline-gradient {
+  background: linear-gradient(135deg, #15803D 0%, #16A34A 50%, #22C55E 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
 .dark .headline-gradient,
 [data-theme="dark"] .headline-gradient {
   background: linear-gradient(135deg, #F472B6 0%, #FB7185 50%, #FDA4AF 100%) !important;
@@ -165,6 +197,12 @@ body {
   box-shadow: 0 8px 24px rgba(159, 18, 57, 0.28) !important;
 }
 
+[data-theme="green"] .btn-theme-primary {
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 24px rgba(34, 197, 94, 0.28) !important;
+}
+
 .dark .btn-theme-primary,
 [data-theme="dark"] .btn-theme-primary {
   background: #FFFFFF !important;
@@ -179,16 +217,18 @@ body {
 [data-theme="maroon"] .brand-mascot {
   background: linear-gradient(135deg, #881337 0%, #9F1239 50%, #BE123C 100%) !important;
 }
+[data-theme="green"] .brand-mascot {
+  background: linear-gradient(135deg, #15803D 0%, #16A34A 50%, #22C55E 100%) !important;
+}
 .dark .brand-mascot,
 [data-theme="dark"] .brand-mascot {
   background: linear-gradient(135deg, #F472B6 0%, #EC4899 100%) !important;
 }
 
 /* ==========================================================================
-   4. MAROON X PUTIH COMPREHENSIVE OVERRIDES
+   4. MAROON X PUTIH OVERRIDES
    ========================================================================== */
 [data-theme="maroon"] {
-  /* Navbar */
   header {
     background-color: rgba(253, 249, 250, 0.88) !important;
     border-bottom: 1px solid rgba(159, 18, 57, 0.10) !important;
@@ -204,7 +244,6 @@ body {
     color: #9F1239 !important;
   }
 
-  /* Creator badges & pills */
   .bg-pink-500\/\[0\.08\],
   .bg-pink-500\/\[0\.15\] {
     background-color: rgba(159, 18, 57, 0.08) !important;
@@ -216,7 +255,6 @@ body {
     color: #881337 !important;
   }
 
-  /* Text colors */
   h1, h2, h3, h4 {
     color: #1C0A10 !important;
   }
@@ -230,13 +268,11 @@ body {
     background-color: #9F1239 !important;
   }
 
-  /* Cards */
   .bg-white {
     background-color: #FFFFFF !important;
     border-color: rgba(159, 18, 57, 0.12) !important;
   }
 
-  /* Simulator */
   #simulator {
     background-color: #FFFFFF !important;
     border-color: rgba(159, 18, 57, 0.16) !important;
@@ -253,12 +289,10 @@ body {
     color: #9F1239 !important;
   }
 
-  /* Range sliders */
   .accent-pink-500 {
     accent-color: #9F1239 !important;
   }
 
-  /* Pricing */
   .bg-zinc-950 {
     background: linear-gradient(135deg, #9F1239 0%, #881337 100%) !important;
     color: #FFFFFF !important;
@@ -267,7 +301,6 @@ body {
     color: #FFFFFF !important;
   }
 
-  /* Comparison table */
   table th {
     color: #1C0A10 !important;
   }
@@ -275,7 +308,6 @@ body {
     border-color: rgba(159, 18, 57, 0.10) !important;
   }
 
-  /* Footer */
   footer {
     border-top: 1px solid rgba(159, 18, 57, 0.12) !important;
     color: #9E5268 !important;
@@ -289,7 +321,110 @@ body {
 }
 
 /* ==========================================================================
-   5. ANIMATIONS
+   5. HIJAU FRESH (DUOLINGO VIBES) OVERRIDES
+   ========================================================================== */
+[data-theme="green"] {
+  header {
+    background-color: rgba(244, 251, 247, 0.88) !important;
+    border-bottom: 1px solid rgba(22, 163, 74, 0.12) !important;
+  }
+  header span[class*="text-[#1A0A12]"],
+  header span[class*="text-black"] {
+    color: #0D2818 !important;
+  }
+  header nav a {
+    color: #305440 !important;
+  }
+  header nav a:hover {
+    color: #16A34A !important;
+  }
+
+  /* Creator badges & pills */
+  .bg-pink-500\/\[0\.08\],
+  .bg-pink-500\/\[0\.15\] {
+    background-color: rgba(34, 197, 94, 0.09) !important;
+    border-color: rgba(34, 197, 94, 0.22) !important;
+    color: #15803D !important;
+  }
+  .bg-pink-500\/\[0\.08\] *,
+  .bg-pink-500\/\[0\.15\] * {
+    color: #15803D !important;
+  }
+
+  /* Text & elements */
+  h1, h2, h3, h4 {
+    color: #0D2818 !important;
+  }
+  p, .text-stone-600, .text-stone-500, .text-zinc-500, .text-zinc-600 {
+    color: #305440 !important;
+  }
+  .text-pink-600, .text-pink-500 {
+    color: #16A34A !important;
+  }
+  .bg-pink-500 {
+    background-color: #22C55E !important;
+  }
+
+  /* Cards */
+  .bg-white {
+    background-color: #FFFFFF !important;
+    border-color: rgba(22, 163, 74, 0.14) !important;
+  }
+
+  /* Simulator */
+  #simulator {
+    background-color: #FFFFFF !important;
+    border-color: rgba(22, 163, 74, 0.18) !important;
+    box-shadow: 0 16px 50px rgba(22, 163, 74, 0.08) !important;
+  }
+  #simulator > div:first-child {
+    background-color: #E8F7EE !important;
+    border-bottom: 1px solid rgba(22, 163, 74, 0.12) !important;
+  }
+  #simulator button {
+    color: #305440 !important;
+  }
+  #simulator button:hover {
+    color: #16A34A !important;
+  }
+
+  /* Range sliders */
+  .accent-pink-500 {
+    accent-color: #16A34A !important;
+  }
+
+  /* Pricing */
+  .bg-zinc-950 {
+    background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
+    color: #FFFFFF !important;
+  }
+  .bg-zinc-950 * {
+    color: #FFFFFF !important;
+  }
+
+  /* Comparison table */
+  table th {
+    color: #0D2818 !important;
+  }
+  tr.border-b {
+    border-color: rgba(22, 163, 74, 0.12) !important;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid rgba(22, 163, 74, 0.14) !important;
+    color: #5B7E6B !important;
+  }
+  footer a {
+    color: #305440 !important;
+  }
+  footer a:hover {
+    color: #16A34A !important;
+  }
+}
+
+/* ==========================================================================
+   6. ANIMATIONS
    ========================================================================== */
 @keyframes laserScan {
   0%   { top: 5%; opacity: 0.2; }
