@@ -284,6 +284,17 @@ export function ThreeTitaniumOrb({
         keyLight.color.setHex(0xffaaaa);
         rimLight.color.setHex(0xd71920);
         specularFill.color.setHex(0xffffff);
+      } else if (themeName === "emerald") {
+        sphereMat.color.setHex(0x0d4a38);      // Luxury Emerald
+        sphereMat.emissive.setHex(0x042118);   // Velvet forest glow
+        innerWireMat.color.setHex(0xfbf9f4);   // Warm ivory wireframe
+        innerWireMat.opacity = 0.35;
+        ringMat1.color.setHex(0x15664e);       // Rich emerald ring
+        ringMat2.color.setHex(0xf0ebe1);       // Ivory champagne ring
+        particleMat.color.setHex(0xd8ece3);    // Emerald-ivory stardust
+        keyLight.color.setHex(0xc2e2d6);
+        rimLight.color.setHex(0x15664e);
+        specularFill.color.setHex(0xffffff);
       } else if (themeName === "dark") {
         sphereMat.color.setHex(0x1e293b);      // Titanium obsidian
         sphereMat.emissive.setHex(0x0f172a);

@@ -2,15 +2,16 @@
 
 import React, { useEffect, useState } from "react";
 
-type Theme = "pink" | "maroon" | "green" | "blue" | "telkom" | "dark";
+type Theme = "pink" | "maroon" | "green" | "blue" | "telkom" | "emerald" | "dark";
 
 const THEMES: { id: Theme; label: string; color: string; ring: string }[] = [
-  { id: "pink",   label: "Pink Pastel",   color: "#EC4899", ring: "ring-pink-400"    },
-  { id: "maroon", label: "Maroon",        color: "#9F1239", ring: "ring-rose-800"    },
-  { id: "green",  label: "Hijau Fresh",   color: "#22C55E", ring: "ring-emerald-500" },
-  { id: "blue",   label: "Biru iOS",      color: "#0071E3", ring: "ring-blue-500"    },
-  { id: "telkom", label: "Merah Telkom",  color: "#D71920", ring: "ring-red-600"     },
-  { id: "dark",   label: "Dark Mode",     color: "#0F172A", ring: "ring-slate-600"   },
+  { id: "pink",    label: "Pink Pastel",    color: "#EC4899", ring: "ring-pink-400"    },
+  { id: "maroon",  label: "Maroon",         color: "#9F1239", ring: "ring-rose-800"    },
+  { id: "green",   label: "Hijau Fresh",    color: "#22C55E", ring: "ring-emerald-500" },
+  { id: "blue",    label: "Biru iOS",       color: "#0071E3", ring: "ring-blue-500"    },
+  { id: "telkom",  label: "Merah Telkom",   color: "#D71920", ring: "ring-red-600"     },
+  { id: "emerald", label: "Emerald Ivory",  color: "#0D4A38", ring: "ring-emerald-800" },
+  { id: "dark",    label: "Dark Mode",      color: "#0F172A", ring: "ring-slate-600"   },
 ];
 
 function applyTheme(theme: Theme) {
@@ -30,6 +31,8 @@ function applyTheme(theme: Theme) {
     root.setAttribute("data-theme", "blue");
   } else if (theme === "telkom") {
     root.setAttribute("data-theme", "telkom");
+  } else if (theme === "emerald") {
+    root.setAttribute("data-theme", "emerald");
   }
   // pink = default, no attribute needed
   localStorage.setItem("semestr-theme", theme);
