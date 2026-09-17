@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
@@ -19,10 +19,10 @@ import {
   Building,
   Camera,
   Upload,
-  ExternalLink,
   CheckCircle2,
   Loader2,
   Bell,
+  Edit3,
 } from "lucide-react";
 
 interface UserProfile {
@@ -32,10 +32,12 @@ interface UserProfile {
   nim: string | null;
   kelas: string | null;
   prodi: string | null;
+  dosen_wali: string | null;
   avatar_url: string | null;
 }
 
 export default function ProfilPage() {
+  const { data: session } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
@@ -44,9 +46,64 @@ export default function ProfilPage() {
   const [isSubmittingAvatar, setIsSubmittingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Edit Profile Data Diri
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false);
+  const [editNama, setEditNama] = useState("");
+  const [editNim, setEditNim] = useState("");
+  const [editKelas, setEditKelas] = useState("");
+  const [editProdi, setEditProdi] = useState("");
+  const [editDosenWali, setEditDosenWali] = useState("");
+  const [isSubmittingProfile, setIsSubmittingProfile] = useState(false);
+  const [editProfileMsg, setEditProfileMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
   const [newPassword, setNewPassword] = useState("");
   const [passwordMsg, setPasswordMsg] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [isChangingPassword, setIsChangingPassword] = useState(false);
+
+  const openEditProfile = () => {
+    setEditNama(profile?.nama || session?.user?.name || "");
+    setEditNim(profile?.nim || "");
+    setEditKelas(profile?.kelas || "");
+    setEditProdi(profile?.prodi || "");
+    setEditDosenWali(profile?.dosen_wali || "");
+    setEditProfileMsg(null);
+    setIsEditProfileOpen(true);
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingProfile(true);
+    setEditProfileMsg(null);
+
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          nama: editNama,
+          nim: editNim,
+          kelas: editKelas,
+          prodi: editProdi,
+          dosen_wali: editDosenWali,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.user) {
+        setProfile(data.user);
+        setEditProfileMsg({ text: "Data diri berhasil disimpan!", type: "success" });
+        setTimeout(() => {
+          setIsEditProfileOpen(false);
+        }, 900);
+      } else {
+        setEditProfileMsg({ text: data.error || "Gagal memperbarui profil", type: "error" });
+      }
+    } catch {
+      setEditProfileMsg({ text: "Terjadi kendala saat menghubungi server", type: "error" });
+    } finally {
+      setIsSubmittingProfile(false);
+    }
+  };
 
   const handleUpdatePassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -204,10 +261,11 @@ export default function ProfilPage() {
           type: "success",
         });
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Push toggle error:", err);
+      const e = err as Error;
       setPushMessage({
-        text: err?.message || "Terjadi kesalahan saat mengatur notifikasi.",
+        text: e?.message || "Terjadi kesalahan saat mengatur notifikasi.",
         type: "error",
       });
       setPushEnabled(false);
@@ -233,7 +291,7 @@ export default function ProfilPage() {
           type: "error",
         });
       }
-    } catch (err: any) {
+    } catch {
       setPushMessage({
         text: "Terjadi kesalahan saat memicu notifikasi uji coba.",
         type: "error",
@@ -263,7 +321,7 @@ export default function ProfilPage() {
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [processingStatus, setProcessingStatus] = useState<string>("");
 
-  // Client-side automatic image compression to prevent Vercel 413 Payload Too Large
+  // Client-side automatic image compression
   const compressImage = (blob: Blob): Promise<string> => {
     return new Promise((resolve, reject) => {
       const objectUrl = URL.createObjectURL(blob);
@@ -272,7 +330,7 @@ export default function ProfilPage() {
       img.onload = () => {
         try {
           const canvas = document.createElement("canvas");
-          const MAX_SIZE = 480; // 480x480 max resolution for crisp circular avatar
+          const MAX_SIZE = 480;
           let width = img.naturalWidth || img.width;
           let height = img.naturalHeight || img.height;
 
@@ -299,7 +357,6 @@ export default function ProfilPage() {
 
           ctx.drawImage(img, 0, 0, width, height);
           URL.revokeObjectURL(objectUrl);
-          // Compress to high-quality JPEG (~40KB payload)
           const compressedBase64 = canvas.toDataURL("image/jpeg", 0.85);
           resolve(compressedBase64);
         } catch (err) {
@@ -348,10 +405,11 @@ export default function ProfilPage() {
       setProcessingStatus("Mengompresi & menyiapkan pratinjau...");
       const compressed = await compressImage(rawBlob);
       setAvatarPreview(compressed);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("File processing error:", err);
+      const e = err as Error;
       setAvatarUploadError(
-        err?.message || "Format gambar tidak valid atau file rusak."
+        e?.message || "Format gambar tidak valid atau file rusak."
       );
     } finally {
       setIsProcessingImage(false);
@@ -394,9 +452,12 @@ export default function ProfilPage() {
     }
   };
 
+  const studentName = profile?.nama || session?.user?.name || "Mahasiswa";
+  const studentInitial = studentName.charAt(0).toUpperCase();
+
   return (
     <div className="space-y-4 pt-2">
-      {/* Hidden File Input with broad image + Apple HEIC support */}
+      {/* Hidden File Input */}
       <input
         type="file"
         ref={fileInputRef}
@@ -414,22 +475,24 @@ export default function ProfilPage() {
           Profil Mahasiswa
         </h1>
         <p className="text-[13px] text-ios-textSecondary">
-          Informasi identitas resmi Telkom University &amp; preferensi akun
+          Informasi identitas resmi akademik &amp; preferensi akun pengguna
         </p>
       </div>
 
-      {/* Student Identity Card with Avatar Upload */}
+      {/* Student Identity Card with Avatar & Edit Profile Button */}
       <Card className="p-5 flex flex-col sm:flex-row items-center gap-4 text-center sm:text-left">
         <div className="relative group">
-          <div className="w-20 h-20 rounded-full bg-ios-accent/10 border-2 border-ios-accent/30 flex items-center justify-center overflow-hidden shadow-inner">
+          <div className="w-20 h-20 rounded-full bg-ios-surfaceSecondary border-2 border-ios-accent/30 flex items-center justify-center overflow-hidden shadow-inner">
             {profile?.avatar_url ? (
               <img
                 src={profile.avatar_url}
-                alt={profile.nama}
+                alt={studentName}
                 className="w-full h-full object-cover"
               />
             ) : (
-              <MascotIcon size={48} />
+              <div className="w-full h-full bg-gradient-to-tr from-ios-accent to-blue-600 flex items-center justify-center text-white font-bold text-2xl">
+                {studentInitial}
+              </div>
             )}
           </div>
 
@@ -448,20 +511,33 @@ export default function ProfilPage() {
 
         <div className="min-w-0 flex-1">
           <h2 className="text-[19px] font-bold text-ios-textPrimary">
-            {profile?.nama || "YOSSIKA PUTRA ERLANGGA"}
+            {studentName}
           </h2>
           <p className="text-[13px] font-mono font-semibold text-ios-accent mt-0.5">
-            NIM: {profile?.nim || "103112430026"} • {profile?.kelas || "S1IF-12-06"}
+            {profile?.nim ? `NIM: ${profile.nim} ${profile.kelas ? `• ${profile.kelas}` : ""}` : profile?.email || "Mahasiswa Aktif"}
           </p>
           <div className="flex items-center justify-center sm:justify-start gap-1.5 text-[12px] text-ios-textSecondary mt-1">
             <Building className="w-3.5 h-3.5 flex-shrink-0" />
             <span className="truncate">
-              {profile?.prodi || "S1 Teknik Informatika - Kampus Purwokerto"}
+              {profile?.prodi || "Program Studi & Kampus Mahasiswa"}
             </span>
           </div>
           <p className="text-[12px] text-ios-textSecondary mt-0.5">
-            Dosen Wali: Annisaa Utami, S.Kom., M.Kom. (ANT)
+            {profile?.dosen_wali ? `Dosen Wali: ${profile.dosen_wali}` : "Dosen Wali: Belum diatur"}
           </p>
+
+          <div className="mt-2.5 flex justify-center sm:justify-start">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={openEditProfile}
+              className="gap-1.5 text-[12px] py-1.5 px-3 rounded-xl font-semibold"
+            >
+              <Edit3 className="w-3.5 h-3.5 text-ios-accent" />
+              <span>Edit Data Diri</span>
+            </Button>
+          </div>
         </div>
       </Card>
 
@@ -471,11 +547,11 @@ export default function ProfilPage() {
           <div className="flex items-center gap-2.5">
             <GraduationCap className="w-4 h-4 text-ios-accent" />
             <span className="text-[14px] font-medium text-ios-textPrimary">
-              IPK Resmi Terkini
+              Status Akademik
             </span>
           </div>
-          <span className="text-[15px] font-bold text-ios-accent">
-            3.64
+          <span className="text-[13px] font-bold text-ios-accent px-2 py-0.5 rounded-full bg-ios-accent/10">
+            Mahasiswa Aktif
           </span>
         </div>
 
@@ -483,11 +559,11 @@ export default function ProfilPage() {
           <div className="flex items-center gap-2.5">
             <Database className="w-4 h-4 text-ios-accent" />
             <span className="text-[14px] font-medium text-ios-textPrimary">
-              Total Beban SKS
+              Semester Terdaftar
             </span>
           </div>
           <span className="text-[13px] font-semibold text-ios-textSecondary">
-            84 SKS Selesai (Tingkat I, II, III) + 22 SKS Berjalan
+            Semester 5 • Tahun Ajaran 2026/2027
           </span>
         </div>
 
@@ -495,7 +571,7 @@ export default function ProfilPage() {
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-4 h-4 text-ios-success" />
             <span className="text-[14px] font-medium text-ios-textPrimary">
-              Database Backend
+              Penyimpanan Cloud
             </span>
           </div>
           <span className="text-[12px] font-semibold text-ios-success px-2 py-0.5 rounded-full bg-ios-success/15">
@@ -505,17 +581,11 @@ export default function ProfilPage() {
 
         <div className="flex items-center justify-between pt-3">
           <span className="text-[14px] font-medium text-ios-textPrimary">
-            Portofolio Resmi
+            Email Terdaftar
           </span>
-          <a
-            href="https://yossikaputra.my.id"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-[13px] font-semibold text-ios-accent flex items-center gap-1 hover:underline"
-          >
-            <span>yossikaputra.my.id</span>
-            <ExternalLink className="w-3.5 h-3.5" />
-          </a>
+          <span className="text-[13px] font-mono text-ios-textSecondary truncate max-w-[200px] sm:max-w-none">
+            {profile?.email || session?.user?.email || "-"}
+          </span>
         </div>
       </Card>
 
@@ -594,7 +664,7 @@ export default function ProfilPage() {
               onChange={handleTogglePush}
               disabled={isSubscribingPush}
               label="Notifikasi Push Pengingat"
-              description="Pemberitahuan resmi OS untuk deadline tugas & 15 menit sebelum kuliah"
+              description="Pemberitahuan resmi OS untuk deadline tugas &amp; 15 menit sebelum kuliah"
             />
 
             {pushMessage && (
@@ -637,7 +707,7 @@ export default function ProfilPage() {
           onClick={async () => {
             try {
               await signOut({ redirect: false });
-            } catch (e) {}
+            } catch {}
             window.location.href = "/?logged_out=1";
           }}
         >
@@ -645,6 +715,79 @@ export default function ProfilPage() {
           <span>Keluar dari Akun</span>
         </Button>
       </div>
+
+      {/* Sheet Edit Data Diri Mahasiswa */}
+      <Sheet
+        isOpen={isEditProfileOpen}
+        onClose={() => {
+          setIsEditProfileOpen(false);
+          setEditProfileMsg(null);
+        }}
+        title="Edit Data Diri Mahasiswa"
+        description="Perbarui informasi identitas akademik Anda di Semestr."
+      >
+        <form onSubmit={handleSaveProfile} className="space-y-4">
+          <Input
+            label="Nama Lengkap"
+            placeholder="Contoh: Arthur Zevallent Alfani"
+            value={editNama}
+            onChange={(e) => setEditNama(e.target.value)}
+            required
+          />
+
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="NIM Mahasiswa"
+              placeholder="Contoh: 102092430009"
+              value={editNim}
+              onChange={(e) => setEditNim(e.target.value)}
+            />
+            <Input
+              label="Kelas"
+              placeholder="Contoh: S1IF-12-06"
+              value={editKelas}
+              onChange={(e) => setEditKelas(e.target.value)}
+            />
+          </div>
+
+          <Input
+            label="Program Studi &amp; Kampus"
+            placeholder="Contoh: S1 Teknik Informatika - Telkom Purwokerto"
+            value={editProdi}
+            onChange={(e) => setEditProdi(e.target.value)}
+          />
+
+          <Input
+            label="Nama Dosen Wali (Opsional)"
+            placeholder="Contoh: Dosen Pembimbing Akademik"
+            value={editDosenWali}
+            onChange={(e) => setEditDosenWali(e.target.value)}
+          />
+
+          {editProfileMsg && (
+            <div
+              className={`p-3 rounded-xl text-[12.5px] font-semibold text-center ${
+                editProfileMsg.type === "success"
+                  ? "bg-ios-success/15 text-ios-success border border-ios-success/30"
+                  : "bg-ios-danger/10 text-ios-danger border border-ios-danger/25"
+              }`}
+            >
+              {editProfileMsg.text}
+            </div>
+          )}
+
+          <div className="pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              className="w-full font-bold"
+              isLoading={isSubmittingProfile}
+            >
+              Simpan Data Diri
+            </Button>
+          </div>
+        </form>
+      </Sheet>
 
       {/* Sheet Upload Foto Profil */}
       <Sheet

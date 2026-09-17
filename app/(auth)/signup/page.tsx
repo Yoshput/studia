@@ -119,7 +119,7 @@ export default function SignupPage() {
 
               <Input
                 label="Nama Lengkap"
-                placeholder="Contoh: Yossika Putra Erlangga"
+                placeholder="Contoh: Budi Pratama"
                 value={nama}
                 onChange={(e) => setNama(e.target.value)}
                 required
@@ -128,14 +128,14 @@ export default function SignupPage() {
               <div className="grid grid-cols-2 gap-3">
                 <Input
                   label="NIM Mahasiswa"
-                  placeholder="103112430026"
+                  placeholder="103012300001"
                   value={nim}
                   onChange={(e) => setNim(e.target.value)}
                   required
                 />
                 <Input
                   label="Kelas"
-                  placeholder="S1IF-12-06"
+                  placeholder="IF-46-01"
                   value={kelas}
                   onChange={(e) => setKelas(e.target.value)}
                   required
@@ -144,6 +144,7 @@ export default function SignupPage() {
 
               <Input
                 label="Program Studi & Kampus"
+                placeholder="S1 Teknik Informatika - Telkom Purwokerto"
                 value={prodi}
                 onChange={(e) => setProdi(e.target.value)}
                 required
@@ -152,7 +153,7 @@ export default function SignupPage() {
               <Input
                 label="Email Kampus / Personal"
                 type="email"
-                placeholder="yossika@telkomuniversity.ac.id"
+                placeholder="nama@student.telkomuniversity.ac.id"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required

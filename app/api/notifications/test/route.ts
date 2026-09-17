@@ -9,18 +9,22 @@ export async function POST(req: NextRequest) {
     const session = await getServerSession(authOptions);
     let user = null;
 
-    if (session?.user?.email) {
-      user = await db.user.findUnique({
-        where: { email: session.user.email },
+    const userId = (session?.user as { id?: string })?.id;
+    const userEmail = session?.user?.email;
+
+    if (userId || userEmail) {
+      user = await db.user.findFirst({
+        where: {
+          OR: [
+            ...(userId ? [{ id: userId }] : []),
+            ...(userEmail ? [{ email: userEmail }] : []),
+          ],
+        },
       });
     }
 
     if (!user) {
-      user = await db.user.findFirst();
-    }
-
-    if (!user) {
-      return NextResponse.json({ error: "User tidak ditemukan" }, { status: 401 });
+      return NextResponse.json({ error: "Silakan login untuk menguji notifikasi" }, { status: 401 });
     }
 
     const res = await sendPushToUser(user.id, {

@@ -25,7 +25,7 @@ export function LiveVoiceModal({ isOpen, onClose }: LiveVoiceModalProps) {
   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
   const [liveTranscript, setLiveTranscript] = useState("");
   const [lastAssistantReply, setLastAssistantReply] = useState(
-    "Hai Yossika! Aku Aiko 3D. Silakan bicara langsung lewat mic, aku siap mendengarkan!"
+    "Hai! Aku Aiko 3D. Silakan bicara langsung lewat mic, aku siap mendengarkan!"
   );
   const [statusText, setStatusText] = useState("Siap Mendengarkan Suaramu");
 
@@ -49,7 +49,7 @@ export function LiveVoiceModal({ isOpen, onClose }: LiveVoiceModalProps) {
 
     // Initial greeting when opening Live Voice Call
     setStatusText("Aiko 3D Terhubung • Gemini 2.5 Flash Aktif");
-    speakVoice("Hai Yossika! Aku Aiko 3D, asisten kamu di Telkom Purwokerto. Ada yang ingin kamu tanyakan lewat suara?");
+    speakVoice("Hai! Aku Aiko 3D, asisten akademikmu di Semestr. Ada yang ingin kamu tanyakan lewat suara?");
   }, [isOpen]);
 
   // Text-To-Speech Output via Laptop/HP Speaker
@@ -189,7 +189,7 @@ export function LiveVoiceModal({ isOpen, onClose }: LiveVoiceModalProps) {
       });
 
       const data = await res.json();
-      const reply = data.reply || "Bisa diulangi pertanyaannya, Yossika?";
+      const reply = data.reply || "Bisa diulangi pertanyaannya?";
       setLastAssistantReply(reply);
       setLiveTranscript("");
       speakVoice(reply);

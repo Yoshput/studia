@@ -8,18 +8,19 @@ datasource db {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  nama          String
-  email         String     @unique
-  password_hash String
-  nim           String?    @default("103112430026")
-  kelas         String?    @default("S1IF-12-06")
-  prodi         String?    @default("S1 Teknik Informatika - Kampus Purwokerto")
+  id                 String             @id @default(cuid())
+  nama               String
+  email              String             @unique
+  password_hash      String
+  nim                String?
+  kelas              String?
+  prodi              String?
+  dosen_wali         String?
   avatar_url         String?            @db.LongText
   presensi           Presensi[]
   push_subscriptions PushSubscription[]
   createdAt          DateTime           @default(now())
-  updatedAt     DateTime   @updatedAt
+  updatedAt          DateTime           @updatedAt
 
   @@map("users")
 }

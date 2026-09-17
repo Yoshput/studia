@@ -12,12 +12,34 @@ const presensiSchema = z.object({
 
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const matkulId = searchParams.get("matkul_id");
 
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    const userEmail = session?.user?.email;
+
+    let currentUser = null;
+    if (userId || userEmail) {
+      currentUser = await db.user.findFirst({
+        where: {
+          OR: [
+            ...(userId ? [{ id: userId }] : []),
+            ...(userEmail ? [{ email: userEmail }] : []),
+          ],
+        },
+      });
+    }
+
     const whereClause: Record<string, unknown> = {};
+    if (currentUser) {
+      whereClause.user_id = currentUser.id;
+    }
     if (matkulId) {
       whereClause.matkul_id = matkulId;
     }
@@ -59,8 +81,26 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const validated = presensiSchema.parse(body);
 
-    // Get default student user
-    const user = await db.user.findFirst();
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    const userEmail = session?.user?.email;
+
+    let user = null;
+    if (userId || userEmail) {
+      user = await db.user.findFirst({
+        where: {
+          OR: [
+            ...(userId ? [{ id: userId }] : []),
+            ...(userEmail ? [{ email: userEmail }] : []),
+          ],
+        },
+      });
+    }
+
+    if (!user) {
+      user = await db.user.findFirst();
+    }
+
     if (!user) {
       return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 });
     }

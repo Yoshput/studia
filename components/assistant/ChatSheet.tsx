@@ -56,7 +56,7 @@ export function ChatSheet({
     {
       id: "init-1",
       sender: "assistant",
-      text: "Halo Yossika! Aku Aiko, asisten akademik & sahabat belajar digitalmu di Telkom University Purwokerto. Ada yang ingin kamu tanyakan hari ini?",
+      text: "Halo! Aku Aiko, asisten akademik & sahabat belajar digitalmu di Semestr. Ada yang ingin kamu tanyakan atau diskusikan hari ini?",
       timestamp: new Date().toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
@@ -356,7 +356,7 @@ export function ChatSheet({
                     ? "🧠 Sedang memproses jawaban dengan Gemini..."
                     : avatarStatus === "talking"
                     ? "🔊 Sedang berbicara..."
-                    : "✨ Siap membantumu, Yossika!"}
+                    : "✨ Siap membantumu kapan saja!"}
                 </p>
               </div>
             </div>

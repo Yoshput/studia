@@ -5,6 +5,8 @@ import {
   calculateAttentionScore,
   getDaysRemaining,
 } from "@/lib/utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 // Indonesian day names mapping
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
@@ -102,15 +104,37 @@ export async function POST(req: NextRequest) {
       (m) => m.attention.status === "perlu_perhatian" || m.attention.status === "waspada"
     );
 
+    // Fetch logged in user identity for personalized conversation
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    const userEmail = session?.user?.email;
+
+    let studentUser = null;
+    if (userId || userEmail) {
+      studentUser = await db.user.findFirst({
+        where: {
+          OR: [
+            ...(userId ? [{ id: userId }] : []),
+            ...(userEmail ? [{ email: userEmail }] : []),
+          ],
+        },
+      });
+    }
+
+    const studentFullName = studentUser?.nama || session?.user?.name || "Mahasiswa";
+    const studentCallName = studentFullName.split(" ")[0] || "Teman";
+    const studentNim = studentUser?.nim || "-";
+    const studentProdi = studentUser?.prodi || "Teknik Informatika";
+    const studentKelas = studentUser?.kelas || "-";
+
     // Build context summary for AI
     const academicContextText = `
 === PROFIL MAHASISWA & KONTEKS AKADEMIK ===
-Nama Mahasiswa: Yossika Putra Erlangga
-NIM: 103112430026
-Program Studi: S1 Teknik Informatika (Kelas: S1IF-12-06)
+Nama Mahasiswa: ${studentFullName}
+NIM: ${studentNim}
+Program Studi: ${studentProdi} (Kelas: ${studentKelas})
 Institusi: Telkom University Purwokerto
 Semester Aktif: Semester 5 (Tahun Ajaran 2026/2027)
-IPK Kumulatif Resmi: 3.64 (Total 84 SKS Selesai, Tingkat I: 3.68, Tingkat II: 3.60, Tingkat III: 3.70)
 Hari Ini: ${todayDayName}, ${todayDate.toLocaleDateString("id-ID", { dateStyle: "full" })}
 
 Jadwal Kuliah Hari Ini (${todayDayName}):
@@ -150,11 +174,11 @@ Konteks Lingkungan & Gaya Hidup Kampus:
 - Karakter Bot: Bernama "Aiko" (Asisten Cerdas & Sahabat Belajar Mahasiswa). Komunikatif, hangat, cerdas, supportif, paham dunia coding/IT (Linux, VMware, Python, Cyber Security, AI, Web Dev), dan luwes menjawab apa saja mulai dari pertanyaan akademik sampai rekomendasi santai sehari-hari.
 `;
 
-    const systemInstruction = `Kamu adalah "Aiko", asisten akademik AI pintar dan sahabat belajar mahasiswa untuk Yossika Putra Erlangga (mahasiswa S1 Teknik Informatika Telkom University Purwokerto).
+    const systemInstruction = `Kamu adalah "Aiko", asisten akademik AI pintar dan sahabat belajar mahasiswa untuk ${studentFullName} (mahasiswa ${studentProdi} Telkom University Purwokerto).
 Kamu memiliki kepribadian yang ramah, santai, cerdas, solutif, dan berempati tinggi.
-Jawablah dengan Bahasa Indonesia yang alami, luwes, dan menyenangkan.
+Jawablah dengan Bahasa Indonesia yang alami, luwes, dan menyenangkan. Panggil pengguna dengan nama "${studentCallName}".
 Jika ditanya tentang jadwal kuliah, deadline tugas, nilai, atau kampus, gunakan data kontekstual yang diberikan secara akurat.
-Jika ditanya pertanyaan santai sehari-hari (misalnya: "mood makan apa ya enaknya hari ini", rekomendasi kuliner, curhat nugas, kopi, motivasi belajar, tips VMware/Kali Linux), jawablah dengan santai, kreatif, dan berikan rekomendasi nyata yang relevan untuk anak kuliahan di Purwokerto atau mahasiswa IT tanpa terikat template kaku.
+Jika ditanya pertanyaan santai sehari-hari (misalnya: "mood makan apa ya enaknya hari ini", rekomendasi kuliner, curhat nugas, kopi, motivasi belajar, tips praktikum), jawablah dengan santai, kreatif, dan berikan rekomendasi nyata yang relevan untuk anak kuliahan di Purwokerto atau mahasiswa IT tanpa terikat template kaku.
 
 ${academicContextText}`;
 
@@ -265,7 +289,7 @@ ${academicContextText}`;
       lower.includes("saran makan")
     ) {
       const foodSuggestions = [
-        "Lagi bingung mau makan apa, Yossika? Kalau pengen yang anget dan khas banget, cobain **Soto Sokaraja** pake kerupuk cantir plus sambal kacang! Atau kalau mau yang simpel buat nemenin nugas: **Mendoan hangat** cocol kecap rawit di Jl. Suparno / sekitar Dukuhwaluh mantap banget!",
+        `Lagi bingung mau makan apa, ${studentCallName}? Kalau pengen yang anget dan khas banget, cobain **Soto Sokaraja** pake kerupuk cantir plus sambal kacang! Atau kalau mau yang simpel buat nemenin nugas: **Mendoan hangat** cocol kecap rawit di Jl. Suparno / sekitar Dukuhwaluh mantap banget!`,
         "Wah pas banget jam makan! Kalau butuh tenaga buat praktikum dan ngoding, **Ayam Geprek** level pedas favorit anak kampus di sekitar Dukuhwaluh bisa jadi pilihan cepat dan ngenyangin. Jangan lupa es teh jumbo-nya ya!",
         "Mood santai sambil buka laptop? Mending melipir cari **Mie Dok-Dok / Nasi Goreng Magelangan** anget di burjo dekat kampus Telkom, atau ngopi santai di kafe sekitar HR Soebronto biar dapet wifi colokan sekalian!",
       ];
@@ -283,7 +307,7 @@ ${academicContextText}`;
       lower.includes("keamanan siber")
     ) {
       return NextResponse.json({
-        reply: `Untuk praktikum **Sistem Keamanan Cerdas**, pastikan setup VMware dan Kali Linux kamu sudah optimal ya Yossika:
+        reply: `Untuk praktikum **Sistem Keamanan Cerdas**, pastikan setup VMware dan Kali Linux kamu sudah optimal ya ${studentCallName}:
 1. Alokasikan RAM minimal 4 GB dan 2 CPU cores di VMware agar Kali Linux tidak lag.
 2. Pasang \`open-vm-tools-desktop\` (\`sudo apt update && sudo apt install -y open-vm-tools-desktop\`) supaya resolusi layar otomatis pas dan clipboard copy-paste host-guest berfungsi mulus.
 3. Gunakan mode Network **NAT** untuk koneksi internet dasar, atau **Bridged** jika butuh latihan scanning jaringan lab.
@@ -301,7 +325,7 @@ Sudah siap kelompok praktikumnya?`,
     ) {
       if (todayMatkul.length === 0) {
         return NextResponse.json({
-          reply: `Hari ini (${todayDayName}) kamu tidak ada jadwal kelas kuliah tatap muka di kampus, Yossika! Waktu yang pas buat santai sejenak, ngelanjutin setup Kali Linux di VMware, atau ngopi santai.`,
+          reply: `Hari ini (${todayDayName}) kamu tidak ada jadwal kelas kuliah tatap muka di kampus, ${studentCallName}! Waktu yang pas buat santai sejenak, ngelanjutin tugas atau istirahat.`,
           engine: "smart-local",
         });
       }
@@ -348,7 +372,7 @@ Sudah siap kelompok praktikumnya?`,
       lower.includes("sks")
     ) {
       return NextResponse.json({
-        reply: `Catatan resmi akademik kamu sangat membanggakan, Yossika!\n\n• **IPK Kumulatif Resmi**: **3.64** (Predikat Sangat Memuaskan)\n• **Total SKS Diselesaikan**: **84 SKS**\n• **Rincian Prestasi**: Tingkat I (3.68), Tingkat II (3.60), Tingkat III (3.70)\n\nTetap pertahankan konsistensinya di Semester 5 ini ya!`,
+        reply: `Catatan akademik semester ini siap dipantau, ${studentCallName}! Kamu bisa melihat detail evaluasi tiap mata kuliah, bobot penilaian, dan rekapitulasi nilai di menu **Nilai & Transkrip**. Tetap semangat dan pertahankan performa terbaikmu ya!`,
         engine: "smart-local",
       });
     }
@@ -363,7 +387,7 @@ Sudah siap kelompok praktikumnya?`,
       lower.includes("assalamu")
     ) {
       return NextResponse.json({
-        reply: `Halo Yossika! Ada yang bisa Aiko bantu hari ini? Kamu bisa tanya jadwal kuliah, tugas, tips praktikum, rekomendasi makanan, atau sekadar ngobrol santai! 😊`,
+        reply: `Halo ${studentCallName}! Ada yang bisa Aiko bantu hari ini? Kamu bisa tanya jadwal kuliah, tugas, tips praktikum, rekomendasi makanan, atau sekadar ngobrol santai! 😊`,
         engine: "smart-local",
       });
     }
@@ -371,14 +395,14 @@ Sudah siap kelompok praktikumnya?`,
     // 7. Tanya Siapa Kamu / Bot
     if (lower.includes("siapa kamu") || lower.includes("namamu") || lower.includes("kamu siapa")) {
       return NextResponse.json({
-        reply: `Aku **Aiko**, asisten akademik AI dan sahabat belajar digitalmu di Semestr! Aku siap bantu kamu mantau jadwal kuliah, deadline tugas, hitung estimasi nilai, kasih tips seputar praktikum informatika, sampai ngobrol santai seputar kampus Telkom University Purwokerto.`,
+        reply: `Aku **Aiko**, asisten akademik AI dan sahabat belajar digitalmu di Semestr! Aku siap bantu kamu mantau jadwal kuliah, deadline tugas, hitung estimasi nilai, kasih tips praktikum, sampai ngobrol santai seputar kampus Telkom University Purwokerto.`,
         engine: "smart-local",
       });
     }
 
     // Default conversational response
     return NextResponse.json({
-      reply: `Halo Yossika! Terkait "${message}", aku selalu siap nemenin kamu di Semester 5 ini. Kamu mau cek jadwal kuliah hari ini, pantau progres tugas Kali Linux, atau butuh rekomendasi tempat nugas dan kuliner enak di Purwokerto?`,
+      reply: `Halo ${studentCallName}! Terkait "${message}", aku selalu siap nemenin kamu di semester ini. Kamu mau cek jadwal kuliah hari ini, pantau progres tugas, atau butuh rekomendasi tempat nugas dan kuliner enak di Purwokerto?`,
       engine: "smart-local",
     });
   } catch (error) {

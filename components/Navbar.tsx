@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Sparkles, Download } from "lucide-react";
 import { usePWAInstall } from "@/components/pwa/PWAInstallContext";
@@ -12,11 +13,40 @@ interface NavbarProps {
   semesterName?: string;
 }
 
-export function Navbar({ onOpenAssistant, semesterName = "Semester 4" }: NavbarProps) {
+export function Navbar({ onOpenAssistant, semesterName = "Semester 5" }: NavbarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const { isInstallable, promptInstall } = usePWAInstall();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const cached = localStorage.getItem("semestr-user-avatar");
+    if (cached) setAvatarUrl(cached);
+
+    fetch("/api/user/profile")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d?.user?.avatar_url) {
+          setAvatarUrl(d.user.avatar_url);
+          localStorage.setItem("semestr-user-avatar", d.user.avatar_url);
+        }
+      })
+      .catch(() => {});
+
+    const handleAvatarUpdated = (e: Event) => {
+      const customEvent = e as CustomEvent<{ avatar_url: string }>;
+      if (customEvent.detail?.avatar_url) {
+        setAvatarUrl(customEvent.detail.avatar_url);
+      }
+    };
+
+    window.addEventListener("avatar-updated", handleAvatarUpdated);
+    return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
+  }, []);
 
   if (pathname === "/login") return null;
+
+  const initial = session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "M";
 
   return (
     <header className="md:hidden sticky top-0 z-40 glass-nav border-b border-ios-border transition-colors duration-200">
@@ -61,14 +91,21 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 4" }: NavbarP
 
           <Link
             href="/profil"
-            className="w-8 h-8 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-accent/10 flex-shrink-0 active:scale-95 transition-transform"
+            className="w-8 h-8 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-accent/15 flex-shrink-0 active:scale-95 transition-transform"
             title="Profil Mahasiswa"
           >
-            <img
-              src="/avatars/yossika.jpg"
-              alt="Profil"
-              className="w-full h-full object-cover"
-            />
+            {avatarUrl ? (
+              <img
+                src={avatarUrl}
+                alt="Profil"
+                className="w-full h-full object-cover"
+                onError={() => setAvatarUrl(null)}
+              />
+            ) : (
+              <span className="text-[12px] font-bold text-ios-accent">
+                {initial}
+              </span>
+            )}
           </Link>
         </div>
       </div>

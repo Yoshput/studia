@@ -59,6 +59,7 @@ export default function AbsenPage() {
   const [isScanning, setIsScanning] = useState(false);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
+  const [userProfile, setUserProfile] = useState<{ nama: string; nim: string | null } | null>(null);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
 
@@ -69,16 +70,22 @@ export default function AbsenPage() {
   const todayDate = new Date();
   const todayDayName = DAYS_ID[todayDate.getDay()];
 
-  // Fetch courses & attendance history
+  // Fetch courses, profile & attendance history
   const fetchData = async () => {
     try {
       setLoading(true);
-      const [mRes, pRes] = await Promise.all([
+      const [mRes, pRes, uRes] = await Promise.all([
         fetch("/api/matkul"),
         fetch("/api/presensi"),
+        fetch("/api/user/profile"),
       ]);
       const mData = await mRes.json();
       const pData = await pRes.json();
+      const uData = await uRes.json();
+
+      if (uData.user) {
+        setUserProfile(uData.user);
+      }
 
       if (mData.matkul) {
         setMatkulList(mData.matkul);
@@ -188,11 +195,15 @@ export default function AbsenPage() {
     ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
     ctx.fillRect(0, canvas.height - 36, canvas.width, 36);
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 12.5px Inter, -apple-system, sans-serif";
+    ctx.font = "bold 12px Inter, -apple-system, sans-serif";
     const modeWatermark =
       kuliahMode === "online" ? "KULIAH ONLINE (DARING)" : "KULIAH OFFLINE (TETAP MUKA)";
+    const studentLabel = userProfile?.nama
+      ? userProfile.nama.toUpperCase()
+      : "MAHASISWA";
+    const nimPart = userProfile?.nim ? `${userProfile.nim} • ` : "";
     ctx.fillText(
-      `YOSSIKA • 103112430026 • ${modeWatermark} • ${formatDateIndo(new Date())} ${new Date().toLocaleTimeString("id-ID")}`,
+      `${studentLabel} • ${nimPart}${modeWatermark} • ${formatDateIndo(new Date())} ${new Date().toLocaleTimeString("id-ID")}`,
       14,
       canvas.height - 13
     );

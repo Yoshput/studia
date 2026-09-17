@@ -14,9 +14,17 @@ export async function POST() {
 
 async function handleCron() {
   try {
-    const user = await db.user.findFirst();
-    if (!user) {
-      return NextResponse.json({ message: "No user found" }, { status: 200 });
+    const subscribedUsers = await db.user.findMany({
+      where: {
+        push_subscriptions: {
+          some: {},
+        },
+      },
+      select: { id: true, nama: true },
+    });
+
+    if (!subscribedUsers || subscribedUsers.length === 0) {
+      return NextResponse.json({ message: "No subscribed users found", dispatched: [] }, { status: 200 });
     }
 
     const now = new Date();
@@ -42,14 +50,16 @@ async function handleCron() {
         const diffMinutes = classStartMinutes - currentTotalMinutes;
 
         if (diffMinutes >= 10 && diffMinutes <= 20) {
-          const res = await sendPushToUser(user.id, {
-            title: `Kuliah Segera Dimulai (${diffMinutes} Menit)`,
-            body: `${matkul.nama} di ruang ${matkul.ruang} mulai pukul ${matkul.jam_mulai} WIB.`,
-            url: "/jadwal",
-            tag: `class-${matkul.id}-${nowWib.toDateString()}`,
-          });
-          if (res.success) {
-            notificationsSent.push(`Class: ${matkul.nama}`);
+          for (const u of subscribedUsers) {
+            const res = await sendPushToUser(u.id, {
+              title: `Kuliah Segera Dimulai (${diffMinutes} Menit)`,
+              body: `${matkul.nama} di ruang ${matkul.ruang} mulai pukul ${matkul.jam_mulai} WIB.`,
+              url: "/jadwal",
+              tag: `class-${matkul.id}-${nowWib.toDateString()}`,
+            });
+            if (res.success) {
+              notificationsSent.push(`Class (${u.id}): ${matkul.nama}`);
+            }
           }
         }
       }
@@ -72,26 +82,30 @@ async function handleCron() {
 
       // H-3 hours (between 2.5 and 3.5 hours)
       if (diffHours >= 2.5 && diffHours <= 3.5) {
-        const res = await sendPushToUser(user.id, {
-          title: "Batas Pengumpulan Mendekat (3 Jam)",
-          body: `Tugas "${task.judul}" (${task.matkul.nama}) segera kumpulkan sebelum tenggat waktu.`,
-          url: "/tugas",
-          tag: `task-h3-${task.id}`,
-        });
-        if (res.success) {
-          notificationsSent.push(`Task H-3: ${task.judul}`);
+        for (const u of subscribedUsers) {
+          const res = await sendPushToUser(u.id, {
+            title: "Batas Pengumpulan Mendekat (3 Jam)",
+            body: `Tugas "${task.judul}" (${task.matkul.nama}) segera kumpulkan sebelum tenggat waktu.`,
+            url: "/tugas",
+            tag: `task-h3-${task.id}`,
+          });
+          if (res.success) {
+            notificationsSent.push(`Task H-3 (${u.id}): ${task.judul}`);
+          }
         }
       }
       // H-1 day (between 23 and 25 hours)
       else if (diffHours >= 23 && diffHours <= 25) {
-        const res = await sendPushToUser(user.id, {
-          title: "Pengingat Deadline Tugas (Besok)",
-          body: `Tugas "${task.judul}" (${task.matkul.nama}) memiliki tenggat pengumpulan besok.`,
-          url: "/tugas",
-          tag: `task-h24-${task.id}`,
-        });
-        if (res.success) {
-          notificationsSent.push(`Task H-24: ${task.judul}`);
+        for (const u of subscribedUsers) {
+          const res = await sendPushToUser(u.id, {
+            title: "Pengingat Deadline Tugas (Besok)",
+            body: `Tugas "${task.judul}" (${task.matkul.nama}) memiliki tenggat pengumpulan besok.`,
+            url: "/tugas",
+            tag: `task-h24-${task.id}`,
+          });
+          if (res.success) {
+            notificationsSent.push(`Task H-24 (${u.id}): ${task.judul}`);
+          }
         }
       }
     }

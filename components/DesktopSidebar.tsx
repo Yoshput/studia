@@ -53,18 +53,25 @@ const navSections = [
   },
 ];
 
+import { useSession } from "next-auth/react";
+
 export function DesktopSidebar({
   semesterName = "Semester 5",
   onOpenLiveVoice,
 }: DesktopSidebarProps) {
   const pathname = usePathname();
+  const { data: session } = useSession();
   const { isInstallable, promptInstall } = usePWAInstall();
-  const [avatarUrl, setAvatarUrl] = useState<string>("/avatars/yossika.jpg");
-  const [studentName, setStudentName] = useState<string>("Yossika Putra E.");
-  const [studentNim, setStudentNim] = useState<string>("103112430026");
-  const [studentClass, setStudentClass] = useState<string>("S1IF-12-06");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [studentName, setStudentName] = useState<string>(session?.user?.name || "Mahasiswa");
+  const [studentNim, setStudentNim] = useState<string>("");
+  const [studentClass, setStudentClass] = useState<string>("");
 
   useEffect(() => {
+    if (session?.user?.name) {
+      setStudentName(session.user.name);
+    }
+
     // Initial check from localStorage for instant display
     const cached = localStorage.getItem("semestr-user-avatar");
     if (cached) setAvatarUrl(cached);
@@ -73,7 +80,7 @@ export function DesktopSidebar({
     fetch("/api/user/profile")
       .then((r) => r.json())
       .then((d) => {
-        if (d.user) {
+        if (d?.user) {
           if (d.user.avatar_url) {
             setAvatarUrl(d.user.avatar_url);
             localStorage.setItem("semestr-user-avatar", d.user.avatar_url);
@@ -98,7 +105,7 @@ export function DesktopSidebar({
 
     window.addEventListener("avatar-updated", handleAvatarUpdated);
     return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
-  }, []);
+  }, [session]);
 
   // Hide on landing, login, signup
   if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
@@ -130,16 +137,16 @@ export function DesktopSidebar({
       {/* 2. Student Identity Mini Banner */}
       <div className="p-3.5 mx-3 mt-3 rounded-2xl bg-ios-surfaceSecondary/60 border border-ios-border/70">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-[14px] shadow-inner flex-shrink-0 overflow-hidden border border-ios-border">
+          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-ios-accent to-blue-600 flex items-center justify-center text-white font-bold text-[14px] shadow-inner flex-shrink-0 overflow-hidden border border-ios-border">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
                 alt={studentName}
                 className="w-full h-full object-cover"
-                onError={() => setAvatarUrl("/avatars/yossika.jpg")}
+                onError={() => setAvatarUrl(null)}
               />
             ) : (
-              studentName.charAt(0) || "Y"
+              studentName.charAt(0) || "M"
             )}
           </div>
           <div className="min-w-0 flex-1">
@@ -147,14 +154,14 @@ export function DesktopSidebar({
               {studentName}
             </p>
             <p className="text-[11px] text-ios-textSecondary truncate">
-              {studentNim} • {studentClass}
+              {studentNim ? `${studentNim} ${studentClass ? `• ${studentClass}` : ""}` : session?.user?.email || "Mahasiswa Aktif"}
             </p>
           </div>
         </div>
         <div className="mt-2.5 pt-2 border-t border-ios-border/40 flex items-center justify-between text-[11px]">
-          <span className="text-ios-textSecondary">IPK Resmi:</span>
-          <span className="font-bold text-ios-accent px-1.5 py-0.5 rounded bg-ios-accent/10">
-            3.64 (84 SKS)
+          <span className="text-ios-textSecondary">Akun:</span>
+          <span className="font-semibold text-ios-success px-1.5 py-0.5 rounded bg-ios-success/10">
+            Terverifikasi Aktif
           </span>
         </div>
       </div>

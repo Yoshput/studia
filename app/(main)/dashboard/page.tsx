@@ -259,7 +259,7 @@ export default function DashboardPage() {
                       />
                     ) : (
                       <span className="text-xl font-bold text-ios-accent">
-                        {userProfile?.nama?.charAt(0) || "Y"}
+                        {userProfile?.nama?.charAt(0) || "M"}
                       </span>
                     )}
                   </div>
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                   <span>Autentikasi Berhasil</span>
                 </div>
                 <h3 className="text-[19px] font-bold text-ios-textPrimary leading-snug">
-                  Selamat Datang, {userProfile?.nama?.split(" ")[0] || "Yossika"}! 👋
+                  Selamat Datang, {userProfile?.nama?.split(" ")[0] || "Mahasiswa"}! 👋
                 </h3>
               </div>
             </div>
@@ -345,14 +345,16 @@ export default function DashboardPage() {
       <div className="pt-2">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <p className="text-[12px] font-mono font-semibold text-ios-accent">
-              NIM: {userProfile?.nim || "103112430026"} • {userProfile?.kelas || "S1IF-12-06"}
-            </p>
+            {userProfile?.nim && (
+              <p className="text-[12px] font-mono font-semibold text-ios-accent">
+                NIM: {userProfile.nim} {userProfile.kelas ? `• ${userProfile.kelas}` : ""}
+              </p>
+            )}
             <h1 className="text-[26px] sm:text-[30px] font-bold text-ios-textPrimary tracking-tight mt-0.5">
-              Halo, {userProfile?.nama || "Mahasiswa"}
+              Halo, {userProfile?.nama || "Mahasiswa"}!
             </h1>
             <p className="text-[13px] text-ios-textSecondary">
-              {formatDateIndo(todayDate)} • {userProfile?.prodi || "S1 Teknik Informatika Telkom University Purwokerto"}
+              {formatDateIndo(todayDate)} • {userProfile?.prodi || "Akun Mahasiswa Semestr"}
             </p>
           </div>
 
