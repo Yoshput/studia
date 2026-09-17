@@ -42,5 +42,6 @@ public/sw.js
 public/workbox-*.js
 public/worker-*.js
 public/swe-worker-*.js
-public/*.map
-
+# json secrets
+json/
+client_secret*.json
