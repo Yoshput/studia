@@ -19,34 +19,71 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 5" }: NavbarP
   const { isInstallable, promptInstall } = usePWAInstall();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
 
+  const [studentInitial, setStudentInitial] = useState<string>(
+    session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "M"
+  );
+
+  const userIdentifier = session?.user?.email || (session?.user as { id?: string })?.id;
+
   useEffect(() => {
-    const cached = localStorage.getItem("semestr-user-avatar");
-    if (cached) setAvatarUrl(cached);
+    // Immediately purge legacy global avatar cache that could retain previous user photos
+    try {
+      localStorage.removeItem("semestr-user-avatar");
+    } catch {}
+
+    if (session?.user?.name) {
+      setStudentInitial(session.user.name.charAt(0).toUpperCase());
+    }
+
+    if (!userIdentifier) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    const userCacheKey = `semestr-avatar-${userIdentifier}`;
+    const cached = localStorage.getItem(userCacheKey);
+    if (cached) {
+      setAvatarUrl(cached);
+    } else {
+      setAvatarUrl(null);
+    }
 
     fetch("/api/user/profile")
       .then((r) => r.json())
       .then((d) => {
-        if (d?.user?.avatar_url) {
-          setAvatarUrl(d.user.avatar_url);
-          localStorage.setItem("semestr-user-avatar", d.user.avatar_url);
+        if (d?.user) {
+          if (d.user.nama) {
+            setStudentInitial(d.user.nama.charAt(0).toUpperCase());
+          }
+          if (d.user.avatar_url) {
+            setAvatarUrl(d.user.avatar_url);
+            localStorage.setItem(userCacheKey, d.user.avatar_url);
+          } else {
+            setAvatarUrl(null);
+            localStorage.removeItem(userCacheKey);
+          }
         }
       })
       .catch(() => {});
 
     const handleAvatarUpdated = (e: Event) => {
-      const customEvent = e as CustomEvent<{ avatar_url: string }>;
-      if (customEvent.detail?.avatar_url) {
-        setAvatarUrl(customEvent.detail.avatar_url);
+      const customEvent = e as CustomEvent<{ avatar_url?: string | null }>;
+      const newUrl = customEvent.detail?.avatar_url || null;
+      setAvatarUrl(newUrl);
+      if (newUrl) {
+        localStorage.setItem(userCacheKey, newUrl);
+      } else {
+        localStorage.removeItem(userCacheKey);
       }
     };
 
     window.addEventListener("avatar-updated", handleAvatarUpdated);
     return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
-  }, []);
+  }, [userIdentifier, session]);
 
   if (pathname === "/login") return null;
 
-  const initial = session?.user?.name ? session.user.name.charAt(0).toUpperCase() : "M";
+  const initial = studentInitial || "M";
 
   return (
     <header className="md:hidden sticky top-0 z-40 glass-nav border-b border-ios-border transition-colors duration-200">

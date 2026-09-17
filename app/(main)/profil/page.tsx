@@ -23,6 +23,7 @@ import {
   Loader2,
   Bell,
   Edit3,
+  Trash2,
 } from "lucide-react";
 
 interface UserProfile {
@@ -145,6 +146,10 @@ export default function ProfilPage() {
   };
 
   useEffect(() => {
+    try {
+      localStorage.removeItem("semestr-user-avatar");
+    } catch {}
+
     fetchProfile();
 
     if (document.documentElement.classList.contains("dark")) {
@@ -417,6 +422,9 @@ export default function ProfilPage() {
     }
   };
 
+  const userIdentifier = profile?.id || profile?.email || session?.user?.email;
+  const userCacheKey = userIdentifier ? `semestr-avatar-${userIdentifier}` : null;
+
   const handleSaveAvatar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!avatarPreview) return;
@@ -436,7 +444,10 @@ export default function ProfilPage() {
       if (res.ok) {
         setIsUploadSheetOpen(false);
         setProfile((prev) => (prev ? { ...prev, avatar_url: avatarPreview } : null));
-        localStorage.setItem("semestr-user-avatar", avatarPreview);
+        if (userCacheKey) localStorage.setItem(userCacheKey, avatarPreview);
+        try {
+          localStorage.removeItem("semestr-user-avatar");
+        } catch {}
         window.dispatchEvent(
           new CustomEvent("avatar-updated", { detail: { avatar_url: avatarPreview } })
         );
@@ -446,6 +457,42 @@ export default function ProfilPage() {
       }
     } catch (err) {
       console.error("Save avatar error:", err);
+      setAvatarUploadError("Terjadi kendala jaringan saat menghubungi server.");
+    } finally {
+      setIsSubmittingAvatar(false);
+    }
+  };
+
+  const handleRemoveAvatar = async () => {
+    setIsSubmittingAvatar(true);
+    setAvatarUploadError(null);
+    try {
+      const res = await fetch("/api/user/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          avatar_url: null,
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setIsUploadSheetOpen(false);
+        setProfile((prev) => (prev ? { ...prev, avatar_url: null } : null));
+        setAvatarPreview(null);
+        if (userCacheKey) localStorage.removeItem(userCacheKey);
+        try {
+          localStorage.removeItem("semestr-user-avatar");
+        } catch {}
+        window.dispatchEvent(
+          new CustomEvent("avatar-updated", { detail: { avatar_url: null } })
+        );
+        fetchProfile();
+      } else {
+        setAvatarUploadError(data.error || "Gagal menghapus foto profil.");
+      }
+    } catch (err) {
+      console.error("Remove avatar error:", err);
       setAvatarUploadError("Terjadi kendala jaringan saat menghubungi server.");
     } finally {
       setIsSubmittingAvatar(false);
@@ -706,6 +753,8 @@ export default function ProfilPage() {
           className="w-full text-ios-danger hover:bg-ios-danger/10 border-ios-danger/30 gap-2"
           onClick={async () => {
             try {
+              localStorage.removeItem("semestr-user-avatar");
+              if (userCacheKey) localStorage.removeItem(userCacheKey);
               await signOut({ redirect: false });
             } catch {}
             window.location.href = "/?logged_out=1";
@@ -872,7 +921,7 @@ export default function ProfilPage() {
             </div>
           )}
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2">
             <Button
               type="submit"
               variant="primary"
@@ -882,6 +931,19 @@ export default function ProfilPage() {
             >
               Simpan Foto Profil
             </Button>
+
+            {profile?.avatar_url && (
+              <Button
+                type="button"
+                variant="secondary"
+                className="w-full font-semibold text-ios-danger border-ios-danger/30 hover:bg-ios-danger/10 gap-1.5"
+                onClick={handleRemoveAvatar}
+                disabled={isSubmittingAvatar}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus Foto (Gunakan Inisial Huruf)</span>
+              </Button>
+            )}
           </div>
         </form>
       </Sheet>

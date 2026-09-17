@@ -37,7 +37,7 @@ async function main() {
       nim: "103112430026",
       kelas: "S1IF-12-06",
       prodi: "S1 Teknik Informatika - Kampus Purwokerto",
-      avatar_url: "/avatars/yossika.jpg",
+      avatar_url: null,
     },
   });
   console.log(`User created: ${user.nama} (${user.nim})`);

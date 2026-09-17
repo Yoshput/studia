@@ -67,14 +67,30 @@ export function DesktopSidebar({
   const [studentNim, setStudentNim] = useState<string>("");
   const [studentClass, setStudentClass] = useState<string>("");
 
+  const userIdentifier = session?.user?.email || (session?.user as { id?: string })?.id;
+
   useEffect(() => {
+    // Immediately purge legacy global avatar cache
+    try {
+      localStorage.removeItem("semestr-user-avatar");
+    } catch {}
+
     if (session?.user?.name) {
       setStudentName(session.user.name);
     }
 
-    // Initial check from localStorage for instant display
-    const cached = localStorage.getItem("semestr-user-avatar");
-    if (cached) setAvatarUrl(cached);
+    if (!userIdentifier) {
+      setAvatarUrl(null);
+      return;
+    }
+
+    const userCacheKey = `semestr-avatar-${userIdentifier}`;
+    const cached = localStorage.getItem(userCacheKey);
+    if (cached) {
+      setAvatarUrl(cached);
+    } else {
+      setAvatarUrl(null);
+    }
 
     // Fetch latest profile from server
     fetch("/api/user/profile")
@@ -83,7 +99,10 @@ export function DesktopSidebar({
         if (d?.user) {
           if (d.user.avatar_url) {
             setAvatarUrl(d.user.avatar_url);
-            localStorage.setItem("semestr-user-avatar", d.user.avatar_url);
+            localStorage.setItem(userCacheKey, d.user.avatar_url);
+          } else {
+            setAvatarUrl(null);
+            localStorage.removeItem(userCacheKey);
           }
           if (d.user.nama) setStudentName(d.user.nama);
           if (d.user.nim) setStudentNim(d.user.nim);
@@ -94,18 +113,19 @@ export function DesktopSidebar({
 
     // Listen for instant avatar update event
     const handleAvatarUpdated = (e: Event) => {
-      const customEvent = e as CustomEvent<{ avatar_url: string }>;
-      if (customEvent.detail?.avatar_url) {
-        setAvatarUrl(customEvent.detail.avatar_url);
+      const customEvent = e as CustomEvent<{ avatar_url?: string | null }>;
+      const newUrl = customEvent.detail?.avatar_url || null;
+      setAvatarUrl(newUrl);
+      if (newUrl) {
+        localStorage.setItem(userCacheKey, newUrl);
       } else {
-        const saved = localStorage.getItem("semestr-user-avatar");
-        if (saved) setAvatarUrl(saved);
+        localStorage.removeItem(userCacheKey);
       }
     };
 
     window.addEventListener("avatar-updated", handleAvatarUpdated);
     return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
-  }, [session]);
+  }, [session, userIdentifier]);
 
   // Hide on landing, login, signup
   if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
@@ -269,6 +289,8 @@ export function DesktopSidebar({
           type="button"
           onClick={async () => {
             try {
+              localStorage.removeItem("semestr-user-avatar");
+              if (userIdentifier) localStorage.removeItem(`semestr-avatar-${userIdentifier}`);
               await signOut({ redirect: false });
             } catch (e) {}
             window.location.href = "/?logged_out=1";

@@ -84,7 +84,7 @@ export default function DashboardPage() {
 
       const matkulData = await matkulRes.json();
       const semData = await semRes.json();
-      const tugasData = await userRes.json ? await tugasRes.json() : {};
+      const tugasData = await tugasRes.json();
       const userData = await userRes.json();
 
       if (userData.user) setUserProfile(userData.user);
@@ -108,6 +108,10 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
+    try {
+      localStorage.removeItem("semestr-user-avatar");
+    } catch {}
+
     fetchData();
 
     if (typeof window !== "undefined") {
