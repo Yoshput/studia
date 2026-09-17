@@ -9,7 +9,7 @@
 /* --- 🌸 THEME 1: PASTEL PINK (DEFAULT) --- */
 :root {
   --bg: #FAF5F8;                        /* Soft soothing blush cream */
-  --nav-bg: rgba(250, 245, 248, 0.82);
+  --nav-bg: rgba(250, 245, 248, 0.85);
   --surface: #FFFFFF;
   --surface-secondary: #F7EDF2;
   --border: rgba(236, 72, 153, 0.16);
@@ -19,8 +19,8 @@
   --text-muted: #9E7D8D;
 
   --accent: #EC4899;                    /* Radiant pastel rose */
-  --accent-light: #FBCFE8;              /* Soft petal tint */
-  --accent-dark: #BE185D;               /* Deep contrast rose */
+  --accent-light: #FBCFE8;
+  --accent-dark: #BE185D;
   --accent-subtle: rgba(236, 72, 153, 0.08);
   --accent-glow: rgba(236, 72, 153, 0.22);
   --accent-border: rgba(236, 72, 153, 0.22);
@@ -30,35 +30,35 @@
   --danger: #EF4444;
 }
 
-/* --- 🍷 THEME 2: MAROON X PUTIH (LUXURY IMPERIAL BURGUNDY & PURE WHITE) --- */
+/* --- 🍷 THEME 2: MAROON X PUTIH (CLEAN LUXURY APPLE BURGUNDY & PURE WHITE) --- */
 [data-theme="maroon"] {
-  --bg: #22040D;                        /* Deep, velvet royal wine maroon */
-  --nav-bg: rgba(34, 4, 13, 0.88);
-  --surface: #340915;                   /* Frosted maroon card surface */
-  --surface-secondary: #450D1D;         /* Inset container */
-  --border: rgba(255, 255, 255, 0.14);  /* Crisp white hairline border */
-  --border-subtle: rgba(255, 255, 255, 0.10);
-  --text-primary: #FFFFFF;              /* Crisp pure white */
-  --text-secondary: #F2CBD6;            /* Rose pearl soft white */
-  --text-muted: #C996A5;
+  --bg: #FDF9FA;                        /* Pristine pearl-white canvas with subtle velvet warm undertone */
+  --nav-bg: rgba(253, 249, 250, 0.88);
+  --surface: #FFFFFF;                   /* Crisp pure white iOS cards */
+  --surface-secondary: #F8EDF1;         /* Soft rose-pearl inset surface */
+  --border: rgba(159, 18, 57, 0.14);   /* Delicate maroon hairline border */
+  --border-subtle: rgba(159, 18, 57, 0.08);
+  --text-primary: #1C0A10;              /* Deep prestigious maroon-black */
+  --text-secondary: #70263B;            /* Elegant muted wine */
+  --text-muted: #9E5268;
 
-  --accent: #E11D48;                    /* Radiant ruby red */
+  --accent: #9F1239;                    /* Imperial Royal Maroon */
   --accent-light: #FFE4E6;
-  --accent-dark: #FFFFFF;
-  --accent-subtle: rgba(255, 255, 255, 0.12);
-  --accent-glow: rgba(225, 29, 72, 0.35);
-  --accent-border: rgba(255, 255, 255, 0.22);
+  --accent-dark: #881337;
+  --accent-subtle: rgba(159, 18, 57, 0.08);
+  --accent-glow: rgba(159, 18, 57, 0.25);
+  --accent-border: rgba(159, 18, 57, 0.22);
 
-  --success: #34D399;
-  --warning: #FBBF24;
-  --danger: #FB7185;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #E11D48;
 }
 
 /* --- 🌙 THEME 3: APPLE OBSIDIAN DARK --- */
 .dark,
 [data-theme="dark"] {
   --bg: #090A0F;                        /* True Apple OLED Obsidian */
-  --nav-bg: rgba(9, 10, 15, 0.86);
+  --nav-bg: rgba(9, 10, 15, 0.88);
   --surface: #131620;
   --surface-secondary: #1B202D;
   --border: rgba(255, 255, 255, 0.10);
@@ -113,211 +113,184 @@ body {
   background: rgba(0, 0, 0, 0.15);
   border-radius: 9999px;
 }
-.dark ::-webkit-scrollbar-thumb,
-[data-theme="maroon"] ::-webkit-scrollbar-thumb {
+.dark ::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.22);
 }
 
-/* Glassmorphic navigation */
-.glass-nav {
-  background-color: var(--nav-bg);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+/* ==========================================================================
+   3. BULLETPROOF THEMED COMPONENTS
+   ========================================================================== */
+
+/* A. Headline Gradient Text */
+.headline-gradient {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 50%, #D946EF 100%);
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+[data-theme="maroon"] .headline-gradient {
+  background: linear-gradient(135deg, #9F1239 0%, #BE123C 50%, #E11D48 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+.dark .headline-gradient,
+[data-theme="dark"] .headline-gradient {
+  background: linear-gradient(135deg, #F472B6 0%, #FB7185 50%, #FDA4AF 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
+/* B. Primary Theme Button */
+.btn-theme-primary {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 24px rgba(236, 72, 153, 0.25);
+  transition: all 0.2s ease;
+}
+.btn-theme-primary:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
+}
+
+[data-theme="maroon"] .btn-theme-primary {
+  background: linear-gradient(135deg, #9F1239 0%, #BE123C 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 24px rgba(159, 18, 57, 0.28) !important;
+}
+
+.dark .btn-theme-primary,
+[data-theme="dark"] .btn-theme-primary {
+  background: #FFFFFF !important;
+  color: #090A0F !important;
+  box-shadow: 0 8px 24px rgba(255, 255, 255, 0.15) !important;
+}
+
+/* C. Brand Mascot Icon */
+.brand-mascot {
+  background: linear-gradient(135deg, #EC4899 0%, #F472B6 50%, #D946EF 100%);
+}
+[data-theme="maroon"] .brand-mascot {
+  background: linear-gradient(135deg, #881337 0%, #9F1239 50%, #BE123C 100%) !important;
+}
+.dark .brand-mascot,
+[data-theme="dark"] .brand-mascot {
+  background: linear-gradient(135deg, #F472B6 0%, #EC4899 100%) !important;
 }
 
 /* ==========================================================================
-   3. MAROON X PUTIH COMPREHENSIVE LUXURY THEME OVERRIDES
+   4. MAROON X PUTIH COMPREHENSIVE OVERRIDES
    ========================================================================== */
 [data-theme="maroon"] {
-  /* Navbar blur background */
+  /* Navbar */
   header {
-    background-color: rgba(34, 4, 13, 0.88) !important;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+    background-color: rgba(253, 249, 250, 0.88) !important;
+    border-bottom: 1px solid rgba(159, 18, 57, 0.10) !important;
+  }
+  header span[class*="text-[#1A0A12]"],
+  header span[class*="text-black"] {
+    color: #1C0A10 !important;
+  }
+  header nav a {
+    color: #70263B !important;
+  }
+  header nav a:hover {
+    color: #9F1239 !important;
   }
 
-  /* All white cards become frosted royal maroon with crisp white borders */
-  .bg-white {
-    background-color: #340915 !important;
-    border-color: rgba(255, 255, 255, 0.14) !important;
-    color: #FFFFFF !important;
-  }
-
-  /* Interactive Simulator */
-  #simulator {
-    background-color: #340915 !important;
-    border-color: rgba(255, 255, 255, 0.18) !important;
-    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6) !important;
-  }
-  #simulator > div:first-child {
-    background-color: #27060F !important;
-    border-color: rgba(255, 255, 255, 0.10) !important;
-  }
-
-  /* Tab buttons in simulator */
-  #simulator button {
-    color: #F2CBD6 !important;
-  }
-  #simulator button:hover {
-    color: #FFFFFF !important;
-  }
-  #simulator button.bg-gradient-to-r,
-  #simulator button[class*="from-pink-600"] {
-    background: #FFFFFF !important;
-    color: #22040D !important;
-    font-weight: 700 !important;
-    box-shadow: 0 4px 18px rgba(255, 255, 255, 0.3) !important;
-  }
-
-  /* Typography: Headers pure white, Subtext soft rose-pearl */
-  h1, h2, h3, h4, th {
-    color: #FFFFFF !important;
-  }
-  p, .text-stone-600, .text-stone-500, .text-zinc-500, .text-zinc-600, .text-zinc-700, .text-zinc-400 {
-    color: #F2CBD6 !important;
-  }
-  .text-black, .text-[#1C1917], .text-[#1A0A12], .text-[#1D1D1F] {
-    color: #FFFFFF !important;
-  }
-
-  /* Hero Headline Gradient in Maroon -> Brilliant White to Rose-Gold shine */
-  .from-pink-600 {
-    --tw-gradient-from: #FFFFFF var(--tw-gradient-from-position) !important;
-  }
-  .via-rose-500 {
-    --tw-gradient-via: #FFE4E6 var(--tw-gradient-via-position) !important;
-  }
-  .to-fuchsia-500, .to-rose-500 {
-    --tw-gradient-to: #FDA4AF var(--tw-gradient-to-position) !important;
-  }
-
-  /* Primary CTA Buttons become Pure White with Maroon text (Apple Keynote Style) */
-  .bg-gradient-to-r.from-pink-600 {
-    background: #FFFFFF !important;
-    color: #22040D !important;
-    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.28) !important;
-  }
-  .bg-gradient-to-r.from-pink-600:hover {
-    background: #FFF1F2 !important;
-    transform: translateY(-1px);
-  }
-  .bg-gradient-to-r.from-pink-600 * {
-    color: #22040D !important;
-  }
-
-  /* Secondary Buttons become Frosted White on Maroon */
-  .bg-black\/\[0\.04\],
-  .bg-black\/\[0\.02\],
-  .bg-black\/\[0\.03\],
-  .bg-black\/\[0\.05\] {
-    background-color: rgba(255, 255, 255, 0.10) !important;
-    border-color: rgba(255, 255, 255, 0.16) !important;
-    color: #FFFFFF !important;
-  }
-  .bg-black\/\[0\.04\]:hover,
-  .bg-black\/\[0\.08\]:hover {
-    background-color: rgba(255, 255, 255, 0.16) !important;
-  }
-
-  /* Borders across sections */
-  .border-black\/\[0\.06\],
-  .border-black\/\[0\.08\],
-  .border-black\/\[0\.05\],
-  .border-black\/\[0\.04\] {
-    border-color: rgba(255, 255, 255, 0.12) !important;
-  }
-
-  /* Creator Pill & Badges */
+  /* Creator badges & pills */
   .bg-pink-500\/\[0\.08\],
   .bg-pink-500\/\[0\.15\] {
-    background-color: rgba(255, 255, 255, 0.12) !important;
-    border-color: rgba(255, 255, 255, 0.22) !important;
-    color: #FFFFFF !important;
+    background-color: rgba(159, 18, 57, 0.08) !important;
+    border-color: rgba(159, 18, 57, 0.20) !important;
+    color: #881337 !important;
   }
   .bg-pink-500\/\[0\.08\] *,
   .bg-pink-500\/\[0\.15\] * {
-    color: #FFFFFF !important;
+    color: #881337 !important;
   }
 
-  /* Action links & highlights */
-  .text-pink-600, .text-pink-500 {
-    color: #FDA4AF !important;
+  /* Text colors */
+  h1, h2, h3, h4 {
+    color: #1C0A10 !important;
   }
-  .text-pink-800, .text-pink-950, .text-pink-400, .text-pink-200, .text-pink-300 {
-    color: #FFFFFF !important;
+  p, .text-stone-600, .text-stone-500, .text-zinc-500, .text-zinc-600 {
+    color: #70263B !important;
+  }
+  .text-pink-600, .text-pink-500 {
+    color: #9F1239 !important;
   }
   .bg-pink-500 {
-    background-color: #E11D48 !important;
+    background-color: #9F1239 !important;
   }
-  .border-pink-500\/10,
-  .border-pink-500\/15,
-  .border-pink-500\/20,
-  .border-pink-500\/25,
-  .border-pink-400 {
-    border-color: rgba(255, 255, 255, 0.16) !important;
+
+  /* Cards */
+  .bg-white {
+    background-color: #FFFFFF !important;
+    border-color: rgba(159, 18, 57, 0.12) !important;
+  }
+
+  /* Simulator */
+  #simulator {
+    background-color: #FFFFFF !important;
+    border-color: rgba(159, 18, 57, 0.16) !important;
+    box-shadow: 0 16px 50px rgba(159, 18, 57, 0.08) !important;
+  }
+  #simulator > div:first-child {
+    background-color: #F8EDF1 !important;
+    border-bottom: 1px solid rgba(159, 18, 57, 0.10) !important;
+  }
+  #simulator button {
+    color: #70263B !important;
+  }
+  #simulator button:hover {
+    color: #9F1239 !important;
   }
 
   /* Range sliders */
   .accent-pink-500 {
-    accent-color: #E11D48 !important;
+    accent-color: #9F1239 !important;
   }
 
-  /* Navigation Links */
-  nav a {
-    color: #F2CBD6 !important;
-  }
-  nav a:hover {
-    color: #FFFFFF !important;
-  }
-
-  /* Pricing Cards & Badges */
+  /* Pricing */
   .bg-zinc-950 {
-    background-color: #FFFFFF !important;
-    color: #22040D !important;
-  }
-  .bg-zinc-950:hover {
-    background-color: #FFF1F2 !important;
+    background: linear-gradient(135deg, #9F1239 0%, #881337 100%) !important;
+    color: #FFFFFF !important;
   }
   .bg-zinc-950 * {
-    color: #22040D !important;
-  }
-
-  /* Feature icons */
-  svg.text-zinc-800 {
     color: #FFFFFF !important;
   }
 
-  /* Comparison Table */
+  /* Comparison table */
+  table th {
+    color: #1C0A10 !important;
+  }
   tr.border-b {
-    border-color: rgba(255, 255, 255, 0.10) !important;
-  }
-  table th, table td {
-    color: #FFFFFF !important;
-  }
-  table td.text-zinc-400 {
-    color: #C996A5 !important;
+    border-color: rgba(159, 18, 57, 0.10) !important;
   }
 
   /* Footer */
   footer {
-    border-color: rgba(255, 255, 255, 0.12) !important;
-    color: #C996A5 !important;
+    border-top: 1px solid rgba(159, 18, 57, 0.12) !important;
+    color: #9E5268 !important;
   }
   footer a {
-    color: #FFFFFF !important;
+    color: #70263B !important;
+  }
+  footer a:hover {
+    color: #9F1239 !important;
   }
 }
 
 /* ==========================================================================
-   4. UTILITIES & ANIMATIONS
+   5. ANIMATIONS
    ========================================================================== */
-.text-accent       { color: var(--accent) !important; }
-.text-accent-dark  { color: var(--accent-dark) !important; }
-.text-accent-light { color: var(--accent-light) !important; }
-.bg-accent         { background-color: var(--accent) !important; }
-.bg-accent-subtle  { background-color: var(--accent-subtle) !important; }
-.border-accent     { border-color: var(--accent-border) !important; }
-.shadow-accent     { box-shadow: 0 8px 24px var(--accent-glow) !important; }
-
 @keyframes laserScan {
   0%   { top: 5%; opacity: 0.2; }
   50%  { top: 90%; opacity: 1; }
@@ -330,7 +303,3 @@ body {
   50% { transform: translateY(-8px); }
 }
 .animate-float { animation: float 4s ease-in-out infinite; }
-
-.glow-pink {
-  box-shadow: 0 16px 60px -10px var(--accent-glow);
-}

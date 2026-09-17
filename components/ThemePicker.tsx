@@ -5,9 +5,9 @@ import React, { useEffect, useState } from "react";
 type Theme = "pink" | "maroon" | "dark";
 
 const THEMES: { id: Theme; label: string; color: string; ring: string }[] = [
-  { id: "pink",   label: "Pink Pastel", color: "#E879A0", ring: "ring-pink-400"   },
-  { id: "maroon", label: "Maroon",      color: "#991B1B", ring: "ring-red-800"    },
-  { id: "dark",   label: "Dark Mode",   color: "#0D0810", ring: "ring-slate-600"  },
+  { id: "pink",   label: "Pink Pastel", color: "#EC4899", ring: "ring-pink-400"   },
+  { id: "maroon", label: "Maroon",      color: "#9F1239", ring: "ring-rose-800"   },
+  { id: "dark",   label: "Dark Mode",   color: "#0F172A", ring: "ring-slate-600"  },
 ];
 
 function applyTheme(theme: Theme) {
@@ -45,7 +45,7 @@ export function ThemePicker() {
     setOpen(false);
   };
 
-  const current = THEMES.find((t) => t.id === theme)!;
+  const current = THEMES.find((t) => t.id === theme) || THEMES[0];
 
   return (
     <div className="relative">
@@ -54,14 +54,14 @@ export function ThemePicker() {
         type="button"
         onClick={() => setOpen(!open)}
         aria-label="Ganti tema warna"
-        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] border border-black/[0.07] dark:border-white/[0.10] hover:bg-black/[0.08] dark:hover:bg-white/[0.14] transition-all text-[12px] font-medium text-[#1A0A12] dark:text-[#FDF0F7]"
+        className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] border border-black/[0.07] dark:border-white/[0.10] hover:bg-black/[0.08] dark:hover:bg-white/[0.14] transition-all text-[12px] font-medium text-[var(--text-primary)]"
       >
         {/* Swatch */}
         <span
           className="w-3.5 h-3.5 rounded-full border border-white/40 shadow-sm flex-shrink-0"
           style={{ background: current.color }}
         />
-        <span className="hidden sm:inline leading-none">{current.label}</span>
+        <span className="hidden sm:inline leading-none font-medium">{current.label}</span>
         {/* Chevron */}
         <svg
           className={`w-3 h-3 text-[#7A5068] dark:text-[#B08099] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
@@ -77,7 +77,7 @@ export function ThemePicker() {
         <>
           {/* Backdrop */}
           <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 z-50 w-44 rounded-2xl bg-white dark:bg-[#1A0F1E] border border-black/[0.07] dark:border-white/[0.10] shadow-lg shadow-black/[0.08] dark:shadow-black/40 overflow-hidden">
+          <div className="absolute right-0 top-full mt-2 z-50 w-44 rounded-2xl bg-[var(--surface)] border border-[var(--border)] shadow-xl overflow-hidden">
             <div className="p-1.5 space-y-0.5">
               {THEMES.map((t) => (
                 <button
@@ -86,8 +86,8 @@ export function ThemePicker() {
                   onClick={() => handleSelect(t.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left text-[13px] font-medium transition-all ${
                     theme === t.id
-                      ? "bg-[var(--accent-subtle)] text-[var(--accent-dark)]"
-                      : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-[#1A0A12] dark:text-[#FDF0F7]"
+                      ? "bg-[var(--accent-subtle)] text-[var(--accent)] font-semibold"
+                      : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06] text-[var(--text-primary)]"
                   }`}
                 >
                   <span

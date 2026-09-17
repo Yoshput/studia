@@ -165,7 +165,7 @@ export default function LandingPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-400 to-fuchsia-400 flex items-center justify-center text-white shadow-md shadow-pink-500/25 transition-transform group-hover:scale-105">
+            <div className="w-8 h-8 rounded-xl brand-mascot flex items-center justify-center text-white shadow-md shadow-pink-500/25 transition-transform group-hover:scale-105">
               <MascotIcon size={20} />
             </div>
             <div className="flex flex-col text-left">
@@ -227,7 +227,7 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="sm"
-                className="bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white font-semibold text-[13px] px-4 h-8 rounded-full shadow-md shadow-pink-500/20"
+                className="btn-theme-primary font-semibold text-[13px] px-4 h-8 rounded-full shadow-md"
               >
                 Mulai
               </Button>
@@ -293,7 +293,7 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link href="/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" className="w-full text-[13px] h-9 rounded-full bg-gradient-to-r from-pink-600 to-rose-500 text-white">
+                <Button variant="primary" className="w-full text-[13px] h-9 rounded-full btn-theme-primary text-white font-semibold">
                   Daftar Gratis
                 </Button>
               </Link>
@@ -324,7 +324,7 @@ export default function LandingPage() {
           {/* Main Headline */}
           <h1 className="gsap-hero-item text-[40px] sm:text-[62px] lg:text-[72px] font-bold tracking-[-0.035em] leading-[1.05] text-[#1A0A12] dark:text-white">
             Seluruh perkuliahan. <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-pink-600 via-rose-500 to-fuchsia-500 dark:from-pink-400 dark:via-rose-300 dark:to-fuchsia-400 bg-clip-text text-transparent">
+            <span className="headline-gradient">
               Dalam satu kendali ceria & tenang.
             </span>
           </h1>
@@ -340,7 +340,7 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white font-semibold text-[15px] px-8 h-11 rounded-full gap-2 transition-transform active:scale-[0.98] shadow-lg shadow-pink-500/25"
+                className="btn-theme-primary font-semibold text-[15px] px-8 h-11 rounded-full gap-2 transition-transform active:scale-[0.98] shadow-lg"
               >
                 <span>Mulai Coba Gratis</span>
                 <ArrowRight className="w-4 h-4" />
@@ -404,7 +404,7 @@ export default function LandingPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-4 py-1.5 rounded-full transition-all whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'bg-gradient-to-r from-pink-600 to-rose-500 text-white font-semibold shadow-md shadow-pink-500/25'
+                      ? 'btn-theme-primary text-white font-semibold shadow-md'
                       : 'hover:text-pink-600 dark:hover:text-pink-400'
                   }`}
                 >
@@ -527,7 +527,7 @@ export default function LandingPage() {
                       size="sm"
                       disabled={presensiLoading || presensiHadir}
                       onClick={handleCapturePresensi}
-                      className="bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white font-semibold text-[12.5px] px-4 rounded-full h-8 shadow-md shadow-pink-500/20"
+                      className="btn-theme-primary font-semibold text-[12.5px] px-4 rounded-full h-8 shadow-md"
                     >
                       {presensiLoading ? 'Memverifikasi...' : 'Ambil Foto'}
                     </Button>
@@ -897,7 +897,7 @@ export default function LandingPage() {
 
             <div className="pt-3">
               <Link href="/signup">
-                <Button variant="primary" className="w-full h-10 rounded-full font-semibold text-[13.5px] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950">
+                <Button variant="primary" className="w-full h-10 rounded-full font-semibold text-[13.5px] btn-theme-primary">
                   Daftar Akun Gratis
                 </Button>
               </Link>
@@ -1118,7 +1118,7 @@ export default function LandingPage() {
               href="https://yossikaputra.my.id"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[13px] shadow-sm transition-transform active:scale-95"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full btn-theme-primary font-semibold text-[13px] shadow-sm transition-transform active:scale-95"
             >
               <span>Lihat Portofolio</span>
               <ExternalLink className="w-3.5 h-3.5" />
@@ -1141,7 +1141,7 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[15px] px-8 h-11 rounded-full shadow-md"
+                className="btn-theme-primary font-semibold text-[15px] px-8 h-11 rounded-full shadow-md"
               >
                 Daftar Akun Mahasiswa Gratis
               </Button>
