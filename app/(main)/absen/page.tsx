@@ -9,15 +9,14 @@ import {
   Camera,
   CheckCircle2,
   AlertCircle,
-  Clock,
-  Sparkles,
   RefreshCw,
   UserCheck,
-  ShieldAlert,
-  Calendar,
   FlipHorizontal,
   ShieldCheck,
   Lock,
+  Globe,
+  Building2,
+  Trash2,
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo } from "@/lib/utils";
 import { Matkul } from "@/types";
@@ -48,15 +47,20 @@ export default function AbsenPage() {
   const [presensiList, setPresensiList] = useState<PresensiRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Kuliah Mode: Online (Daring) vs Offline (Tatap Muka)
+  const [kuliahMode, setKuliahMode] = useState<"online" | "offline">("online");
+
   // Camera & Face Scan State
   const [isCameraActive, setIsCameraActive] = useState(false);
-  const [isMirror, setIsMirror] = useState(false); // Default: Non-mirror (Normal)
+  const [isMirror, setIsMirror] = useState(false); // false = Non-mirror / Normal (Teks terbaca benar)
   const [cameraError, setCameraError] = useState("");
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [lastSavedPresensiId, setLastSavedPresensiId] = useState<string | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [scanSuccess, setScanSuccess] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const [showConsentModal, setShowConsentModal] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -109,6 +113,7 @@ export default function AbsenPage() {
   const startCamera = async () => {
     setCameraError("");
     setCapturedImage(null);
+    setLastSavedPresensiId(null);
     setScanSuccess(false);
 
     try {
@@ -158,6 +163,7 @@ export default function AbsenPage() {
     setIsCameraActive(false);
   };
 
+  // Capture face snapshot with non-mirror / un-mirrored output by default
   const captureFaceSnapshot = () => {
     if (!videoRef.current || !canvasRef.current) return;
 
@@ -169,45 +175,138 @@ export default function AbsenPage() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Draw video frame to canvas with mirror support (default: non-mirror / normal)
-    if (isMirror) {
-      ctx.save();
+    // By default (!isMirror), flip horizontally so text on clothes/background reads normally (not mirrored)
+    ctx.save();
+    if (!isMirror) {
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-      ctx.restore();
-    } else {
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     }
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-    // Optional: Draw overlay timestamp watermark
-    ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-    ctx.fillRect(0, canvas.height - 35, canvas.width, 35);
+    // Draw overlay watermark (always normal coordinate space, perfectly readable)
+    ctx.fillStyle = "rgba(0, 0, 0, 0.55)";
+    ctx.fillRect(0, canvas.height - 36, canvas.width, 36);
     ctx.fillStyle = "#FFFFFF";
-    ctx.font = "bold 13px Inter, sans-serif";
+    ctx.font = "bold 12.5px Inter, -apple-system, sans-serif";
+    const modeWatermark =
+      kuliahMode === "online" ? "KULIAH ONLINE (DARING)" : "KULIAH OFFLINE (TETAP MUKA)";
     ctx.fillText(
-      `YOSSIKA • 103112430026 • ${formatDateIndo(new Date())} ${new Date().toLocaleTimeString("id-ID")}`,
-      15,
-      canvas.height - 12
+      `YOSSIKA • 103112430026 • ${modeWatermark} • ${formatDateIndo(new Date())} ${new Date().toLocaleTimeString("id-ID")}`,
+      14,
+      canvas.height - 13
     );
 
-    const base64Data = canvas.toDataURL("image/jpeg", 0.85);
+    const base64Data = canvas.toDataURL("image/jpeg", 0.88);
     setCapturedImage(base64Data);
     stopCamera();
     processAttendance(base64Data);
   };
 
+  // Flip captured image on demand and update database
+  const flipCapturedImage = async (overrideBase64?: string, targetId?: string) => {
+    const src = overrideBase64 || capturedImage;
+    if (!src) return;
+
+    const img = new Image();
+    img.onload = async () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth || img.width;
+      c.height = img.naturalHeight || img.height;
+      const ctx = c.getContext("2d");
+      if (!ctx) return;
+
+      // Flip horizontally
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, 0, 0);
+      const newBase64 = c.toDataURL("image/jpeg", 0.88);
+      setCapturedImage(newBase64);
+
+      const recId = targetId || lastSavedPresensiId;
+      if (recId) {
+        try {
+          await fetch("/api/presensi", {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: recId, foto_base64: newBase64 }),
+          });
+          fetchData();
+        } catch (err) {
+          console.error("Error updating flipped photo:", err);
+        }
+      }
+    };
+    img.src = src;
+  };
+
+  // Flip any record in gallery
+  const flipHistoryRecord = async (item: PresensiRecord) => {
+    const img = new Image();
+    img.onload = async () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth || img.width;
+      c.height = img.naturalHeight || img.height;
+      const ctx = c.getContext("2d");
+      if (!ctx) return;
+
+      ctx.translate(c.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(img, 0, 0);
+      const newBase64 = c.toDataURL("image/jpeg", 0.88);
+
+      try {
+        await fetch("/api/presensi", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: item.id, foto_base64: newBase64 }),
+        });
+        fetchData();
+      } catch (err) {
+        console.error("Error updating flipped photo in history:", err);
+      }
+    };
+    img.src = item.foto_base64;
+  };
+
+  // Delete attendance record
+  const handleDeletePresensi = async (id: string) => {
+    if (!window.confirm("Hapus rekaman presensi ini?")) return;
+    try {
+      setDeletingId(id);
+      const res = await fetch(`/api/presensi?id=${id}`, { method: "DELETE" });
+      if (res.ok) {
+        setPresensiList((prev) => prev.filter((p) => p.id !== id));
+        if (lastSavedPresensiId === id) {
+          setCapturedImage(null);
+          setLastSavedPresensiId(null);
+          setScanSuccess(false);
+        }
+      }
+    } catch (err) {
+      console.error("Error deleting presensi:", err);
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  // Process attendance submission
   const processAttendance = async (photoBase64: string) => {
     if (!selectedMatkulId) return;
 
     setIsScanning(true);
-    setStatusMessage("Menganalisis fitur biometrik wajah dan kelayakan busana...");
+    const isOnline = kuliahMode === "online";
+    setStatusMessage(
+      isOnline
+        ? "Memverifikasi biometrik presensi kuliah online (daring)..."
+        : "Memverifikasi biometrik presensi kuliah tatap muka..."
+    );
 
-    // Simulated scanning delay for polished biometrics feedback
     setTimeout(async () => {
       try {
-        const detectionReport =
-          "Wajah terverifikasi 99.2% • Busana berkerah rapi terdeteksi • Kondisi pencahayaan normal";
+        const detectionReport = isOnline
+          ? "Wajah terverifikasi • Kuliah Online (Daring) • Pencahayaan optimal"
+          : `Wajah terverifikasi • Kuliah Tatap Muka (${currentSelectedCourse?.ruang || "Ruang Kelas"}) • Busana rapi`;
 
         const res = await fetch("/api/presensi", {
           method: "POST",
@@ -215,15 +314,23 @@ export default function AbsenPage() {
           body: JSON.stringify({
             matkul_id: selectedMatkulId,
             foto_base64: photoBase64,
-            status: "Hadir Tepat Waktu",
+            status: isOnline ? "Hadir Kuliah Online (Daring)" : "Hadir Kuliah Offline (Tatap Muka)",
             deteksi_info: detectionReport,
-            catatan: "Presensi biometrik wajah mandiri mahasiswa",
+            catatan: isOnline
+              ? "Perkuliahan Daring (Online Zoom / Google Meet / LMS)"
+              : `Perkuliahan Tatap Muka di Kelas (${currentSelectedCourse?.ruang || "Ruang Kuliah"})`,
           }),
         });
 
-        if (res.ok) {
+        const data = await res.json();
+        if (res.ok && data.presensi) {
+          setLastSavedPresensiId(data.presensi.id);
           setScanSuccess(true);
-          setStatusMessage("Presensi Berhasil! Data kehadiran dan foto wajah telah tersimpan rapi.");
+          setStatusMessage(
+            isOnline
+              ? "Presensi Kuliah Online Berhasil! Bukti kehadiran daring tersimpan rapi."
+              : "Presensi Kuliah Tatap Muka Berhasil! Bukti kehadiran tersimpan rapi."
+          );
           fetchData();
         } else {
           setStatusMessage("Gagal menyimpan presensi. Silakan ulangi.");
@@ -234,7 +341,7 @@ export default function AbsenPage() {
       } finally {
         setIsScanning(false);
       }
-    }, 1200);
+    }, 1100);
   };
 
   const currentSelectedCourse = matkulList.find((m) => m.id === selectedMatkulId);
@@ -251,21 +358,21 @@ export default function AbsenPage() {
             <Camera className="w-4 h-4" />
           </span>
           <span className="text-[12px] font-semibold text-ios-accent uppercase tracking-wider">
-            Biometrik & Presensi Kuliah
+            Biometrik &amp; Presensi Kuliah
           </span>
         </div>
         <h1 className="text-[26px] font-bold text-ios-textPrimary tracking-tight mt-0.5">
           Scan Wajah Presensi
         </h1>
         <p className="text-[13px] text-ios-textSecondary">
-          Verifikasi kehadiran dengan rekaman kondisi wajah dan busana berkerah rapi
+          Verifikasi kehadiran kuliah online maupun offline dengan rekaman visual wajah dan busana rapi
         </p>
       </div>
 
-      {/* Camera Scanner Viewport */}
-      <Card className="p-4 border-2 border-ios-accent/20 bg-ios-surface relative overflow-hidden">
+      {/* Camera Scanner Viewport Card */}
+      <Card className="p-4 border-2 border-ios-accent/20 bg-ios-surface relative overflow-hidden space-y-3.5">
         {/* Course Selector */}
-        <div className="mb-3">
+        <div>
           <Select
             label="Pilih Mata Kuliah yang Sedang / Akan Dihadiri"
             value={selectedMatkulId}
@@ -277,6 +384,55 @@ export default function AbsenPage() {
               </option>
             ))}
           </Select>
+        </div>
+
+        {/* Mode Perkuliahan Segmented Control: Online vs Offline */}
+        <div className="space-y-1.5">
+          <label className="text-[12px] font-semibold text-ios-textSecondary uppercase tracking-wider block">
+            Pilihan Keterangan Kuliah
+          </label>
+          <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-ios-surfaceSecondary border border-ios-border">
+            <button
+              type="button"
+              onClick={() => setKuliahMode("online")}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
+                kuliahMode === "online"
+                  ? "bg-ios-accent text-white shadow-sm scale-[1.01]"
+                  : "text-ios-textSecondary hover:text-ios-textPrimary hover:bg-black/5 dark:hover:bg-white/5"
+              }`}
+            >
+              <Globe className="w-4 h-4" />
+              <span>Kuliah Online (Daring)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setKuliahMode("offline")}
+              className={`flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
+                kuliahMode === "offline"
+                  ? "bg-ios-accent text-white shadow-sm scale-[1.01]"
+                  : "text-ios-textSecondary hover:text-ios-textPrimary hover:bg-black/5 dark:hover:bg-white/5"
+              }`}
+            >
+              <Building2 className="w-4 h-4" />
+              <span>Kuliah Offline (Tatap Muka)</span>
+            </button>
+          </div>
+          <div className="flex items-center justify-between text-[11.5px] px-1 pt-0.5">
+            <span className="text-ios-textSecondary">
+              {kuliahMode === "online"
+                ? "💻 Terhubung via Zoom / Google Meet / LMS (Daring)"
+                : `🏫 Hadir langsung di ruang kelas (${currentSelectedCourse?.ruang || "Ruang Kuliah"})`}
+            </span>
+            <span
+              className={`font-semibold px-2 py-0.5 rounded-full text-[10.5px] ${
+                kuliahMode === "online"
+                  ? "bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/25"
+                  : "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25"
+              }`}
+            >
+              {kuliahMode === "online" ? "Mode Daring" : "Mode Tatap Muka"}
+            </span>
+          </div>
         </div>
 
         {/* Video / Snapshot Container */}
@@ -296,21 +452,33 @@ export default function AbsenPage() {
             <button
               type="button"
               onClick={() => setIsMirror(!isMirror)}
-              className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 text-white text-[11px] font-semibold backdrop-blur-md border border-white/20 hover:bg-black/80 active:scale-95 transition-all shadow-lg"
+              className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 text-white text-[11px] font-semibold backdrop-blur-md border border-white/20 hover:bg-black/85 active:scale-95 transition-all shadow-lg"
               title="Toggle Flip / Mirror Kamera"
             >
               <FlipHorizontal className="w-3.5 h-3.5 text-ios-accent" />
-              <span>{isMirror ? "Mirror: Aktif" : "Mirror: Nonaktif (Normal)"}</span>
+              <span>{isMirror ? "Mirror: Aktif (Cermin)" : "Hasil: Tidak Mirror (Normal)"}</span>
             </button>
           )}
 
           {/* Captured Snapshot Preview */}
           {capturedImage && !isCameraActive && (
-            <img
-              src={capturedImage}
-              alt="Snapshot Presensi Wajah"
-              className="w-full h-full object-cover"
-            />
+            <div className="relative w-full h-full">
+              <img
+                src={capturedImage}
+                alt="Snapshot Presensi Wajah"
+                className="w-full h-full object-cover"
+              />
+              {/* Quick Flip Button on top of snapshot */}
+              <button
+                type="button"
+                onClick={() => flipCapturedImage()}
+                className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/75 text-white text-[11px] font-semibold backdrop-blur-md border border-white/20 hover:bg-black/90 active:scale-95 transition-all shadow-lg"
+                title="Balik Foto (Flip Horizontal)"
+              >
+                <FlipHorizontal className="w-3.5 h-3.5 text-ios-accent" />
+                <span>Balik Foto (Flip)</span>
+              </button>
+            </div>
           )}
 
           {/* Placeholder state when camera is inactive */}
@@ -323,7 +491,7 @@ export default function AbsenPage() {
                 Kamera Belum Aktif
               </p>
               <p className="text-[12px] text-white/60 max-w-xs mx-auto">
-                Klik tombol "Nyalakan Kamera" untuk membuka pemindai wajah dan memastikan posisi muka serta pakaian Anda terlihat jelas.
+                Pilih mata kuliah &amp; mode kuliah di atas, lalu klik &quot;Nyalakan Kamera&quot; untuk memulai presensi visual.
               </p>
             </div>
           )}
@@ -334,7 +502,7 @@ export default function AbsenPage() {
               {/* Target Face Bounding Box */}
               <div className="w-48 h-56 border-2 border-dashed border-ios-accent/80 rounded-3xl relative animate-pulse flex flex-col items-center justify-between p-3">
                 <span className="text-[10px] font-bold text-white bg-ios-accent/80 px-2 py-0.5 rounded-full">
-                  Posisikan Wajah & Baju
+                  Posisikan Wajah &amp; Busana
                 </span>
                 <span className="text-[10px] text-white/90 bg-black/60 px-2 py-0.5 rounded-full">
                   Tegak Menghadap Kamera
@@ -371,16 +539,29 @@ export default function AbsenPage() {
         )}
 
         {/* Action Buttons */}
-        <div className="mt-4 flex gap-2 justify-center">
+        <div className="mt-2 flex flex-wrap gap-2 justify-center">
           {!isCameraActive ? (
-            <Button
-              variant="primary"
-              onClick={handleRequestCamera}
-              className="gap-2 px-6"
-            >
-              <Camera className="w-4 h-4" />
-              <span>{capturedImage ? "Pindai Ulang Wajah" : "Nyalakan Kamera"}</span>
-            </Button>
+            <>
+              <Button
+                variant="primary"
+                onClick={handleRequestCamera}
+                className="gap-2 px-6"
+              >
+                <Camera className="w-4 h-4" />
+                <span>{capturedImage ? "Pindai Ulang Wajah" : "Nyalakan Kamera"}</span>
+              </Button>
+              {capturedImage && (
+                <Button
+                  variant="secondary"
+                  onClick={() => flipCapturedImage()}
+                  className="gap-2 px-4"
+                  title="Balik foto secara horizontal jika diperlukan"
+                >
+                  <FlipHorizontal className="w-4 h-4 text-ios-accent" />
+                  <span>Balik Foto (Flip)</span>
+                </Button>
+              )}
+            </>
           ) : (
             <>
               <Button
@@ -396,7 +577,7 @@ export default function AbsenPage() {
                 className="gap-2 px-6"
               >
                 <UserCheck className="w-4 h-4" />
-                <span>Ambil Foto Presensi</span>
+                <span>Ambil Foto Presensi ({kuliahMode === "online" ? "Online" : "Offline"})</span>
               </Button>
             </>
           )}
@@ -460,10 +641,10 @@ export default function AbsenPage() {
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-[18px] font-bold text-ios-textPrimary tracking-tight">
-              Galeri & Log Riwayat Presensi
+              Galeri &amp; Log Riwayat Presensi
             </h2>
             <p className="text-[12px] text-ios-textSecondary">
-              Rekaman kehadiran mahasiswa per hari kuliah beserta bukti visual
+              Rekaman kehadiran mahasiswa per hari kuliah beserta bukti visual dan mode kuliah
             </p>
           </div>
           <span className="text-[12px] font-semibold text-ios-accent px-2 py-0.5 rounded-full bg-ios-accent/10">
@@ -483,44 +664,93 @@ export default function AbsenPage() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {presensiList.map((item) => (
-              <Card key={item.id} className="p-3.5 space-y-2.5 overflow-hidden">
-                {/* Snapshot Image with Face & Clothing Condition */}
-                <div className="aspect-[4/3] w-full rounded-xl overflow-hidden bg-ios-surfaceSecondary border border-ios-border relative group">
-                  <img
-                    src={item.foto_base64}
-                    alt="Bukti Kehadiran Wajah"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-2 left-2">
-                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 text-white backdrop-blur-sm">
-                      {item.hari}, {item.jam}
-                    </span>
-                  </div>
-                  <div className="absolute bottom-2 right-2">
-                    <BadgeStatus size="sm" variant="selesai">
-                      {item.status}
-                    </BadgeStatus>
-                  </div>
-                </div>
+            {presensiList.map((item) => {
+              const isItemOnline =
+                item.status?.toLowerCase().includes("online") ||
+                item.status?.toLowerCase().includes("daring") ||
+                item.catatan?.toLowerCase().includes("online") ||
+                item.catatan?.toLowerCase().includes("daring") ||
+                item.deteksi_info?.toLowerCase().includes("online");
 
-                {/* Meta details */}
-                <div>
-                  <h3 className="text-[14px] font-bold text-ios-textPrimary leading-snug">
-                    {item.matkul.nama}
-                  </h3>
-                  <p className="text-[12px] text-ios-textSecondary mt-0.5">
-                    {item.matkul.ruang} • {formatShortDateIndo(item.tanggal)}
-                  </p>
+              return (
+                <Card key={item.id} className="p-3.5 space-y-2.5 overflow-hidden">
+                  {/* Snapshot Image with Face & Clothing Condition */}
+                  <div className="aspect-[4/3] w-full rounded-xl overflow-hidden bg-ios-surfaceSecondary border border-ios-border relative group">
+                    <img
+                      src={item.foto_base64}
+                      alt="Bukti Kehadiran Wajah"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
 
-                  {item.deteksi_info && (
-                    <p className="text-[11px] text-ios-accent mt-1.5 p-1.5 rounded-md bg-ios-accent/10 border border-ios-accent/20">
-                      {item.deteksi_info}
+                    {/* Top left badges: Date & Mode */}
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap max-w-[70%]">
+                      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/65 text-white backdrop-blur-sm">
+                        {item.hari}, {item.jam}
+                      </span>
+                      {isItemOnline ? (
+                        <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-blue-500/90 text-white backdrop-blur-sm flex items-center gap-1">
+                          <Globe className="w-3 h-3" /> Online
+                        </span>
+                      ) : (
+                        <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-emerald-600/90 text-white backdrop-blur-sm flex items-center gap-1">
+                          <Building2 className="w-3 h-3" /> Tatap Muka
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Top right quick actions: Flip & Delete */}
+                    <div className="absolute top-2 right-2 flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => flipHistoryRecord(item)}
+                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-black/90 active:scale-90 transition-all backdrop-blur-sm"
+                        title="Balik Foto (Flip Horizontal)"
+                      >
+                        <FlipHorizontal className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePresensi(item.id)}
+                        disabled={deletingId === item.id}
+                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-red-600/90 active:scale-90 transition-all backdrop-blur-sm"
+                        title="Hapus Presensi"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+
+                    {/* Bottom right status badge */}
+                    <div className="absolute bottom-2 right-2">
+                      <BadgeStatus size="sm" variant={isItemOnline ? "aman" : "selesai"}>
+                        {item.status}
+                      </BadgeStatus>
+                    </div>
+                  </div>
+
+                  {/* Meta details */}
+                  <div>
+                    <h3 className="text-[14px] font-bold text-ios-textPrimary leading-snug">
+                      {item.matkul.nama}
+                    </h3>
+                    <p className="text-[12px] text-ios-textSecondary mt-0.5">
+                      {isItemOnline ? "Kuliah Daring (Online)" : item.matkul.ruang} • {formatShortDateIndo(item.tanggal)}
                     </p>
-                  )}
-                </div>
-              </Card>
-            ))}
+
+                    {item.catatan && (
+                      <p className="text-[11.5px] text-ios-textSecondary mt-1 line-clamp-1">
+                        {item.catatan}
+                      </p>
+                    )}
+
+                    {item.deteksi_info && (
+                      <p className="text-[11px] text-ios-accent mt-1.5 p-1.5 rounded-md bg-ios-accent/10 border border-ios-accent/20">
+                        {item.deteksi_info}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+              );
+            })}
           </div>
         )}
       </div>

@@ -105,3 +105,63 @@ export async function POST(req: NextRequest) {
     );
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { id, foto_base64, status, catatan } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID presensi wajib disertakan" },
+        { status: 400 }
+      );
+    }
+
+    const updated = await db.presensi.update({
+      where: { id },
+      data: {
+        ...(foto_base64 && { foto_base64 }),
+        ...(status && { status }),
+        ...(catatan && { catatan }),
+      },
+      include: {
+        matkul: true,
+      },
+    });
+
+    return NextResponse.json({ presensi: updated });
+  } catch (error) {
+    console.error("Error updating presensi:", error);
+    return NextResponse.json(
+      { error: "Gagal memperbarui data presensi" },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { error: "ID presensi wajib disertakan" },
+        { status: 400 }
+      );
+    }
+
+    await db.presensi.delete({
+      where: { id },
+    });
+
+    return NextResponse.json({ success: true, message: "Presensi berhasil dihapus" });
+  } catch (error) {
+    console.error("Error deleting presensi:", error);
+    return NextResponse.json(
+      { error: "Gagal menghapus data presensi" },
+      { status: 500 }
+    );
+  }
+}
