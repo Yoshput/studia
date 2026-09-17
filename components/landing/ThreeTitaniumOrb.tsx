@@ -238,11 +238,63 @@ export function ThreeTitaniumOrb({
       renderer.render(scene, camera);
     };
 
+    // 6. Dynamic Theme Palette Adaptation
+    const applyOrbTheme = (themeName: string) => {
+      if (themeName === "maroon") {
+        sphereMat.color.setHex(0x881337);      // Rich deep velvet rose-wine
+        sphereMat.emissive.setHex(0x4c0519);   // Deep wine glow
+        innerWireMat.color.setHex(0xffffff);   // Pure white holographic wireframe
+        innerWireMat.opacity = 0.45;
+        ringMat1.color.setHex(0xe11d48);       // Ruby crimson ring
+        ringMat2.color.setHex(0xffffff);       // Crisp white ring
+        particleMat.color.setHex(0xffd1dc);    // Rose-white stardust
+        keyLight.color.setHex(0xffb1c1);
+        rimLight.color.setHex(0xe11d48);
+        specularFill.color.setHex(0xffffff);
+      } else if (themeName === "dark") {
+        sphereMat.color.setHex(0x1e293b);      // Titanium obsidian
+        sphereMat.emissive.setHex(0x0f172a);
+        innerWireMat.color.setHex(0x38bdf8);   // Icy blue
+        innerWireMat.opacity = 0.35;
+        ringMat1.color.setHex(0x38bdf8);
+        ringMat2.color.setHex(0x818cf8);
+        particleMat.color.setHex(0xe2e8f0);
+        keyLight.color.setHex(0x94a3b8);
+        rimLight.color.setHex(0x38bdf8);
+        specularFill.color.setHex(0x818cf8);
+      } else {
+        // Pastel Pink (Default)
+        sphereMat.color.setHex(0xf472b6);
+        sphereMat.emissive.setHex(0x9d174d);
+        innerWireMat.color.setHex(0xfbcfe8);
+        innerWireMat.opacity = 0.30;
+        ringMat1.color.setHex(0xec4899);
+        ringMat2.color.setHex(0xd946ef);
+        particleMat.color.setHex(0xfbcfe8);
+        keyLight.color.setHex(0xf472b6);
+        rimLight.color.setHex(0xe879a0);
+        specularFill.color.setHex(0xd946ef);
+      }
+    };
+
+    // Initial check
+    const currentSavedTheme =
+      document.documentElement.getAttribute("data-theme") ||
+      (document.documentElement.classList.contains("dark") ? "dark" : "pink");
+    applyOrbTheme(currentSavedTheme);
+
+    const handleThemeEvent = (e: Event) => {
+      const customDetail = (e as CustomEvent).detail;
+      applyOrbTheme(customDetail);
+    };
+    window.addEventListener("semestr-theme-change", handleThemeEvent);
+
     animate();
 
     // 7. Cleanup
     return () => {
       cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("semestr-theme-change", handleThemeEvent);
       container.removeEventListener("pointermove", handlePointerMove);
       container.removeEventListener("pointerdown", handlePointerDown);
       window.removeEventListener("pointerup", handlePointerUp);
@@ -271,16 +323,6 @@ export function ThreeTitaniumOrb({
     >
       {/* 3D Canvas */}
       <canvas ref={canvasRef} className="w-full h-full block" />
-
-      {/* Floating Spatial Badge */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 dark:bg-black/70 backdrop-blur-md border border-orange-500/30 text-[11px] font-medium text-white shadow-lg transition-opacity duration-300">
-        <span
-          className={`w-1.5 h-1.5 rounded-full ${
-            isInteracting ? "bg-amber-300 animate-ping" : "bg-orange-500 animate-pulse"
-          }`}
-        />
-        <span className="font-mono tracking-tight text-orange-200">{badgeLabel}</span>
-      </div>
     </div>
   );
 }

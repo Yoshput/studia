@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useState } from "react";
 
@@ -24,6 +24,9 @@ function applyTheme(theme: Theme) {
   }
   // pink = default, no attribute needed
   localStorage.setItem("semestr-theme", theme);
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("semestr-theme-change", { detail: theme }));
+  }
 }
 
 export function ThemePicker() {

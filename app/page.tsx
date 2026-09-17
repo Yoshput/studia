@@ -153,7 +153,7 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FDF5F9] dark:bg-[#0D0810] text-[#1A0A12] dark:text-[#FDF0F7] selection:bg-pink-500/20 selection:text-pink-700 transition-colors duration-300 font-sans antialiased">
+    <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] selection:bg-pink-500/20 selection:text-pink-700 transition-colors duration-300 font-sans antialiased">
       {/* 1. APPLE-STYLE MINIMALIST BLUR NAVBAR */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${

@@ -2,64 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --- PASTEL PINK (DEFAULT) --- */
+/* ==========================================================================
+   1. COLOR SCHEMES & DESIGN TOKENS
+   ========================================================================== */
+
+/* --- 🌸 THEME 1: PASTEL PINK (DEFAULT) --- */
 :root {
-  --bg: #FDF5F9;
+  --bg: #FAF5F8;                        /* Soft soothing blush cream */
+  --nav-bg: rgba(250, 245, 248, 0.82);
   --surface: #FFFFFF;
-  --surface-secondary: #FAF0F5;
-  --border: #F0DAEA;
-  --text-primary: #1A0A12;
-  --text-secondary: #7A5068;
-  --accent: #E879A0;
-  --accent-light: #FBCFE8;
-  --accent-dark: #BE185D;
-  --accent-subtle: rgba(232, 121, 160, 0.09);
-  --accent-glow: rgba(232, 121, 160, 0.22);
-  --accent-border: rgba(232, 121, 160, 0.22);
+  --surface-secondary: #F7EDF2;
+  --border: rgba(236, 72, 153, 0.16);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --text-primary: #1C0F17;              /* Deep rose-charcoal */
+  --text-secondary: #704E5E;            /* Warm muted mauve */
+  --text-muted: #9E7D8D;
+
+  --accent: #EC4899;                    /* Radiant pastel rose */
+  --accent-light: #FBCFE8;              /* Soft petal tint */
+  --accent-dark: #BE185D;               /* Deep contrast rose */
+  --accent-subtle: rgba(236, 72, 153, 0.08);
+  --accent-glow: rgba(236, 72, 153, 0.22);
+  --accent-border: rgba(236, 72, 153, 0.22);
+
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
 }
 
-/* --- MAROON THEME --- */
+/* --- 🍷 THEME 2: MAROON X PUTIH (LUXURY IMPERIAL BURGUNDY & PURE WHITE) --- */
 [data-theme="maroon"] {
-  --bg: #FDF5F5;
-  --surface: #FFFFFF;
-  --surface-secondary: #FAF0F0;
-  --border: #F0DADA;
-  --text-primary: #1A0A0A;
-  --text-secondary: #7A5050;
-  --accent: #991B1B;
-  --accent-light: #FCA5A5;
-  --accent-dark: #7F1D1D;
-  --accent-subtle: rgba(153, 27, 27, 0.08);
-  --accent-glow: rgba(153, 27, 27, 0.18);
-  --accent-border: rgba(153, 27, 27, 0.20);
+  --bg: #22040D;                        /* Deep, velvet royal wine maroon */
+  --nav-bg: rgba(34, 4, 13, 0.88);
+  --surface: #340915;                   /* Frosted maroon card surface */
+  --surface-secondary: #450D1D;         /* Inset container */
+  --border: rgba(255, 255, 255, 0.14);  /* Crisp white hairline border */
+  --border-subtle: rgba(255, 255, 255, 0.10);
+  --text-primary: #FFFFFF;              /* Crisp pure white */
+  --text-secondary: #F2CBD6;            /* Rose pearl soft white */
+  --text-muted: #C996A5;
+
+  --accent: #E11D48;                    /* Radiant ruby red */
+  --accent-light: #FFE4E6;
+  --accent-dark: #FFFFFF;
+  --accent-subtle: rgba(255, 255, 255, 0.12);
+  --accent-glow: rgba(225, 29, 72, 0.35);
+  --accent-border: rgba(255, 255, 255, 0.22);
+
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #FB7185;
 }
 
-/* --- DARK MODE --- */
+/* --- 🌙 THEME 3: APPLE OBSIDIAN DARK --- */
 .dark,
 [data-theme="dark"] {
-  --bg: #0D0810;
-  --surface: #1A0F1E;
-  --surface-secondary: #231429;
-  --border: rgba(232, 121, 160, 0.15);
-  --text-primary: #FDF0F7;
-  --text-secondary: #B08099;
+  --bg: #090A0F;                        /* True Apple OLED Obsidian */
+  --nav-bg: rgba(9, 10, 15, 0.86);
+  --surface: #131620;
+  --surface-secondary: #1B202D;
+  --border: rgba(255, 255, 255, 0.10);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --text-primary: #F8FAFC;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+
   --accent: #F472B6;
   --accent-light: #FBCFE8;
   --accent-dark: #EC4899;
   --accent-subtle: rgba(244, 114, 182, 0.12);
   --accent-glow: rgba(244, 114, 182, 0.25);
   --accent-border: rgba(244, 114, 182, 0.22);
+
   --success: #34D399;
   --warning: #FBBF24;
   --danger: #F87171;
 }
 
-* { box-sizing: border-box; }
+/* ==========================================================================
+   2. BASE RESET & SCROLLBAR
+   ========================================================================== */
+* {
+  box-sizing: border-box;
+}
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+}
 
 body {
   background-color: var(--bg);
@@ -70,62 +99,225 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  transition: background-color 0.3s ease, color 0.3s ease;
+  transition: background-color 0.35s ease, color 0.35s ease;
 }
 
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 9999px; }
-.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 9999px;
+}
+.dark ::-webkit-scrollbar-thumb,
+[data-theme="maroon"] ::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.22);
+}
 
+/* Glassmorphic navigation */
 .glass-nav {
-  background-color: rgba(255,255,255,0.82);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
-}
-.dark .glass-nav {
-  background-color: rgba(13,8,16,0.82);
-  backdrop-filter: blur(22px);
-  -webkit-backdrop-filter: blur(22px);
+  background-color: var(--nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 
-/* Accent utility classes */
-.text-accent { color: var(--accent) !important; }
-.text-accent-dark { color: var(--accent-dark) !important; }
+/* ==========================================================================
+   3. MAROON X PUTIH COMPREHENSIVE LUXURY THEME OVERRIDES
+   ========================================================================== */
+[data-theme="maroon"] {
+  /* Navbar blur background */
+  header {
+    background-color: rgba(34, 4, 13, 0.88) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* All white cards become frosted royal maroon with crisp white borders */
+  .bg-white {
+    background-color: #340915 !important;
+    border-color: rgba(255, 255, 255, 0.14) !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Interactive Simulator */
+  #simulator {
+    background-color: #340915 !important;
+    border-color: rgba(255, 255, 255, 0.18) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.6) !important;
+  }
+  #simulator > div:first-child {
+    background-color: #27060F !important;
+    border-color: rgba(255, 255, 255, 0.10) !important;
+  }
+
+  /* Tab buttons in simulator */
+  #simulator button {
+    color: #F2CBD6 !important;
+  }
+  #simulator button:hover {
+    color: #FFFFFF !important;
+  }
+  #simulator button.bg-gradient-to-r,
+  #simulator button[class*="from-pink-600"] {
+    background: #FFFFFF !important;
+    color: #22040D !important;
+    font-weight: 700 !important;
+    box-shadow: 0 4px 18px rgba(255, 255, 255, 0.3) !important;
+  }
+
+  /* Typography: Headers pure white, Subtext soft rose-pearl */
+  h1, h2, h3, h4, th {
+    color: #FFFFFF !important;
+  }
+  p, .text-stone-600, .text-stone-500, .text-zinc-500, .text-zinc-600, .text-zinc-700, .text-zinc-400 {
+    color: #F2CBD6 !important;
+  }
+  .text-black, .text-[#1C1917], .text-[#1A0A12], .text-[#1D1D1F] {
+    color: #FFFFFF !important;
+  }
+
+  /* Hero Headline Gradient in Maroon -> Brilliant White to Rose-Gold shine */
+  .from-pink-600 {
+    --tw-gradient-from: #FFFFFF var(--tw-gradient-from-position) !important;
+  }
+  .via-rose-500 {
+    --tw-gradient-via: #FFE4E6 var(--tw-gradient-via-position) !important;
+  }
+  .to-fuchsia-500, .to-rose-500 {
+    --tw-gradient-to: #FDA4AF var(--tw-gradient-to-position) !important;
+  }
+
+  /* Primary CTA Buttons become Pure White with Maroon text (Apple Keynote Style) */
+  .bg-gradient-to-r.from-pink-600 {
+    background: #FFFFFF !important;
+    color: #22040D !important;
+    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.28) !important;
+  }
+  .bg-gradient-to-r.from-pink-600:hover {
+    background: #FFF1F2 !important;
+    transform: translateY(-1px);
+  }
+  .bg-gradient-to-r.from-pink-600 * {
+    color: #22040D !important;
+  }
+
+  /* Secondary Buttons become Frosted White on Maroon */
+  .bg-black\/\[0\.04\],
+  .bg-black\/\[0\.02\],
+  .bg-black\/\[0\.03\],
+  .bg-black\/\[0\.05\] {
+    background-color: rgba(255, 255, 255, 0.10) !important;
+    border-color: rgba(255, 255, 255, 0.16) !important;
+    color: #FFFFFF !important;
+  }
+  .bg-black\/\[0\.04\]:hover,
+  .bg-black\/\[0\.08\]:hover {
+    background-color: rgba(255, 255, 255, 0.16) !important;
+  }
+
+  /* Borders across sections */
+  .border-black\/\[0\.06\],
+  .border-black\/\[0\.08\],
+  .border-black\/\[0\.05\],
+  .border-black\/\[0\.04\] {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+  }
+
+  /* Creator Pill & Badges */
+  .bg-pink-500\/\[0\.08\],
+  .bg-pink-500\/\[0\.15\] {
+    background-color: rgba(255, 255, 255, 0.12) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+    color: #FFFFFF !important;
+  }
+  .bg-pink-500\/\[0\.08\] *,
+  .bg-pink-500\/\[0\.15\] * {
+    color: #FFFFFF !important;
+  }
+
+  /* Action links & highlights */
+  .text-pink-600, .text-pink-500 {
+    color: #FDA4AF !important;
+  }
+  .text-pink-800, .text-pink-950, .text-pink-400, .text-pink-200, .text-pink-300 {
+    color: #FFFFFF !important;
+  }
+  .bg-pink-500 {
+    background-color: #E11D48 !important;
+  }
+  .border-pink-500\/10,
+  .border-pink-500\/15,
+  .border-pink-500\/20,
+  .border-pink-500\/25,
+  .border-pink-400 {
+    border-color: rgba(255, 255, 255, 0.16) !important;
+  }
+
+  /* Range sliders */
+  .accent-pink-500 {
+    accent-color: #E11D48 !important;
+  }
+
+  /* Navigation Links */
+  nav a {
+    color: #F2CBD6 !important;
+  }
+  nav a:hover {
+    color: #FFFFFF !important;
+  }
+
+  /* Pricing Cards & Badges */
+  .bg-zinc-950 {
+    background-color: #FFFFFF !important;
+    color: #22040D !important;
+  }
+  .bg-zinc-950:hover {
+    background-color: #FFF1F2 !important;
+  }
+  .bg-zinc-950 * {
+    color: #22040D !important;
+  }
+
+  /* Feature icons */
+  svg.text-zinc-800 {
+    color: #FFFFFF !important;
+  }
+
+  /* Comparison Table */
+  tr.border-b {
+    border-color: rgba(255, 255, 255, 0.10) !important;
+  }
+  table th, table td {
+    color: #FFFFFF !important;
+  }
+  table td.text-zinc-400 {
+    color: #C996A5 !important;
+  }
+
+  /* Footer */
+  footer {
+    border-color: rgba(255, 255, 255, 0.12) !important;
+    color: #C996A5 !important;
+  }
+  footer a {
+    color: #FFFFFF !important;
+  }
+}
+
+/* ==========================================================================
+   4. UTILITIES & ANIMATIONS
+   ========================================================================== */
+.text-accent       { color: var(--accent) !important; }
+.text-accent-dark  { color: var(--accent-dark) !important; }
 .text-accent-light { color: var(--accent-light) !important; }
-.bg-accent { background-color: var(--accent) !important; }
-.bg-accent-subtle { background-color: var(--accent-subtle) !important; }
-.border-accent { border-color: var(--accent-border) !important; }
-.shadow-accent { box-shadow: 0 8px 24px var(--accent-glow) !important; }
+.bg-accent         { background-color: var(--accent) !important; }
+.bg-accent-subtle  { background-color: var(--accent-subtle) !important; }
+.border-accent     { border-color: var(--accent-border) !important; }
+.shadow-accent     { box-shadow: 0 8px 24px var(--accent-glow) !important; }
 
-.btn-accent {
-  background: linear-gradient(135deg, var(--accent-dark), var(--accent));
-  color: white;
-  transition: opacity 0.2s ease, transform 0.15s ease;
-}
-.btn-accent:hover { opacity: 0.9; }
-.btn-accent:active { transform: scale(0.97); }
-
-/* Maroon overrides for pink-* Tailwind classes */
-[data-theme="maroon"] .from-pink-600 { --tw-gradient-from: #9B1B1B var(--tw-gradient-from-position); }
-[data-theme="maroon"] .from-pink-500 { --tw-gradient-from: #B91C1C var(--tw-gradient-from-position); }
-[data-theme="maroon"] .to-rose-500 { --tw-gradient-to: #991B1B var(--tw-gradient-to-position); }
-[data-theme="maroon"] .to-rose-400 { --tw-gradient-to: #B91C1C var(--tw-gradient-to-position); }
-[data-theme="maroon"] .via-pink-500 { --tw-gradient-via: #C41E1E var(--tw-gradient-via-position); }
-[data-theme="maroon"] .text-pink-600 { color: #991B1B; }
-[data-theme="maroon"] .text-pink-800 { color: #7F1D1D; }
-[data-theme="maroon"] .text-pink-400 { color: #B91C1C; }
-[data-theme="maroon"] .text-pink-500 { color: #991B1B; }
-[data-theme="maroon"] .text-pink-200 { color: #FCA5A5; }
-[data-theme="maroon"] .text-pink-300 { color: #FCA5A5; }
-[data-theme="maroon"] .bg-pink-500 { background-color: #991B1B; }
-[data-theme="maroon"] .border-pink-400 { border-color: #B91C1C; }
-[data-theme="maroon"] .hover\:text-pink-600:hover { color: #991B1B; }
-[data-theme="maroon"] .accent-pink-500 { accent-color: #991B1B; }
-[data-theme="maroon"] .shadow-pink-500\/20 { --tw-shadow-color: rgba(153,27,27,0.20); }
-[data-theme="maroon"] .shadow-pink-500\/25 { --tw-shadow-color: rgba(153,27,27,0.25); }
-
-/* Animations */
 @keyframes laserScan {
   0%   { top: 5%; opacity: 0.2; }
   50%  { top: 90%; opacity: 1; }
