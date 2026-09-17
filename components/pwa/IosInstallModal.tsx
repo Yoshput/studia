@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React from "react";
 import { X, Share2, PlusSquare, Smartphone } from "lucide-react";
