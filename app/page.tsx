@@ -413,9 +413,16 @@ export default function LandingPage() {
                   </div>
 
                   {/* Clean Watermark */}
-                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-white/70">
-                    <span>{presensiMode === 'online' ? 'KULIAH DARING' : 'LABORATORIUM 2'}</span>
-                    <span>{currentTime}</span>
+                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-white/80">
+                    <div className="text-left">
+                      <span className="block font-semibold text-white">
+                        Yossika Putra Erlangga • 103112430026
+                      </span>
+                      <span className="block text-[9px] text-white/60">
+                        {presensiMode === 'online' ? 'KULIAH DARING (ZOOM)' : 'LABORATORIUM 2 (OFFLINE)'}
+                      </span>
+                    </div>
+                    <span className="font-bold text-emerald-400">{currentTime}</span>
                   </div>
                 </div>
 
@@ -613,7 +620,7 @@ export default function LandingPage() {
                     ) : aiAnswer ? (
                       aiAnswer
                     ) : (
-                      'Halo! Ada pertanyaan seputar jadwal kuliah atau tugas minggu ini?'
+                      'Halo Yossika! Ada pertanyaan seputar jadwal kuliah atau tugas minggu ini?'
                     )}
                   </div>
                 </div>
@@ -623,7 +630,7 @@ export default function LandingPage() {
                   {[
                     {
                       q: 'Kapan deadline tugas terdekat?',
-                      a: 'Tugas Jaringan Komputer bab Subnetting dikumpulkan besok pukul 23:59 WIB.',
+                      a: 'Halo Yossika! Tugas Jaringan Komputer bab Subnetting dikumpulkan besok pukul 23:59 WIB.',
                     },
                     {
                       q: 'Ada kuliah apa hari ini?',
@@ -631,7 +638,7 @@ export default function LandingPage() {
                     },
                     {
                       q: 'Target UAS untuk nilai A?',
-                      a: 'Minimal skor 82 pada ujian akhir untuk mempertahankan predikat A.',
+                      a: 'Untuk mengamankan nilai A, target minimal skor ujian akhirmu adalah 82.',
                     },
                   ].map((p, idx) => (
                     <button

@@ -778,7 +778,7 @@ export default function ProfilPage() {
         <form onSubmit={handleSaveProfile} className="space-y-4">
           <Input
             label="Nama Lengkap"
-            placeholder="Contoh: Arthur Zevallent Alfani"
+            placeholder="Contoh: Yossika Putra Erlangga"
             value={editNama}
             onChange={(e) => setEditNama(e.target.value)}
             required
@@ -787,7 +787,7 @@ export default function ProfilPage() {
           <div className="grid grid-cols-2 gap-3">
             <Input
               label="NIM Mahasiswa"
-              placeholder="Contoh: 102092430009"
+              placeholder="Contoh: 103112430026"
               value={editNim}
               onChange={(e) => setEditNim(e.target.value)}
             />
