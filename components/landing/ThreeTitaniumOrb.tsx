@@ -42,19 +42,19 @@ export function ThreeTitaniumOrb({
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
 
-    // 2. Lighting (Pastel Pink & Rose Glow)
-    const ambientLight = new THREE.AmbientLight(0xfdf2f8, 1.2);
+    // 2. Lighting (Telkom Merah Putih & Apple HIG)
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.2);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xf472b6, 2.6); // Pink-400 key
+    const keyLight = new THREE.DirectionalLight(0xffb3b8, 2.6);
     keyLight.position.set(3, 4, 3);
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0xe879a0, 2.2); // Rose rim
+    const rimLight = new THREE.DirectionalLight(0xed1e28, 2.2);
     rimLight.position.set(-3, -2, -2);
     scene.add(rimLight);
 
-    const specularFill = new THREE.PointLight(0xd946ef, 2.0, 10); // Fuchsia fill
+    const specularFill = new THREE.PointLight(0xffffff, 2.0, 10);
     specularFill.position.set(0, -2, 2.5);
     scene.add(specularFill);
 
@@ -62,11 +62,11 @@ export function ThreeTitaniumOrb({
     const rootGroup = new THREE.Group();
     scene.add(rootGroup);
 
-    // --- A. Central Pastel Pink Sphere ---
+    // --- A. Central Telkom Maroon Sphere ---
     const sphereGeo = new THREE.SphereGeometry(1.05, 64, 64);
     const sphereMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0xf472b6),   // Pink-400
-      emissive: new THREE.Color(0x9d174d), // Pink-800 emissive
+      color: new THREE.Color(0xb6252a),   // Telkom Maroon
+      emissive: new THREE.Color(0x7a1418), // Deep maroon emissive
       emissiveIntensity: 0.40,
       metalness: 0.85,
       roughness: 0.16,
@@ -78,25 +78,25 @@ export function ThreeTitaniumOrb({
     const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
     rootGroup.add(coreSphere);
 
-    // --- B. Inner Fuchsia Wireframe Hologram ---
+    // --- B. Inner Crisp White Wireframe Hologram ---
     const innerWireGeo = new THREE.IcosahedronGeometry(1.07, 2);
     const innerWireMat = new THREE.MeshBasicMaterial({
-      color: 0xfbcfe8,   // Pink-200
+      color: 0xffffff,
       wireframe: true,
       transparent: true,
-      opacity: 0.30,
+      opacity: 0.40,
     });
     const innerWire = new THREE.Mesh(innerWireGeo, innerWireMat);
     rootGroup.add(innerWire);
 
-    // --- C. Rose Orbital Rings (VisionOS Gyro) ---
+    // --- C. Telkom Red & Titanium Rings ---
     const ringMat1 = new THREE.MeshStandardMaterial({
-      color: 0xec4899,   // Pink-500
+      color: 0xed1e28,   // Telkom Red
       metalness: 0.98,
       roughness: 0.08,
     });
     const ringMat2 = new THREE.MeshStandardMaterial({
-      color: 0xd946ef,   // Fuchsia-500
+      color: 0xffffff,   // Crisp White
       metalness: 0.95,
       roughness: 0.15,
     });
@@ -112,7 +112,7 @@ export function ThreeTitaniumOrb({
     ring2.rotation.x = -Math.PI / 6;
     rootGroup.add(ring2);
 
-    // --- D. Floating Solar Gold Dust Particles ---
+    // --- D. Floating Ruby-White Dust Particles ---
     const particleCount = 85;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
@@ -129,7 +129,7 @@ export function ThreeTitaniumOrb({
     particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
     const particleMat = new THREE.PointsMaterial({
-      color: 0xfbcfe8,  // Pink-200 dust
+      color: 0xffe4e6,  // Ruby-white dust
       size: 0.028,
       transparent: true,
       opacity: 0.75,
@@ -238,93 +238,44 @@ export function ThreeTitaniumOrb({
       renderer.render(scene, camera);
     };
 
-    // 6. Dynamic Theme Palette Adaptation
+    // 6. Dynamic Theme Palette Adaptation (2 Official Themes: Light Merah Putih & Dark Mode)
     const applyOrbTheme = (themeName: string) => {
-      if (themeName === "maroon") {
-        sphereMat.color.setHex(0x881337);      // Rich deep velvet rose-wine
-        sphereMat.emissive.setHex(0x4c0519);   // Deep wine glow
-        innerWireMat.color.setHex(0xffffff);   // Pure white holographic wireframe
-        innerWireMat.opacity = 0.45;
-        ringMat1.color.setHex(0xe11d48);       // Ruby crimson ring
-        ringMat2.color.setHex(0xffffff);       // Crisp white ring
-        particleMat.color.setHex(0xffd1dc);    // Rose-white stardust
-        keyLight.color.setHex(0xffb1c1);
-        rimLight.color.setHex(0xe11d48);
-        specularFill.color.setHex(0xffffff);
-      } else if (themeName === "green") {
-        sphereMat.color.setHex(0x22c55e);      // Duolingo fresh emerald green
-        sphereMat.emissive.setHex(0x064e3b);   // Deep forest green glow
-        innerWireMat.color.setHex(0xbbf7d0);   // Mint lime wireframe
+      const isDark =
+        themeName === "dark" ||
+        document.documentElement.classList.contains("dark") ||
+        document.documentElement.getAttribute("data-theme") === "dark";
+
+      if (isDark) {
+        // --- TEMA 2: DARK MODE (Slate & Apple Red) ---
+        sphereMat.color.setHex(0x1c1c1e);      // Apple dark slate
+        sphereMat.emissive.setHex(0x2c2c2e);   // Elevated surface glow
+        innerWireMat.color.setHex(0xff453a);   // Apple Red hologram wireframe
         innerWireMat.opacity = 0.35;
-        ringMat1.color.setHex(0x16a34a);       // Leaf green ring
-        ringMat2.color.setHex(0x4ade80);       // Spring lime ring
-        particleMat.color.setHex(0xdcfce7);    // Mint stardust
-        keyLight.color.setHex(0x86efac);
-        rimLight.color.setHex(0x16a34a);
-        specularFill.color.setHex(0xffffff);
-      } else if (themeName === "blue") {
-        sphereMat.color.setHex(0x0071e3);      // Apple Pacific Blue
-        sphereMat.emissive.setHex(0x002855);   // Deep royal navy glow
-        innerWireMat.color.setHex(0xbfe0ff);   // Icy azure wireframe
-        innerWireMat.opacity = 0.35;
-        ringMat1.color.setHex(0x2997ff);       // Apple iOS blue ring
-        ringMat2.color.setHex(0xffffff);       // Crisp white ring
-        particleMat.color.setHex(0xd0e8ff);    // Sapphire stardust
-        keyLight.color.setHex(0x99ccff);
-        rimLight.color.setHex(0x0071e3);
-        specularFill.color.setHex(0xffffff);
-      } else if (themeName === "telkom") {
-        sphereMat.color.setHex(0xd71920);      // Telkom Red
-        sphereMat.emissive.setHex(0x5c060a);   // Deep crimson glow
-        innerWireMat.color.setHex(0xffffff);   // Pure white wireframe
-        innerWireMat.opacity = 0.35;
-        ringMat1.color.setHex(0xb91c1c);       // Crimson red ring
-        ringMat2.color.setHex(0xffffff);       // Pure white ring
-        particleMat.color.setHex(0xffd1d5);    // Ruby-white stardust
-        keyLight.color.setHex(0xffaaaa);
-        rimLight.color.setHex(0xd71920);
-        specularFill.color.setHex(0xffffff);
-      } else if (themeName === "emerald") {
-        sphereMat.color.setHex(0x0d4a38);      // Luxury Emerald
-        sphereMat.emissive.setHex(0x042118);   // Velvet forest glow
-        innerWireMat.color.setHex(0xfbf9f4);   // Warm ivory wireframe
-        innerWireMat.opacity = 0.35;
-        ringMat1.color.setHex(0x15664e);       // Rich emerald ring
-        ringMat2.color.setHex(0xf0ebe1);       // Ivory champagne ring
-        particleMat.color.setHex(0xd8ece3);    // Emerald-ivory stardust
-        keyLight.color.setHex(0xc2e2d6);
-        rimLight.color.setHex(0x15664e);
-        specularFill.color.setHex(0xffffff);
-      } else if (themeName === "dark") {
-        sphereMat.color.setHex(0x1e293b);      // Titanium obsidian
-        sphereMat.emissive.setHex(0x0f172a);
-        innerWireMat.color.setHex(0x38bdf8);   // Icy blue
-        innerWireMat.opacity = 0.35;
-        ringMat1.color.setHex(0x38bdf8);
-        ringMat2.color.setHex(0x818cf8);
-        particleMat.color.setHex(0xe2e8f0);
-        keyLight.color.setHex(0x94a3b8);
-        rimLight.color.setHex(0x38bdf8);
-        specularFill.color.setHex(0x818cf8);
+        ringMat1.color.setHex(0xff453a);       // Apple Red primary ring
+        ringMat2.color.setHex(0xc9414a);       // Dark maroon secondary ring
+        particleMat.color.setHex(0xf2f2f7);    // Apple silver stardust
+        keyLight.color.setHex(0xff6961);
+        rimLight.color.setHex(0xff453a);
+        specularFill.color.setHex(0xc9414a);
       } else {
-        // Pastel Pink (Default)
-        sphereMat.color.setHex(0xf472b6);
-        sphereMat.emissive.setHex(0x9d174d);
-        innerWireMat.color.setHex(0xfbcfe8);
-        innerWireMat.opacity = 0.30;
-        ringMat1.color.setHex(0xec4899);
-        ringMat2.color.setHex(0xd946ef);
-        particleMat.color.setHex(0xfbcfe8);
-        keyLight.color.setHex(0xf472b6);
-        rimLight.color.setHex(0xe879a0);
-        specularFill.color.setHex(0xd946ef);
+        // --- TEMA 1: LIGHT MODE "MERAH PUTIH" (Official Telkom University) ---
+        sphereMat.color.setHex(0xb6252a);      // Official Telkom Maroon
+        sphereMat.emissive.setHex(0x7a1418);   // Deep maroon glow
+        innerWireMat.color.setHex(0xffffff);   // Crisp pure white wireframe
+        innerWireMat.opacity = 0.40;
+        ringMat1.color.setHex(0xed1e28);       // Official Telkom Red ring
+        ringMat2.color.setHex(0xffffff);       // Crisp white ring
+        particleMat.color.setHex(0xffe4e6);    // Pearl-ruby stardust
+        keyLight.color.setHex(0xffb3b8);
+        rimLight.color.setHex(0xed1e28);
+        specularFill.color.setHex(0xffffff);
       }
     };
 
     // Initial check
     const currentSavedTheme =
       document.documentElement.getAttribute("data-theme") ||
-      (document.documentElement.classList.contains("dark") ? "dark" : "pink");
+      (document.documentElement.classList.contains("dark") ? "dark" : "light");
     applyOrbTheme(currentSavedTheme);
 
     const handleThemeEvent = (e: Event) => {

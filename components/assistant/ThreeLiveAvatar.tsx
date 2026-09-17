@@ -68,7 +68,7 @@ export function ThreeLiveAvatar({
     rimLight.position.set(-3, 1, -2);
     scene.add(rimLight);
 
-    const fillLight = new THREE.PointLight(0xf472b6, 1.5, 10); // Pink Fill
+    const fillLight = new THREE.PointLight(0xffb3b8, 1.5, 10); // Red Tint Fill
     fillLight.position.set(0, -1, 2);
     scene.add(fillLight);
 

@@ -108,7 +108,7 @@ export function LiveAnimeAvatar({
     thinking: {
       text: "Aiko • Berpikir...",
       color: "bg-purple-500/15 text-purple-600 dark:text-purple-400 border-purple-500/30",
-      ringColor: "from-purple-500/40 via-pink-500/40 to-blue-500/40",
+      ringColor: "from-ios-accent/40 via-ios-accentSecondary/40 to-ios-accent/40",
       badgeIcon: Radio,
     },
     talking: {

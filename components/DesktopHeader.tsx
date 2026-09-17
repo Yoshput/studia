@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
-import { Sparkles, Clock, Calendar, Shield, Search } from "lucide-react";
-import { formatDateIndo } from "@/lib/utils";
+import { Sparkles, Clock } from "lucide-react";
+import { TelkomLogo } from "./TelkomLogo";
 
 interface DesktopHeaderProps {
   onOpenAssistant?: () => void;
@@ -65,18 +65,17 @@ export function DesktopHeader({
         </p>
       </div>
 
-      {/* Right: Live Clock, Status, & Aiko Trigger */}
-      <div className="flex items-center gap-3">
+      {/* Right: Live Clock, Official Telkom University Logo & Brand, & Aiko Trigger */}
+      <div className="flex items-center gap-3.5">
         {/* Live Clock WIB */}
-        <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ios-surfaceSecondary border border-ios-border text-[11.5px] font-medium text-ios-textSecondary">
+        <div className="hidden xl:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-ios-surfaceSecondary border border-ios-border text-[11.5px] font-medium text-ios-textSecondary">
           <Clock className="w-3.5 h-3.5 text-ios-accent" />
           <span>{timeStr}</span>
         </div>
 
-        {/* Institutional Badge */}
-        <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-ios-accent/10 border border-ios-accent/20 text-[11px] font-semibold text-ios-accent">
-          <Shield className="w-3.5 h-3.5" />
-          <span>Telkom University Purwokerto</span>
+        {/* Official Telkom University Badge with Logo in Top Right */}
+        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-ios-surfaceSecondary border border-ios-border/80 shadow-sm transition-all hover:border-ios-accent/30">
+          <TelkomLogo size={22} withText={true} subtext="Purwokerto" />
         </div>
 
         {/* Aiko AI Assistant Quick Button */}
@@ -84,7 +83,7 @@ export function DesktopHeader({
           <button
             type="button"
             onClick={onOpenAssistant}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-btn bg-ios-accent text-white hover:bg-ios-accent/90 text-[12px] font-semibold transition-all shadow-sm active:scale-95"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-btn bg-ios-accent text-white hover:opacity-90 text-[12px] font-semibold transition-all shadow-sm active:scale-95"
             title="Buka Chat Asisten AI Aiko"
           >
             <Sparkles className="w-3.5 h-3.5" />

@@ -137,7 +137,7 @@ export function DesktopSidebar({
       {/* 1. Brand Logo & System Status */}
       <div className="h-16 px-5 flex items-center justify-between border-b border-ios-border/70">
         <Link href="/dashboard" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-ios-accent to-purple-600 flex items-center justify-center text-white font-black text-[16px] shadow-sm group-hover:scale-105 transition-transform">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-ios-accent to-ios-accentSecondary flex items-center justify-center text-white font-black text-[16px] shadow-sm group-hover:scale-105 transition-transform">
             S
           </div>
           <div>
@@ -157,7 +157,7 @@ export function DesktopSidebar({
       {/* 2. Student Identity Mini Banner */}
       <div className="p-3.5 mx-3 mt-3 rounded-2xl bg-ios-surfaceSecondary/60 border border-ios-border/70">
         <div className="flex items-center gap-2.5">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-ios-accent to-blue-600 flex items-center justify-center text-white font-bold text-[14px] shadow-inner flex-shrink-0 overflow-hidden border border-ios-border">
+          <div className="w-10 h-10 rounded-full bg-ios-surface border border-ios-border flex items-center justify-center text-ios-accent font-bold text-[14px] shadow-sm flex-shrink-0 overflow-hidden">
             {avatarUrl ? (
               <img
                 src={avatarUrl}

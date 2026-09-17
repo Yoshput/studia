@@ -14,45 +14,44 @@ const config: Config = {
           bg: "var(--bg)",
           surface: "var(--surface)",
           surfaceSecondary: "var(--surface-secondary)",
+          surfaceTertiary: "var(--surface-tertiary)",
           border: "var(--border)",
+          borderSubtle: "var(--border-subtle)",
           textPrimary: "var(--text-primary)",
           textSecondary: "var(--text-secondary)",
           accent: "var(--accent)",
+          accentSecondary: "var(--accent-secondary)",
           accentDark: "var(--accent-dark)",
           accentLight: "var(--accent-light)",
-          /* Pastel Pink theme tokens */
-          blush: "#E879A0",       /* Main pastel pink */
-          rose: "#F472B6",        /* Pink-400 glow */
-          fuchsia: "#D946EF",     /* Fuchsia accent */
-          petal: "#FBCFE8",       /* Pink-200 subtle */
-          maroon: "#991B1B",      /* Maroon theme accent */
-          /* Neutrals */
-          titanium: "#8E8E93",
-          silver: "#D1D1D6",
-          spaceBlack: "#09090B",
-          platinum: "#F5F5F7",
-          success: "#10B981",
-          warning: "#F59E0B",
-          danger: "#FF3B30",
+          /* Official Telkom Colors */
+          telkomMaroon: "#B6252A",
+          telkomRed: "#ED1E28",
+          /* Semantic Apple HIG */
+          success: "var(--success)",
+          warning: "var(--warning)",
+          danger: "var(--danger)",
         },
       },
       borderRadius: {
-        card: "16px",
+        card: "18px",
         btn: "12px",
+        input: "10px",
         sheet: "20px",
       },
       boxShadow: {
-        ios: "0 1px 2px rgba(0, 0, 0, 0.04)",
-        iosHover: "0 4px 12px rgba(0, 0, 0, 0.06)",
+        ios: "0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 14px rgba(0, 0, 0, 0.03)",
+        iosHover: "0 6px 20px rgba(0, 0, 0, 0.07)",
         iosSheet: "0 -4px 24px rgba(0, 0, 0, 0.12)",
       },
       fontFamily: {
         sans: [
-          "Inter",
           "-apple-system",
           "BlinkMacSystemFont",
-          "Segoe UI",
-          "Roboto",
+          "SF Pro Text",
+          "SF Pro Display",
+          "Inter",
+          "Helvetica Neue",
+          "Arial",
           "sans-serif",
         ],
       },

@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { MascotIcon } from "@/components/assistant/MascotIcon";
+import { TelkomLogo } from "@/components/TelkomLogo";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
 
 export default function LoginPage() {
@@ -49,15 +51,22 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen flex flex-col justify-center items-center px-4 bg-ios-bg text-ios-textPrimary transition-colors duration-200">
       <div className="w-full max-w-sm">
-        {/* Back Link */}
-        <div className="mb-4">
+        {/* Top Header: Back Link & Telkom Logo + ThemeToggle */}
+        <div className="mb-4 flex items-center justify-between">
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 text-[13px] font-medium text-ios-textSecondary hover:text-ios-accent transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Kembali ke Beranda</span>
+            <span>Beranda</span>
           </Link>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <div className="px-2.5 py-1 rounded-full bg-ios-surface border border-ios-border flex items-center gap-1.5 shadow-sm">
+              <TelkomLogo size={20} withText={true} subtext="Purwokerto" />
+            </div>
+          </div>
         </div>
 
         {/* App Title & Icon */}

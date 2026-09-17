@@ -31,7 +31,7 @@ export const viewport: Viewport = {
   maximumScale: 1,
   userScalable: false,
   viewportFit: "cover",
-  themeColor: "#007AFF",
+  themeColor: "#B6252A",
 };
 
 export default function RootLayout({
@@ -51,10 +51,13 @@ export default function RootLayout({
             __html: `
               try {
                 const t = localStorage.getItem('semestr-theme');
-                if (t === 'dark') {
+                const isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                if (isDark) {
                   document.documentElement.classList.add('dark');
+                  document.documentElement.setAttribute('data-theme', 'dark');
                 } else {
                   document.documentElement.classList.remove('dark');
+                  document.documentElement.removeAttribute('data-theme');
                 }
               } catch (e) {}
             `,

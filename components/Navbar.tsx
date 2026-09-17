@@ -7,6 +7,7 @@ import { useSession } from "next-auth/react";
 import { ThemeToggle } from "./ThemeToggle";
 import { Sparkles, Download } from "lucide-react";
 import { usePWAInstall } from "@/components/pwa/PWAInstallContext";
+import { TelkomLogo } from "./TelkomLogo";
 
 interface NavbarProps {
   onOpenAssistant?: () => void;
@@ -26,7 +27,6 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 5" }: NavbarP
   const userIdentifier = session?.user?.email || (session?.user as { id?: string })?.id;
 
   useEffect(() => {
-    // Immediately purge legacy global avatar cache that could retain previous user photos
     try {
       localStorage.removeItem("semestr-user-avatar");
     } catch {}
@@ -93,12 +93,12 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 5" }: NavbarP
           <span className="text-[19px] font-bold text-ios-textPrimary tracking-tight">
             Semestr
           </span>
-          <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-ios-surfaceSecondary text-ios-textSecondary border border-ios-border">
+          <span className="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-ios-surfaceSecondary text-ios-textSecondary border border-ios-border">
             {semesterName}
           </span>
         </Link>
 
-        {/* Action Controls */}
+        {/* Action Controls & Telkom Logo */}
         <div className="flex items-center gap-2">
           {onOpenAssistant && (
             <button
@@ -126,9 +126,14 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 5" }: NavbarP
 
           <ThemeToggle />
 
+          {/* Telkom University Emblem */}
+          <div className="p-1 rounded-lg bg-ios-surfaceSecondary border border-ios-border flex items-center justify-center">
+            <TelkomLogo size={20} />
+          </div>
+
           <Link
             href="/profil"
-            className="w-8 h-8 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-accent/15 flex-shrink-0 active:scale-95 transition-transform"
+            className="w-8 h-8 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-accent/15 flex-shrink-0 active:scale-95 transition-transform ml-0.5"
             title="Profil Mahasiswa"
           >
             {avatarUrl ? (
