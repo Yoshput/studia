@@ -16,10 +16,12 @@ import {
   LogOut,
   ChevronRight,
   ShieldCheck,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { signOut } from "next-auth/react";
+import { usePWAInstall } from "@/components/pwa/PWAInstallContext";
 
 interface DesktopSidebarProps {
   semesterName?: string;
@@ -56,6 +58,7 @@ export function DesktopSidebar({
   onOpenLiveVoice,
 }: DesktopSidebarProps) {
   const pathname = usePathname();
+  const { isInstallable, promptInstall } = usePWAInstall();
   const [avatarUrl, setAvatarUrl] = useState<string>("/avatars/yossika.jpg");
   const [studentName, setStudentName] = useState<string>("Yossika Putra E.");
   const [studentNim, setStudentNim] = useState<string>("103112430026");
@@ -229,6 +232,23 @@ export function DesktopSidebar({
             </button>
           )}
         </div>
+
+        {/* PWA Install Quick Action */}
+        {isInstallable && (
+          <button
+            type="button"
+            onClick={promptInstall}
+            className="w-full py-2 px-3 rounded-2xl bg-ios-accent/10 hover:bg-ios-accent/20 border border-ios-accent/30 text-ios-accent text-[11.5px] font-bold flex items-center justify-between transition-all active:scale-[0.98] mt-2 group shadow-sm"
+          >
+            <div className="flex items-center gap-2">
+              <Download className="w-3.5 h-3.5 group-hover:translate-y-0.5 transition-transform" />
+              <span>Install Aplikasi</span>
+            </div>
+            <span className="text-[9.5px] px-1.5 py-0.5 rounded bg-ios-accent text-white font-bold uppercase tracking-wider">
+              PWA
+            </span>
+          </button>
+        )}
       </div>
 
       {/* 5. Footer: Theme Toggle & Logout */}

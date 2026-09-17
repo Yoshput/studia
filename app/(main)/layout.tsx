@@ -4,6 +4,7 @@ import { DesktopSidebar } from "@/components/DesktopSidebar";
 import { DesktopHeader } from "@/components/DesktopHeader";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { MascotWidget } from "@/components/assistant/MascotWidget";
+import { ReminderOverlay } from "@/components/reminders/ReminderOverlay";
 import { db } from "@/lib/db";
 import { getDaysRemaining } from "@/lib/utils";
 
@@ -74,6 +75,9 @@ export default async function MainLayout({
         greetingMessage={greetingMessage}
         hasUrgentDeadline={hasUrgentDeadline}
       />
+
+      {/* In-App Floating Reminders for Deadlines & Classes */}
+      <ReminderOverlay />
 
       {/* Mobile Bottom Tab Bar (Hidden on Desktop) */}
       <BottomTabBar />

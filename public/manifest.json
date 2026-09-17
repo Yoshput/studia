@@ -2,21 +2,59 @@
   "name": "Semestr — Academic OS",
   "short_name": "Semestr",
   "description": "Daily Academic Companion Mahasiswa Informatika Telkom University Purwokerto",
+  "id": "/dashboard",
   "start_url": "/dashboard",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#0F172A",
+  "background_color": "#0B0F19",
   "theme_color": "#007AFF",
   "orientation": "portrait-primary",
   "icons": [
     {
       "src": "/icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/icons/icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icons/apple-touch-icon.png",
+      "sizes": "180x180",
       "type": "image/png"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Jadwal Kuliah",
+      "url": "/jadwal",
+      "description": "Cek jadwal kuliah semester ini"
+    },
+    {
+      "name": "Tugas & Deadline",
+      "url": "/tugas",
+      "description": "Pantau tugas dan batas pengumpulan"
+    },
+    {
+      "name": "Presensi Wajah",
+      "url": "/absen",
+      "description": "Presensi kelas cepat"
     }
   ]
 }

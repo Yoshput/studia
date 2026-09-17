@@ -15,9 +15,10 @@ model User {
   nim           String?    @default("103112430026")
   kelas         String?    @default("S1IF-12-06")
   prodi         String?    @default("S1 Teknik Informatika - Kampus Purwokerto")
-  avatar_url    String?    @db.LongText
-  presensi      Presensi[]
-  createdAt     DateTime   @default(now())
+  avatar_url         String?            @db.LongText
+  presensi           Presensi[]
+  push_subscriptions PushSubscription[]
+  createdAt          DateTime           @default(now())
   updatedAt     DateTime   @updatedAt
 
   @@map("users")
@@ -148,4 +149,17 @@ model Presensi {
   createdAt    DateTime @default(now())
 
   @@map("presensi")
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  user_id   String
+  user      User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  endpoint  String   @db.Text
+  p256dh    String   @db.Text
+  auth      String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("push_subscriptions")
 }

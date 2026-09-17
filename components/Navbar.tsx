@@ -4,7 +4,8 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "./ThemeToggle";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Download } from "lucide-react";
+import { usePWAInstall } from "@/components/pwa/PWAInstallContext";
 
 interface NavbarProps {
   onOpenAssistant?: () => void;
@@ -13,6 +14,7 @@ interface NavbarProps {
 
 export function Navbar({ onOpenAssistant, semesterName = "Semester 4" }: NavbarProps) {
   const pathname = usePathname();
+  const { isInstallable, promptInstall } = usePWAInstall();
 
   if (pathname === "/login") return null;
 
@@ -40,6 +42,18 @@ export function Navbar({ onOpenAssistant, semesterName = "Semester 4" }: NavbarP
             >
               <Sparkles className="w-3.5 h-3.5 stroke-[2.2]" />
               <span className="hidden sm:inline">Asisten</span>
+            </button>
+          )}
+
+          {isInstallable && (
+            <button
+              type="button"
+              onClick={promptInstall}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-btn bg-ios-accent/15 hover:bg-ios-accent/25 border border-ios-accent/30 text-ios-accent text-[12px] font-bold transition-all shadow-sm active:scale-95 min-h-[34px]"
+              title="Install Aplikasi"
+            >
+              <Download className="w-3.5 h-3.5 stroke-[2.2]" />
+              <span>Install</span>
             </button>
           )}
 

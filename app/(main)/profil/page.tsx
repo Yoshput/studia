@@ -22,6 +22,7 @@ import {
   ExternalLink,
   CheckCircle2,
   Loader2,
+  Bell,
 } from "lucide-react";
 
 interface UserProfile {
@@ -97,7 +98,150 @@ export default function ProfilPage() {
     if (savedVoice === "true") {
       setVoiceEnabled(true);
     }
+
+    if (typeof window !== "undefined" && "Notification" in window && "serviceWorker" in navigator) {
+      if (Notification.permission === "granted") {
+        navigator.serviceWorker.ready.then((reg) => {
+          reg.pushManager.getSubscription().then((sub) => {
+            if (sub) {
+              setPushEnabled(true);
+            }
+          });
+        });
+      }
+    }
   }, []);
+
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [isSubscribingPush, setIsSubscribingPush] = useState(false);
+  const [isTestingPush, setIsTestingPush] = useState(false);
+  const [pushMessage, setPushMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
+
+  function urlBase64ToUint8Array(base64String: string) {
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/\-/g, "+").replace(/_/g, "/");
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  const handleTogglePush = async (checked: boolean) => {
+    setPushMessage(null);
+
+    if (typeof window === "undefined" || !("Notification" in window) || !("serviceWorker" in navigator)) {
+      setPushMessage({
+        text: "Peramban ini tidak mendukung Web Push Notification.",
+        type: "error",
+      });
+      return;
+    }
+
+    setIsSubscribingPush(true);
+
+    try {
+      if (checked) {
+        const permission = await Notification.requestPermission();
+        if (permission !== "granted") {
+          setPushMessage({
+            text: "Izin notifikasi belum diizinkan. Silakan aktifkan di ikon setelan gembok browser.",
+            type: "error",
+          });
+          setPushEnabled(false);
+          return;
+        }
+
+        const reg = await navigator.serviceWorker.ready;
+        const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+        if (!vapidPublicKey) {
+          throw new Error("Kunci VAPID public key tidak ditemukan.");
+        }
+
+        let sub = await reg.pushManager.getSubscription();
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+          });
+        }
+
+        const subJson = sub.toJSON();
+        const res = await fetch("/api/notifications/subscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            endpoint: sub.endpoint,
+            keys: subJson.keys,
+          }),
+        });
+
+        if (res.ok) {
+          setPushEnabled(true);
+          setPushMessage({
+            text: "Notifikasi pengingat aktif! Perangkat ini akan menerima pemberitahuan jadwal & tugas.",
+            type: "success",
+          });
+        } else {
+          const errData = await res.json();
+          throw new Error(errData.error || "Gagal menyimpan langganan notifikasi");
+        }
+      } else {
+        const reg = await navigator.serviceWorker.ready;
+        const sub = await reg.pushManager.getSubscription();
+        if (sub) {
+          await fetch("/api/notifications/subscribe", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint: sub.endpoint }),
+          });
+          await sub.unsubscribe();
+        }
+        setPushEnabled(false);
+        setPushMessage({
+          text: "Notifikasi pengingat telah dinonaktifkan.",
+          type: "success",
+        });
+      }
+    } catch (err: any) {
+      console.error("Push toggle error:", err);
+      setPushMessage({
+        text: err?.message || "Terjadi kesalahan saat mengatur notifikasi.",
+        type: "error",
+      });
+      setPushEnabled(false);
+    } finally {
+      setIsSubscribingPush(false);
+    }
+  };
+
+  const handleSendTestPush = async () => {
+    setIsTestingPush(true);
+    setPushMessage(null);
+    try {
+      const res = await fetch("/api/notifications/test", { method: "POST" });
+      const data = await res.json();
+      if (res.ok) {
+        setPushMessage({
+          text: data.message || "Notifikasi uji coba berhasil dikirim ke perangkat Anda!",
+          type: "success",
+        });
+      } else {
+        setPushMessage({
+          text: data.error || "Gagal mengirim notifikasi uji coba.",
+          type: "error",
+        });
+      }
+    } catch (err: any) {
+      setPushMessage({
+        text: "Terjadi kesalahan saat memicu notifikasi uji coba.",
+        type: "error",
+      });
+    } finally {
+      setIsTestingPush(false);
+    }
+  };
 
   const handleToggleVoice = (checked: boolean) => {
     setVoiceEnabled(checked);
@@ -442,6 +586,45 @@ export default function ProfilPage() {
               label="Suara Asisten AI"
               description="Bacakan sapaan dan respons asisten menggunakan Web Speech API"
             />
+          </div>
+
+          <div className="pt-3 border-t border-ios-border space-y-2.5">
+            <Toggle
+              checked={pushEnabled}
+              onChange={handleTogglePush}
+              disabled={isSubscribingPush}
+              label="Notifikasi Push Pengingat"
+              description="Pemberitahuan resmi OS untuk deadline tugas & 15 menit sebelum kuliah"
+            />
+
+            {pushMessage && (
+              <p
+                className={`text-[12px] font-medium px-1 ${
+                  pushMessage.type === "success" ? "text-ios-success" : "text-ios-danger"
+                }`}
+              >
+                {pushMessage.text}
+              </p>
+            )}
+
+            {pushEnabled && (
+              <div className="pt-2 flex items-center justify-between border-t border-ios-border/50">
+                <span className="text-[11.5px] text-ios-textSecondary">
+                  Perangkat terhubung ke Web Push
+                </span>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={handleSendTestPush}
+                  isLoading={isTestingPush}
+                  className="gap-1.5 text-[11.5px] py-1 px-2.5 rounded-xl font-medium"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>Kirim Notifikasi Uji Coba</span>
+                </Button>
+              </div>
+            )}
           </div>
         </Card>
       </div>
