@@ -18,13 +18,21 @@ const config: Config = {
           textPrimary: "var(--text-primary)",
           textSecondary: "var(--text-secondary)",
           accent: "var(--accent)",
-          accentCyan: "var(--accent-cyan)",
+          accentDark: "var(--accent-dark)",
+          accentLight: "var(--accent-light)",
+          /* Pastel Pink theme tokens */
+          blush: "#E879A0",       /* Main pastel pink */
+          rose: "#F472B6",        /* Pink-400 glow */
+          fuchsia: "#D946EF",     /* Fuchsia accent */
+          petal: "#FBCFE8",       /* Pink-200 subtle */
+          maroon: "#991B1B",      /* Maroon theme accent */
+          /* Neutrals */
           titanium: "#8E8E93",
           silver: "#D1D1D6",
           spaceBlack: "#09090B",
           platinum: "#F5F5F7",
-          success: "#34C759",
-          warning: "#FF9F0A",
+          success: "#10B981",
+          warning: "#F59E0B",
           danger: "#FF3B30",
         },
       },

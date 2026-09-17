@@ -1,41 +1,65 @@
-@tailwind base;
+﻿@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* --- PASTEL PINK (DEFAULT) --- */
 :root {
-  --bg: #F5F5F7;
+  --bg: #FDF5F9;
   --surface: #FFFFFF;
-  --surface-secondary: #F0F0F2;
-  --border: #E5E5EA;
-  --text-primary: #1D1D1F;
-  --text-secondary: #86868B;
-  --accent: #1D1D1F; /* Apple Space Black / Graphite */
-  --accent-cyan: #71717A; /* Titanium Slate */
-  --accent-silver: #A1A1AA;
-  --success: #1D1D1F;
-  --warning: #71717A;
-  --danger: #E11D48;
+  --surface-secondary: #FAF0F5;
+  --border: #F0DAEA;
+  --text-primary: #1A0A12;
+  --text-secondary: #7A5068;
+  --accent: #E879A0;
+  --accent-light: #FBCFE8;
+  --accent-dark: #BE185D;
+  --accent-subtle: rgba(232, 121, 160, 0.09);
+  --accent-glow: rgba(232, 121, 160, 0.22);
+  --accent-border: rgba(232, 121, 160, 0.22);
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
 }
 
-.dark {
-  --bg: #000000; /* Apple Pure OLED Black */
-  --surface: #121214; /* Deep Obsidian */
-  --surface-secondary: #1C1C1E; /* Frosted Graphite */
-  --border: rgba(255, 255, 255, 0.12); /* Hairline Silver Laser */
-  --text-primary: #F5F5F7; /* Pure Platinum */
-  --text-secondary: #8E8E93; /* Brushed Silver */
-  --accent: #FFFFFF; /* High-contrast Titanium White */
-  --accent-cyan: #D4D4D8; /* Silver Titanium */
-  --accent-silver: #A1A1AA;
-  --success: #E4E4E7;
-  --warning: #A1A1AA;
-  --danger: #F43F5E;
+/* --- MAROON THEME --- */
+[data-theme="maroon"] {
+  --bg: #FDF5F5;
+  --surface: #FFFFFF;
+  --surface-secondary: #FAF0F0;
+  --border: #F0DADA;
+  --text-primary: #1A0A0A;
+  --text-secondary: #7A5050;
+  --accent: #991B1B;
+  --accent-light: #FCA5A5;
+  --accent-dark: #7F1D1D;
+  --accent-subtle: rgba(153, 27, 27, 0.08);
+  --accent-glow: rgba(153, 27, 27, 0.18);
+  --accent-border: rgba(153, 27, 27, 0.20);
 }
 
-
-* {
-  box-sizing: border-box;
+/* --- DARK MODE --- */
+.dark,
+[data-theme="dark"] {
+  --bg: #0D0810;
+  --surface: #1A0F1E;
+  --surface-secondary: #231429;
+  --border: rgba(232, 121, 160, 0.15);
+  --text-primary: #FDF0F7;
+  --text-secondary: #B08099;
+  --accent: #F472B6;
+  --accent-light: #FBCFE8;
+  --accent-dark: #EC4899;
+  --accent-subtle: rgba(244, 114, 182, 0.12);
+  --accent-glow: rgba(244, 114, 182, 0.25);
+  --accent-border: rgba(244, 114, 182, 0.22);
+  --success: #34D399;
+  --warning: #FBBF24;
+  --danger: #F87171;
 }
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
 
 body {
   background-color: var(--bg);
@@ -46,80 +70,75 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Custom subtle scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 9999px; }
+.dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); }
 
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
-  border-radius: 9999px;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* Glassmorphic navigation effect */
 .glass-nav {
-  background-color: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(255,255,255,0.82);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
-
 .dark .glass-nav {
-  background-color: rgba(14, 21, 36, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  background-color: rgba(13,8,16,0.82);
+  backdrop-filter: blur(22px);
+  -webkit-backdrop-filter: blur(22px);
 }
 
-/* Biometric laser scanline animation */
+/* Accent utility classes */
+.text-accent { color: var(--accent) !important; }
+.text-accent-dark { color: var(--accent-dark) !important; }
+.text-accent-light { color: var(--accent-light) !important; }
+.bg-accent { background-color: var(--accent) !important; }
+.bg-accent-subtle { background-color: var(--accent-subtle) !important; }
+.border-accent { border-color: var(--accent-border) !important; }
+.shadow-accent { box-shadow: 0 8px 24px var(--accent-glow) !important; }
+
+.btn-accent {
+  background: linear-gradient(135deg, var(--accent-dark), var(--accent));
+  color: white;
+  transition: opacity 0.2s ease, transform 0.15s ease;
+}
+.btn-accent:hover { opacity: 0.9; }
+.btn-accent:active { transform: scale(0.97); }
+
+/* Maroon overrides for pink-* Tailwind classes */
+[data-theme="maroon"] .from-pink-600 { --tw-gradient-from: #9B1B1B var(--tw-gradient-from-position); }
+[data-theme="maroon"] .from-pink-500 { --tw-gradient-from: #B91C1C var(--tw-gradient-from-position); }
+[data-theme="maroon"] .to-rose-500 { --tw-gradient-to: #991B1B var(--tw-gradient-to-position); }
+[data-theme="maroon"] .to-rose-400 { --tw-gradient-to: #B91C1C var(--tw-gradient-to-position); }
+[data-theme="maroon"] .via-pink-500 { --tw-gradient-via: #C41E1E var(--tw-gradient-via-position); }
+[data-theme="maroon"] .text-pink-600 { color: #991B1B; }
+[data-theme="maroon"] .text-pink-800 { color: #7F1D1D; }
+[data-theme="maroon"] .text-pink-400 { color: #B91C1C; }
+[data-theme="maroon"] .text-pink-500 { color: #991B1B; }
+[data-theme="maroon"] .text-pink-200 { color: #FCA5A5; }
+[data-theme="maroon"] .text-pink-300 { color: #FCA5A5; }
+[data-theme="maroon"] .bg-pink-500 { background-color: #991B1B; }
+[data-theme="maroon"] .border-pink-400 { border-color: #B91C1C; }
+[data-theme="maroon"] .hover\:text-pink-600:hover { color: #991B1B; }
+[data-theme="maroon"] .accent-pink-500 { accent-color: #991B1B; }
+[data-theme="maroon"] .shadow-pink-500\/20 { --tw-shadow-color: rgba(153,27,27,0.20); }
+[data-theme="maroon"] .shadow-pink-500\/25 { --tw-shadow-color: rgba(153,27,27,0.25); }
+
+/* Animations */
 @keyframes laserScan {
-  0% {
-    top: 5%;
-    opacity: 0.2;
-  }
-  50% {
-    top: 90%;
-    opacity: 1;
-  }
-  100% {
-    top: 5%;
-    opacity: 0.2;
-  }
+  0%   { top: 5%; opacity: 0.2; }
+  50%  { top: 90%; opacity: 1; }
+  100% { top: 5%; opacity: 0.2; }
 }
+.animate-laser { animation: laserScan 2.4s ease-in-out infinite; }
 
-.animate-laser {
-  animation: laserScan 2.4s ease-in-out infinite;
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
 }
+.animate-float { animation: float 4s ease-in-out infinite; }
 
-/* Titanium & Silver Ambient Lighting */
-.glow-silver {
-  box-shadow: 0 0 50px -10px rgba(255, 255, 255, 0.15);
+.glow-pink {
+  box-shadow: 0 16px 60px -10px var(--accent-glow);
 }
-
-.glow-titanium {
-  box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.25);
-}
-
-.dark .glow-titanium {
-  box-shadow: 0 20px 60px -15px rgba(255, 255, 255, 0.08);
-}
-
-.silver-text {
-  background: linear-gradient(180deg, #FFFFFF 0%, #A1A1AA 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-.silver-border {
-  border-color: rgba(255, 255, 255, 0.12);
-}
-

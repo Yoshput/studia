@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
@@ -42,19 +42,19 @@ export function ThreeTitaniumOrb({
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.1;
 
-    // 2. Lighting (Brushed Titanium & Studio Silver)
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+    // 2. Lighting (Pastel Pink & Rose Glow)
+    const ambientLight = new THREE.AmbientLight(0xfdf2f8, 1.2);
     scene.add(ambientLight);
 
-    const keyLight = new THREE.DirectionalLight(0xffffff, 2.6);
+    const keyLight = new THREE.DirectionalLight(0xf472b6, 2.6); // Pink-400 key
     keyLight.position.set(3, 4, 3);
     scene.add(keyLight);
 
-    const rimLight = new THREE.DirectionalLight(0xd4d4d8, 2.0); // Silver rim
+    const rimLight = new THREE.DirectionalLight(0xe879a0, 2.2); // Rose rim
     rimLight.position.set(-3, -2, -2);
     scene.add(rimLight);
 
-    const specularFill = new THREE.PointLight(0xa1a1aa, 1.8, 10);
+    const specularFill = new THREE.PointLight(0xd946ef, 2.0, 10); // Fuchsia fill
     specularFill.position.set(0, -2, 2.5);
     scene.add(specularFill);
 
@@ -62,41 +62,43 @@ export function ThreeTitaniumOrb({
     const rootGroup = new THREE.Group();
     scene.add(rootGroup);
 
-    // --- A. Central Spatial Titanium Sphere ---
+    // --- A. Central Pastel Pink Sphere ---
     const sphereGeo = new THREE.SphereGeometry(1.05, 64, 64);
     const sphereMat = new THREE.MeshPhysicalMaterial({
-      color: new THREE.Color(0x18181b),
-      metalness: 0.94,
-      roughness: 0.18,
+      color: new THREE.Color(0xf472b6),   // Pink-400
+      emissive: new THREE.Color(0x9d174d), // Pink-800 emissive
+      emissiveIntensity: 0.40,
+      metalness: 0.85,
+      roughness: 0.16,
       clearcoat: 1.0,
-      clearcoatRoughness: 0.08,
-      reflectivity: 0.95,
+      clearcoatRoughness: 0.06,
+      reflectivity: 1.0,
       wireframe: false,
     });
     const coreSphere = new THREE.Mesh(sphereGeo, sphereMat);
     rootGroup.add(coreSphere);
 
-    // --- B. Inner Subtle Wireframe Hologram ---
+    // --- B. Inner Fuchsia Wireframe Hologram ---
     const innerWireGeo = new THREE.IcosahedronGeometry(1.07, 2);
     const innerWireMat = new THREE.MeshBasicMaterial({
-      color: 0xe4e4e7,
+      color: 0xfbcfe8,   // Pink-200
       wireframe: true,
       transparent: true,
-      opacity: 0.18,
+      opacity: 0.30,
     });
     const innerWire = new THREE.Mesh(innerWireGeo, innerWireMat);
     rootGroup.add(innerWire);
 
-    // --- C. Titanium Orbital Rings (VisionOS Gyro) ---
+    // --- C. Rose Orbital Rings (VisionOS Gyro) ---
     const ringMat1 = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
+      color: 0xec4899,   // Pink-500
       metalness: 0.98,
-      roughness: 0.1,
+      roughness: 0.08,
     });
     const ringMat2 = new THREE.MeshStandardMaterial({
-      color: 0xa1a1aa,
+      color: 0xd946ef,   // Fuchsia-500
       metalness: 0.95,
-      roughness: 0.2,
+      roughness: 0.15,
     });
 
     const ring1Geo = new THREE.TorusGeometry(1.48, 0.012, 16, 120);
@@ -110,13 +112,13 @@ export function ThreeTitaniumOrb({
     ring2.rotation.x = -Math.PI / 6;
     rootGroup.add(ring2);
 
-    // --- D. Floating Platinum Dust Particles ---
-    const particleCount = 75;
+    // --- D. Floating Solar Gold Dust Particles ---
+    const particleCount = 85;
     const particleGeo = new THREE.BufferGeometry();
     const positions = new Float32Array(particleCount * 3);
 
     for (let i = 0; i < particleCount * 3; i += 3) {
-      const radius = 1.35 + Math.random() * 0.9;
+      const radius = 1.35 + Math.random() * 0.95;
       const theta = Math.random() * Math.PI * 2;
       const phi = Math.acos(Math.random() * 2 - 1);
 
@@ -127,10 +129,10 @@ export function ThreeTitaniumOrb({
     particleGeo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
 
     const particleMat = new THREE.PointsMaterial({
-      color: 0xffffff,
-      size: 0.024,
+      color: 0xfbcfe8,  // Pink-200 dust
+      size: 0.028,
       transparent: true,
-      opacity: 0.65,
+      opacity: 0.75,
     });
     const particles = new THREE.Points(particleGeo, particleMat);
     rootGroup.add(particles);
@@ -271,13 +273,13 @@ export function ThreeTitaniumOrb({
       <canvas ref={canvasRef} className="w-full h-full block" />
 
       {/* Floating Spatial Badge */}
-      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2 px-3 py-1 rounded-full bg-black/50 dark:bg-white/10 backdrop-blur-md border border-white/20 text-[11px] font-medium text-white shadow-sm transition-opacity duration-300">
+      <div className="absolute bottom-2 left-1/2 -translate-x-1/2 pointer-events-none flex items-center gap-2 px-3 py-1 rounded-full bg-black/60 dark:bg-black/70 backdrop-blur-md border border-orange-500/30 text-[11px] font-medium text-white shadow-lg transition-opacity duration-300">
         <span
           className={`w-1.5 h-1.5 rounded-full ${
-            isInteracting ? "bg-white animate-ping" : "bg-zinc-300 animate-pulse"
+            isInteracting ? "bg-amber-300 animate-ping" : "bg-orange-500 animate-pulse"
           }`}
         />
-        <span className="font-mono tracking-tight">{badgeLabel}</span>
+        <span className="font-mono tracking-tight text-orange-200">{badgeLabel}</span>
       </div>
     </div>
   );

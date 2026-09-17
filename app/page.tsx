@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MascotIcon } from '@/components/assistant/MascotIcon';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThemePicker } from '@/components/ThemePicker';
 import { ThreeTitaniumOrb } from '@/components/landing/ThreeTitaniumOrb';
 import {
   Camera,
@@ -152,49 +153,49 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F5F7] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] selection:bg-zinc-800 selection:text-white dark:selection:bg-zinc-200 dark:selection:text-black transition-colors duration-300 font-sans antialiased">
+    <div className="min-h-screen bg-[#FDF5F9] dark:bg-[#0D0810] text-[#1A0A12] dark:text-[#FDF0F7] selection:bg-pink-500/20 selection:text-pink-700 transition-colors duration-300 font-sans antialiased">
       {/* 1. APPLE-STYLE MINIMALIST BLUR NAVBAR */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/85 dark:bg-[#09090B]/85 backdrop-blur-2xl border-b border-black/[0.08] dark:border-white/[0.1] shadow-[0_2px_12px_rgba(0,0,0,0.03)]'
+            ? 'bg-white/85 dark:bg-[#111726]/85 backdrop-blur-2xl border-b border-pink-500/10 dark:border-pink-500/20 shadow-[0_4px_20px_rgba(249,115,22,0.04)]'
             : 'bg-transparent'
         }`}
       >
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Brand */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-xl bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-950 shadow-sm transition-transform group-hover:scale-105">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-pink-500 via-rose-400 to-fuchsia-400 flex items-center justify-center text-white shadow-md shadow-pink-500/25 transition-transform group-hover:scale-105">
               <MascotIcon size={20} />
             </div>
             <div className="flex flex-col text-left">
-              <span className="font-bold text-[17px] tracking-tight text-[#1D1D1F] dark:text-white leading-none">
+              <span className="font-bold text-[17px] tracking-tight text-[#1A0A12] dark:text-white leading-none">
                 Semestr
               </span>
-              <span className="text-[9.5px] font-mono tracking-widest text-zinc-500 uppercase">
+              <span className="text-[9.5px] font-mono tracking-widest text-pink-600 dark:text-pink-400 uppercase font-semibold">
                 Academic OS
               </span>
             </div>
           </Link>
 
           {/* Center Navigation */}
-          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">
-            <a href="#simulator" className="hover:text-black dark:hover:text-white transition-colors">
+          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium text-stone-600 dark:text-stone-300">
+            <a href="#simulator" className="hover:text-pink-600 dark:hover:text-pink-400 transition-colors">
               Pratinjau
             </a>
-            <a href="#fitur" className="hover:text-black dark:hover:text-white transition-colors">
+            <a href="#fitur" className="hover:text-pink-600 dark:hover:text-pink-400 transition-colors">
               Fitur
             </a>
-            <a href="#cara-kerja" className="hover:text-black dark:hover:text-white transition-colors">
+            <a href="#cara-kerja" className="hover:text-pink-600 dark:hover:text-pink-400 transition-colors">
               Cara Kerja
             </a>
-            <a href="#harga" className="hover:text-black dark:hover:text-white transition-colors">
+            <a href="#harga" className="hover:text-pink-600 dark:hover:text-pink-400 transition-colors">
               Paket
             </a>
-            <a href="#testimoni" className="hover:text-black dark:hover:text-white transition-colors">
+            <a href="#testimoni" className="hover:text-pink-600 dark:hover:text-pink-400 transition-colors">
               Mahasiswa
             </a>
-            <a href="#faq" className="hover:text-black dark:hover:text-white transition-colors">
+            <a href="#faq" className="hover:text-pink-600 dark:hover:text-pink-400 transition-colors">
               Bantuan
             </a>
           </nav>
@@ -206,18 +207,18 @@ export default function LandingPage() {
               href="https://yossikaputra.my.id"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border border-black/[0.06] dark:border-white/[0.12] text-[11.5px] font-medium text-zinc-700 dark:text-zinc-300 transition-all"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-pink-500/[0.08] hover:bg-pink-500/[0.14] dark:bg-pink-500/[0.15] dark:hover:bg-pink-500/[0.22] border border-pink-500/20 text-[11.5px] font-medium text-pink-800 dark:text-pink-200 transition-all"
               title="Portofolio Pengembang Resmi"
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-200 animate-pulse" />
+              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
               <span>Yossika Putra</span>
-              <ExternalLink className="w-3 h-3 text-zinc-400" />
+              <ExternalLink className="w-3 h-3 text-pink-500" />
             </a>
 
-            <ThemeToggle />
+            <ThemePicker />
 
             <Link href="/login">
-              <span className="text-[13px] font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-black dark:hover:text-white px-3 py-1.5 rounded-lg transition-colors">
+              <span className="text-[13px] font-semibold text-[#1A0A12] dark:text-[#FDF0F7] hover:text-pink-600 dark:hover:text-pink-400 px-3 py-1.5 rounded-lg transition-colors">
                 Masuk
               </span>
             </Link>
@@ -226,7 +227,7 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="sm"
-                className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[13px] px-4 h-8 rounded-full shadow-sm"
+                className="bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white font-semibold text-[13px] px-4 h-8 rounded-full shadow-md shadow-pink-500/20"
               >
                 Mulai
               </Button>
@@ -235,11 +236,11 @@ export default function LandingPage() {
 
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-2 md:hidden">
-            <ThemeToggle />
+            <ThemePicker />
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-300"
+              className="p-1.5 rounded-lg text-stone-600 dark:text-stone-300"
               aria-label="Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -249,22 +250,22 @@ export default function LandingPage() {
 
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden px-5 py-4 bg-white/95 dark:bg-[#09090B]/95 backdrop-blur-2xl border-b border-black/[0.08] dark:border-white/[0.1] space-y-3">
+          <div className="md:hidden px-5 py-4 bg-white/95 dark:bg-[#111726]/95 backdrop-blur-2xl border-b border-pink-500/10 dark:border-pink-500/20 space-y-3">
             {/* Mobile Creator Badge */}
             <a
               href="https://yossikaputra.my.id"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center justify-between p-2.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] text-[12px] font-medium text-zinc-700 dark:text-zinc-300"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-pink-500/[0.08] text-[12px] font-medium text-pink-800 dark:text-pink-200"
             >
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-zinc-500" />
+                <Code2 className="w-4 h-4 text-pink-500" />
                 <span>Dibuat oleh Yossika Putra Erlangga</span>
               </div>
               <ExternalLink className="w-3.5 h-3.5" />
             </a>
 
-            <nav className="flex flex-col space-y-2 text-[14px] font-medium text-zinc-600 dark:text-zinc-300">
+            <nav className="flex flex-col space-y-2 text-[14px] font-medium text-stone-600 dark:text-stone-300">
               <a href="#simulator" onClick={() => setMobileMenuOpen(false)} className="py-1">
                 Pratinjau Interaktif
               </a>
@@ -285,14 +286,14 @@ export default function LandingPage() {
               </a>
             </nav>
 
-            <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] flex gap-2">
+            <div className="pt-2 border-t border-pink-500/10 dark:border-pink-500/20 flex gap-2">
               <Link href="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="secondary" className="w-full text-[13px] h-9 rounded-full">
                   Masuk
                 </Button>
               </Link>
               <Link href="/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" className="w-full text-[13px] h-9 rounded-full bg-zinc-950 dark:bg-white text-white dark:text-zinc-950">
+                <Button variant="primary" className="w-full text-[13px] h-9 rounded-full bg-gradient-to-r from-pink-600 to-rose-500 text-white">
                   Daftar Gratis
                 </Button>
               </Link>
@@ -301,19 +302,19 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 2. HERO SECTION — MONOCHROME TITANIUM WITH 3D SPATIAL CORE */}
+      {/* 2. HERO SECTION — ELECTRIC SUNRISE WITH 3D SPATIAL CORE */}
       <section ref={heroRef} className="pt-28 pb-14 sm:pt-36 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
         <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
-          {/* Floating Titanium Creator Pill */}
-          <div className="gsap-hero-item inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] border border-black/[0.08] dark:border-white/[0.12] text-[12px] font-medium text-zinc-700 dark:text-zinc-300 shadow-sm">
-            <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-white animate-pulse" />
+          {/* Floating Sunrise Creator Pill */}
+          <div className="gsap-hero-item inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-pink-500/[0.08] dark:bg-pink-500/[0.15] border border-pink-500/20 text-[12px] font-medium text-pink-800 dark:text-pink-200 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
             <span>Karya Orisinil Mahasiswa Telkom University</span>
-            <span className="text-zinc-400 dark:text-zinc-600">•</span>
+            <span className="text-pink-300 dark:text-pink-600">•</span>
             <a
               href="https://yossikaputra.my.id"
               target="_blank"
               rel="noopener noreferrer"
-              className="font-semibold hover:underline flex items-center gap-1 text-black dark:text-white"
+              className="font-semibold hover:underline flex items-center gap-1 text-pink-950 dark:text-white"
             >
               <span>Yossika Putra Erlangga (103112430026)</span>
               <ExternalLink className="w-3 h-3" />
@@ -321,13 +322,15 @@ export default function LandingPage() {
           </div>
 
           {/* Main Headline */}
-          <h1 className="gsap-hero-item text-[40px] sm:text-[62px] lg:text-[72px] font-bold tracking-[-0.035em] leading-[1.05] text-[#1D1D1F] dark:text-white">
+          <h1 className="gsap-hero-item text-[40px] sm:text-[62px] lg:text-[72px] font-bold tracking-[-0.035em] leading-[1.05] text-[#1A0A12] dark:text-white">
             Seluruh perkuliahan. <br className="hidden sm:inline" />
-            <span className="text-zinc-500 dark:text-zinc-400">Dalam satu kendali tenang.</span>
+            <span className="bg-gradient-to-r from-pink-600 via-rose-500 to-fuchsia-500 dark:from-pink-400 dark:via-rose-300 dark:to-fuchsia-400 bg-clip-text text-transparent">
+              Dalam satu kendali ceria & tenang.
+            </span>
           </h1>
 
           {/* Subtext */}
-          <p className="gsap-hero-item text-[17px] sm:text-[20px] text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-normal leading-relaxed">
+          <p className="gsap-hero-item text-[17px] sm:text-[20px] text-stone-600 dark:text-stone-300 max-w-2xl mx-auto font-normal leading-relaxed">
             Ucapkan selamat tinggal pada jadwal bentrok, deadline terlewat, dan presensi ribet. Dilengkapi kamera orientasi normal, asisten Aiko kontekstual, serta kalkulator indeks prestasi semester.
           </p>
 
@@ -337,7 +340,7 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[15px] px-7 h-11 rounded-full gap-2 transition-transform active:scale-[0.98] shadow-md"
+                className="bg-gradient-to-r from-pink-600 via-pink-500 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white font-semibold text-[15px] px-8 h-11 rounded-full gap-2 transition-transform active:scale-[0.98] shadow-lg shadow-pink-500/25"
               >
                 <span>Mulai Coba Gratis</span>
                 <ArrowRight className="w-4 h-4" />
@@ -384,11 +387,11 @@ export default function LandingPage() {
         <div
           id="simulator"
           ref={simulatorCardRef}
-          className="mt-14 max-w-3xl mx-auto rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.08] dark:border-white/[0.12] shadow-[0_16px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_16px_50px_rgba(0,0,0,0.5)] overflow-hidden"
+          className="mt-14 max-w-3xl mx-auto rounded-3xl bg-white dark:bg-[#131A29] border border-pink-500/15 dark:border-pink-500/25 shadow-[0_16px_50px_rgba(234,88,12,0.06)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.6)] overflow-hidden"
         >
           {/* iOS Segmented Control Header */}
-          <div className="p-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-zinc-100/70 dark:bg-[#1A1A1C]/70 flex items-center justify-center">
-            <div className="inline-flex p-1 rounded-full bg-black/[0.06] dark:bg-black/50 text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 max-w-full overflow-x-auto no-scrollbar">
+          <div className="p-3 border-b border-pink-500/10 dark:border-pink-500/20 bg-[#FBF9F5]/80 dark:bg-[#1A2338]/80 flex items-center justify-center">
+            <div className="inline-flex p-1 rounded-full bg-black/[0.04] dark:bg-black/50 text-[12.5px] font-medium text-stone-600 dark:text-stone-400 max-w-full overflow-x-auto no-scrollbar">
               {[
                 { id: 'presensi', label: 'Presensi Kamera' },
                 { id: 'jadwal', label: 'Radar Bentrok' },
@@ -401,8 +404,8 @@ export default function LandingPage() {
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-4 py-1.5 rounded-full transition-all whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.12)]'
-                      : 'hover:text-black dark:hover:text-white'
+                      ? 'bg-gradient-to-r from-pink-600 to-rose-500 text-white font-semibold shadow-md shadow-pink-500/25'
+                      : 'hover:text-pink-600 dark:hover:text-pink-400'
                   }`}
                 >
                   {tab.label}
@@ -418,16 +421,16 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-[16px] font-semibold text-[#1D1D1F] dark:text-white">
+                    <h3 className="text-[16px] font-semibold text-[#1C1917] dark:text-white">
                       Presensi Orientasi Normal
                     </h3>
-                    <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
+                    <p className="text-[13px] text-stone-500 dark:text-stone-400">
                       Kamera tidak terbalik (anti-mirror). Watermark resmi mencatat identitas & detik kehadiran.
                     </p>
                   </div>
 
                   {/* Mode Picker: Daring vs Tatap Muka */}
-                  <div className="inline-flex p-0.5 rounded-lg bg-black/[0.05] dark:bg-white/[0.08] text-[12px] font-medium">
+                  <div className="inline-flex p-0.5 rounded-lg bg-pink-500/[0.08] dark:bg-white/[0.08] text-[12px] font-medium border border-pink-500/15">
                     <button
                       type="button"
                       onClick={() => {
@@ -436,8 +439,8 @@ export default function LandingPage() {
                       }}
                       className={`px-3 py-1 rounded-md transition-all ${
                         presensiMode === 'online'
-                          ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white shadow-sm font-semibold'
-                          : 'text-zinc-500'
+                          ? 'bg-pink-500 text-white shadow-sm font-semibold'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-pink-600'
                       }`}
                     >
                       Daring (Zoom)
@@ -450,8 +453,8 @@ export default function LandingPage() {
                       }}
                       className={`px-3 py-1 rounded-md transition-all ${
                         presensiMode === 'offline'
-                          ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white shadow-sm font-semibold'
-                          : 'text-zinc-500'
+                          ? 'bg-pink-500 text-white shadow-sm font-semibold'
+                          : 'text-stone-600 dark:text-stone-400 hover:text-pink-600'
                       }`}
                     >
                       Tatap Muka
@@ -460,31 +463,31 @@ export default function LandingPage() {
                 </div>
 
                 {/* Camera Viewfinder */}
-                <div className="relative w-full h-[190px] rounded-2xl bg-[#121214] border border-white/10 overflow-hidden flex flex-col items-center justify-center text-white">
+                <div className="relative w-full h-[190px] rounded-2xl bg-[#0F141C] border border-pink-500/20 overflow-hidden flex flex-col items-center justify-center text-white">
                   {/* Viewfinder Target Frame */}
-                  <div className="relative w-36 h-36 rounded-xl border border-white/25 flex items-center justify-center">
-                    <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white" />
-                    <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white" />
-                    <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white" />
-                    <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white" />
+                  <div className="relative w-36 h-36 rounded-xl border border-pink-400/30 flex items-center justify-center">
+                    <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-pink-400" />
+                    <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-pink-400" />
+                    <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-pink-400" />
+                    <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-pink-400" />
 
                     {presensiLoading ? (
-                      <span className="text-[11px] text-white/90 font-mono animate-pulse tracking-wide">
+                      <span className="text-[11px] text-pink-200 font-mono animate-pulse tracking-wide">
                         Memproses Pindaian...
                       </span>
                     ) : presensiHadir ? (
                       <div className="text-center space-y-1.5">
-                        <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center mx-auto shadow-lg">
+                        <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-pink-500 to-rose-400 text-white flex items-center justify-center mx-auto shadow-lg shadow-pink-500/40">
                           <Check className="w-5 h-5 stroke-[3]" />
                         </div>
-                        <span className="text-[11.5px] font-semibold text-white tracking-wide block">
+                        <span className="text-[11.5px] font-semibold text-pink-200 tracking-wide block">
                           Presensi Terverifikasi
                         </span>
                       </div>
                     ) : (
                       <div className="text-center space-y-1">
-                        <Camera className="w-6 h-6 text-white/50 mx-auto" />
-                        <span className="text-[10px] text-zinc-400 font-mono">Orientasi Asli</span>
+                        <Camera className="w-6 h-6 text-pink-400/70 mx-auto" />
+                        <span className="text-[10px] text-stone-400 font-mono">Orientasi Asli</span>
                       </div>
                     )}
                   </div>
@@ -495,17 +498,17 @@ export default function LandingPage() {
                       <span className="block font-bold text-white tracking-tight">
                         Yossika Putra Erlangga • 103112430026
                       </span>
-                      <span className="block text-[9.5px] text-zinc-400">
+                      <span className="block text-[9.5px] text-pink-200/80">
                         {presensiMode === 'online' ? 'KULIAH DARING (ZOOM MEETING)' : 'LABORATORIUM 2 (OFFLINE)'}
                       </span>
                     </div>
-                    <span className="font-bold text-zinc-200 tracking-wider">{currentTime}</span>
+                    <span className="font-bold text-pink-300 tracking-wider">{currentTime}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                  <span className="text-[12px] text-stone-500 dark:text-stone-400">
                     {presensiHadir ? 'Foto kehadiran tersimpan di riwayat Cloud.' : 'Uji respons tombol snapshot kamera normal.'}
                   </span>
 
@@ -514,7 +517,7 @@ export default function LandingPage() {
                       <button
                         type="button"
                         onClick={() => setPresensiHadir(false)}
-                        className="text-[12px] font-medium text-zinc-500 hover:text-black dark:hover:text-white px-2 py-1"
+                        className="text-[12px] font-medium text-stone-500 hover:text-pink-600 dark:hover:text-pink-400 px-2 py-1"
                       >
                         Reset
                       </button>
@@ -524,7 +527,7 @@ export default function LandingPage() {
                       size="sm"
                       disabled={presensiLoading || presensiHadir}
                       onClick={handleCapturePresensi}
-                      className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[12.5px] px-4 rounded-full h-8"
+                      className="bg-gradient-to-r from-pink-600 to-rose-500 hover:from-pink-500 hover:to-rose-400 text-white font-semibold text-[12.5px] px-4 rounded-full h-8 shadow-md shadow-pink-500/20"
                     >
                       {presensiLoading ? 'Memverifikasi...' : 'Ambil Foto'}
                     </Button>
@@ -585,7 +588,7 @@ export default function LandingPage() {
                     {jadwalBentrok ? (
                       <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
                     ) : (
-                      <CheckCircle2 className="w-4 h-4 text-zinc-800 dark:text-zinc-100 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-pink-500 flex-shrink-0" />
                     )}
                     <span className="text-zinc-600 dark:text-zinc-300">
                       {jadwalBentrok ? 'Dua kelas menempati slot waktu yang tumpang tindih.' : 'Semua mata kuliah tersusun rapi tanpa bentrok waktu.'}
@@ -595,7 +598,7 @@ export default function LandingPage() {
                   <button
                     type="button"
                     onClick={() => setJadwalBentrok(!jadwalBentrok)}
-                    className="text-[12px] font-semibold text-black dark:text-white underline whitespace-nowrap"
+                    className="text-[12px] font-semibold text-pink-600 dark:text-pink-400 underline whitespace-nowrap"
                   >
                     {jadwalBentrok ? 'Pindahkan ke 13:30' : 'Ulangi Bentrok'}
                   </button>
@@ -628,7 +631,7 @@ export default function LandingPage() {
                         max="100"
                         value={nilaiTugas}
                         onChange={(e) => setNilaiTugas(Number(e.target.value))}
-                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-zinc-900 dark:accent-white"
+                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-pink-500"
                       />
                     </div>
 
@@ -643,7 +646,7 @@ export default function LandingPage() {
                         max="100"
                         value={nilaiUTS}
                         onChange={(e) => setNilaiUTS(Number(e.target.value))}
-                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-zinc-900 dark:accent-white"
+                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-pink-500"
                       />
                     </div>
 
@@ -658,7 +661,7 @@ export default function LandingPage() {
                         max="100"
                         value={nilaiUAS}
                         onChange={(e) => setNilaiUAS(Number(e.target.value))}
-                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-zinc-900 dark:accent-white"
+                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-pink-500"
                       />
                     </div>
                   </div>
