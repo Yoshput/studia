@@ -24,7 +24,7 @@ export function Button({
     "inline-flex items-center justify-center font-medium rounded-btn transition-colors focus:outline-none focus:ring-2 focus:ring-ios-accent/20 disabled:opacity-50 disabled:pointer-events-none select-none";
 
   const variants = {
-    primary: "bg-ios-accent text-white hover:bg-ios-accent/95 active:bg-ios-accent/90 shadow-sm",
+    primary: "bg-ios-accent text-white dark:text-black hover:opacity-90 active:opacity-85 shadow-sm",
     secondary:
       "bg-ios-surfaceSecondary text-ios-textPrimary border border-ios-border hover:bg-ios-surface hover:border-ios-textSecondary/30",
     danger: "bg-ios-danger text-white hover:bg-ios-danger/90 active:bg-ios-danger/85 shadow-sm",

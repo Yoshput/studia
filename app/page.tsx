@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { MascotIcon } from '@/components/assistant/MascotIcon';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { ThreeTitaniumOrb } from '@/components/landing/ThreeTitaniumOrb';
 import {
   Camera,
   Calendar,
@@ -22,6 +23,8 @@ import {
   Award,
   AlertCircle,
   RotateCcw,
+  CheckCircle2,
+  Code2,
 } from 'lucide-react';
 import gsap from 'gsap';
 
@@ -149,48 +152,72 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FBFBFD] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] selection:bg-emerald-500/20 selection:text-emerald-600 transition-colors duration-300 font-sans antialiased">
+    <div className="min-h-screen bg-[#F5F5F7] dark:bg-[#000000] text-[#1D1D1F] dark:text-[#F5F5F7] selection:bg-zinc-800 selection:text-white dark:selection:bg-zinc-200 dark:selection:text-black transition-colors duration-300 font-sans antialiased">
       {/* 1. APPLE-STYLE MINIMALIST BLUR NAVBAR */}
       <header
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
           scrolled
-            ? 'bg-white/80 dark:bg-[#161618]/80 backdrop-blur-xl border-b border-black/[0.06] dark:border-white/[0.08] shadow-[0_1px_3px_rgba(0,0,0,0.02)]'
+            ? 'bg-white/85 dark:bg-[#09090B]/85 backdrop-blur-2xl border-b border-black/[0.08] dark:border-white/[0.1] shadow-[0_2px_12px_rgba(0,0,0,0.03)]'
             : 'bg-transparent'
         }`}
       >
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           {/* Brand */}
-          <Link href="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-white shadow-sm">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-8 h-8 rounded-xl bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-950 shadow-sm transition-transform group-hover:scale-105">
               <MascotIcon size={20} />
             </div>
-            <span className="font-semibold text-[17px] tracking-tight text-[#1D1D1F] dark:text-white">
-              Semestr
-            </span>
+            <div className="flex flex-col text-left">
+              <span className="font-bold text-[17px] tracking-tight text-[#1D1D1F] dark:text-white leading-none">
+                Semestr
+              </span>
+              <span className="text-[9.5px] font-mono tracking-widest text-zinc-500 uppercase">
+                Academic OS
+              </span>
+            </div>
           </Link>
 
           {/* Center Navigation */}
-          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium text-[#6E6E73] dark:text-[#86868B]">
+          <nav className="hidden md:flex items-center gap-7 text-[13px] font-medium text-zinc-500 dark:text-zinc-400">
             <a href="#simulator" className="hover:text-black dark:hover:text-white transition-colors">
               Pratinjau
             </a>
             <a href="#fitur" className="hover:text-black dark:hover:text-white transition-colors">
               Fitur
             </a>
-            <a href="#perbandingan" className="hover:text-black dark:hover:text-white transition-colors">
-              Perbandingan
+            <a href="#cara-kerja" className="hover:text-black dark:hover:text-white transition-colors">
+              Cara Kerja
+            </a>
+            <a href="#harga" className="hover:text-black dark:hover:text-white transition-colors">
+              Paket
+            </a>
+            <a href="#testimoni" className="hover:text-black dark:hover:text-white transition-colors">
+              Mahasiswa
             </a>
             <a href="#faq" className="hover:text-black dark:hover:text-white transition-colors">
               Bantuan
             </a>
           </nav>
 
-          {/* Right Action Buttons */}
+          {/* Right Action Buttons & Creator Attribution */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Direct Creator Badge */}
+            <a
+              href="https://yossikaputra.my.id"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border border-black/[0.06] dark:border-white/[0.12] text-[11.5px] font-medium text-zinc-700 dark:text-zinc-300 transition-all"
+              title="Portofolio Pengembang Resmi"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-zinc-400 dark:bg-zinc-200 animate-pulse" />
+              <span>Yossika Putra</span>
+              <ExternalLink className="w-3 h-3 text-zinc-400" />
+            </a>
+
             <ThemeToggle />
 
             <Link href="/login">
-              <span className="text-[13px] font-medium text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-emerald-600 px-3 py-1.5 rounded-lg transition-colors">
+              <span className="text-[13px] font-semibold text-[#1D1D1F] dark:text-[#F5F5F7] hover:text-black dark:hover:text-white px-3 py-1.5 rounded-lg transition-colors">
                 Masuk
               </span>
             </Link>
@@ -199,7 +226,7 @@ export default function LandingPage() {
               <Button
                 variant="primary"
                 size="sm"
-                className="bg-[#0071E3] hover:bg-[#0077ED] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-medium text-[13px] px-3.5 h-8 rounded-full shadow-none"
+                className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[13px] px-4 h-8 rounded-full shadow-sm"
               >
                 Mulai
               </Button>
@@ -212,7 +239,7 @@ export default function LandingPage() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-lg text-[#6E6E73]"
+              className="p-1.5 rounded-lg text-zinc-600 dark:text-zinc-300"
               aria-label="Menu"
             >
               {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -222,21 +249,42 @@ export default function LandingPage() {
 
         {/* Mobile Dropdown */}
         {mobileMenuOpen && (
-          <div className="md:hidden px-5 py-4 bg-white dark:bg-[#161618] border-b border-black/[0.06] dark:border-white/[0.08] space-y-3">
-            <nav className="flex flex-col space-y-2 text-[14px] font-medium text-[#6E6E73] dark:text-[#86868B]">
+          <div className="md:hidden px-5 py-4 bg-white/95 dark:bg-[#09090B]/95 backdrop-blur-2xl border-b border-black/[0.08] dark:border-white/[0.1] space-y-3">
+            {/* Mobile Creator Badge */}
+            <a
+              href="https://yossikaputra.my.id"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-between p-2.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] text-[12px] font-medium text-zinc-700 dark:text-zinc-300"
+            >
+              <div className="flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-zinc-500" />
+                <span>Dibuat oleh Yossika Putra Erlangga</span>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+
+            <nav className="flex flex-col space-y-2 text-[14px] font-medium text-zinc-600 dark:text-zinc-300">
               <a href="#simulator" onClick={() => setMobileMenuOpen(false)} className="py-1">
                 Pratinjau Interaktif
               </a>
               <a href="#fitur" onClick={() => setMobileMenuOpen(false)} className="py-1">
                 Fitur Utama
               </a>
-              <a href="#perbandingan" onClick={() => setMobileMenuOpen(false)} className="py-1">
-                Perbandingan
+              <a href="#cara-kerja" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Cara Kerja
+              </a>
+              <a href="#harga" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Paket Mahasiswa
+              </a>
+              <a href="#testimoni" onClick={() => setMobileMenuOpen(false)} className="py-1">
+                Testimoni
               </a>
               <a href="#faq" onClick={() => setMobileMenuOpen(false)} className="py-1">
                 Pertanyaan Umum
               </a>
             </nav>
+
             <div className="pt-2 border-t border-black/[0.06] dark:border-white/[0.08] flex gap-2">
               <Link href="/login" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="secondary" className="w-full text-[13px] h-9 rounded-full">
@@ -244,8 +292,8 @@ export default function LandingPage() {
                 </Button>
               </Link>
               <Link href="/signup" className="flex-1" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="primary" className="w-full text-[13px] h-9 rounded-full bg-[#0071E3] dark:bg-emerald-600 text-white">
-                  Daftar
+                <Button variant="primary" className="w-full text-[13px] h-9 rounded-full bg-zinc-950 dark:bg-white text-white dark:text-zinc-950">
+                  Daftar Gratis
                 </Button>
               </Link>
             </div>
@@ -253,35 +301,45 @@ export default function LandingPage() {
         )}
       </header>
 
-      {/* 2. HERO SECTION — CLEAN CUPERTINO TYPOGRAPHY */}
-      <section ref={heroRef} className="pt-28 pb-16 sm:pt-36 sm:pb-24 px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center space-y-5">
-          {/* Subtle Dynamic Island Pill */}
-          <div className="gsap-hero-item inline-flex items-center gap-2 px-3 py-1 rounded-full bg-black/[0.04] dark:bg-white/[0.08] text-[12px] font-medium text-[#6E6E73] dark:text-[#86868B]">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            <span>Sistem Operasi Akademik Mahasiswa</span>
+      {/* 2. HERO SECTION — MONOCHROME TITANIUM WITH 3D SPATIAL CORE */}
+      <section ref={heroRef} className="pt-28 pb-14 sm:pt-36 sm:pb-20 px-4 sm:px-6 relative overflow-hidden">
+        <div className="max-w-5xl mx-auto text-center space-y-6 relative z-10">
+          {/* Floating Titanium Creator Pill */}
+          <div className="gsap-hero-item inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-black/[0.04] dark:bg-white/[0.08] border border-black/[0.08] dark:border-white/[0.12] text-[12px] font-medium text-zinc-700 dark:text-zinc-300 shadow-sm">
+            <span className="w-1.5 h-1.5 rounded-full bg-zinc-950 dark:bg-white animate-pulse" />
+            <span>Karya Orisinil Mahasiswa Telkom University</span>
+            <span className="text-zinc-400 dark:text-zinc-600">•</span>
+            <a
+              href="https://yossikaputra.my.id"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline flex items-center gap-1 text-black dark:text-white"
+            >
+              <span>Yossika Putra Erlangga (103112430026)</span>
+              <ExternalLink className="w-3 h-3" />
+            </a>
           </div>
 
           {/* Main Headline */}
-          <h1 className="gsap-hero-item text-[38px] sm:text-[58px] lg:text-[66px] font-semibold tracking-[-0.03em] leading-[1.08] text-[#1D1D1F] dark:text-white">
+          <h1 className="gsap-hero-item text-[40px] sm:text-[62px] lg:text-[72px] font-bold tracking-[-0.035em] leading-[1.05] text-[#1D1D1F] dark:text-white">
             Seluruh perkuliahan. <br className="hidden sm:inline" />
-            <span className="text-[#6E6E73] dark:text-[#86868B]">Dalam satu kendali tenang.</span>
+            <span className="text-zinc-500 dark:text-zinc-400">Dalam satu kendali tenang.</span>
           </h1>
 
           {/* Subtext */}
-          <p className="gsap-hero-item text-[17px] sm:text-[20px] text-[#6E6E73] dark:text-[#86868B] max-w-2xl mx-auto font-normal leading-relaxed">
-            Presensi tanpa foto terbalik, jadwal bebas bentrok, kalkulator indeks prestasi semester, dan pengingat resmi perangkat.
+          <p className="gsap-hero-item text-[17px] sm:text-[20px] text-zinc-600 dark:text-zinc-400 max-w-2xl mx-auto font-normal leading-relaxed">
+            Ucapkan selamat tinggal pada jadwal bentrok, deadline terlewat, dan presensi ribet. Dilengkapi kamera orientasi normal, asisten Aiko kontekstual, serta kalkulator indeks prestasi semester.
           </p>
 
           {/* CTA Buttons */}
-          <div className="gsap-hero-item pt-2 flex items-center justify-center gap-3">
+          <div className="gsap-hero-item pt-2 flex flex-wrap items-center justify-center gap-3.5">
             <Link href="/signup">
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-[#0071E3] hover:bg-[#0077ED] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-medium text-[15px] px-6 h-11 rounded-full gap-1.5 transition-transform active:scale-[0.98]"
+                className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[15px] px-7 h-11 rounded-full gap-2 transition-transform active:scale-[0.98] shadow-md"
               >
-                <span>Coba Sekarang</span>
+                <span>Mulai Coba Gratis</span>
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </Link>
@@ -290,19 +348,35 @@ export default function LandingPage() {
               <Button
                 variant="secondary"
                 size="lg"
-                className="bg-black/[0.04] hover:bg-black/[0.07] dark:bg-white/[0.08] dark:hover:bg-white/[0.12] border-0 text-[#1D1D1F] dark:text-[#F5F5F7] font-medium text-[15px] px-5 h-11 rounded-full transition-transform active:scale-[0.98]"
+                className="bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.08] dark:hover:bg-white/[0.14] border border-black/[0.08] dark:border-white/[0.12] text-[#1D1D1F] dark:text-[#F5F5F7] font-semibold text-[15px] px-6 h-11 rounded-full transition-transform active:scale-[0.98]"
               >
-                Lihat Pratinjau
+                Uji Simulasi Fitur
               </Button>
             </a>
           </div>
 
-          <div className="gsap-hero-item pt-1 flex items-center justify-center gap-6 text-[12px] text-[#86868B]">
-            <span>Gratis selamanya</span>
-            <span>•</span>
-            <span>Multi-akun privat</span>
-            <span>•</span>
-            <span>PWA mandiri</span>
+          {/* Interactive 3D Spatial Titanium Orb */}
+          <div className="gsap-hero-item pt-4 max-w-sm sm:max-w-md mx-auto">
+            <ThreeTitaniumOrb
+              className="w-full h-[260px] sm:h-[310px] mx-auto"
+              badgeLabel="3D Spatial Core • Interaktif Putar & Sentuh"
+            />
+          </div>
+
+          {/* Value Badges */}
+          <div className="gsap-hero-item pt-1 flex flex-wrap items-center justify-center gap-4 sm:gap-7 text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" /> Gratis selamanya
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" /> Multi-akun privat
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" /> PWA mandiri iOS & Android
+            </span>
+            <span className="flex items-center gap-1.5">
+              <Check className="w-3.5 h-3.5 text-zinc-700 dark:text-zinc-300" /> Tanpa AI Slop
+            </span>
           </div>
         </div>
 
@@ -310,14 +384,14 @@ export default function LandingPage() {
         <div
           id="simulator"
           ref={simulatorCardRef}
-          className="mt-14 max-w-3xl mx-auto rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.08] dark:border-white/[0.1] shadow-[0_12px_40px_rgba(0,0,0,0.06)] dark:shadow-[0_12px_40px_rgba(0,0,0,0.4)] overflow-hidden"
+          className="mt-14 max-w-3xl mx-auto rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.08] dark:border-white/[0.12] shadow-[0_16px_50px_rgba(0,0,0,0.06)] dark:shadow-[0_16px_50px_rgba(0,0,0,0.5)] overflow-hidden"
         >
           {/* iOS Segmented Control Header */}
-          <div className="p-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-[#F5F5F7]/70 dark:bg-[#2C2C2E]/60 flex items-center justify-center">
-            <div className="inline-flex p-1 rounded-full bg-black/[0.06] dark:bg-black/40 text-[12.5px] font-medium text-[#6E6E73] dark:text-[#86868B] max-w-full overflow-x-auto">
+          <div className="p-3 border-b border-black/[0.06] dark:border-white/[0.08] bg-zinc-100/70 dark:bg-[#1A1A1C]/70 flex items-center justify-center">
+            <div className="inline-flex p-1 rounded-full bg-black/[0.06] dark:bg-black/50 text-[12.5px] font-medium text-zinc-600 dark:text-zinc-400 max-w-full overflow-x-auto no-scrollbar">
               {[
-                { id: 'presensi', label: 'Presensi Wajah' },
-                { id: 'jadwal', label: 'Radar Jadwal' },
+                { id: 'presensi', label: 'Presensi Kamera' },
+                { id: 'jadwal', label: 'Radar Bentrok' },
                 { id: 'nilai', label: 'Simulasi IPS' },
                 { id: 'asisten', label: 'Asisten Aiko' },
               ].map((tab) => (
@@ -325,10 +399,10 @@ export default function LandingPage() {
                   key={tab.id}
                   type="button"
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`px-3.5 py-1 rounded-full transition-all whitespace-nowrap ${
+                  className={`px-4 py-1.5 rounded-full transition-all whitespace-nowrap ${
                     activeTab === tab.id
-                      ? 'bg-white dark:bg-[#3A3A3C] text-[#1D1D1F] dark:text-white font-semibold shadow-[0_1px_3px_rgba(0,0,0,0.1)]'
-                      : 'hover:text-[#1D1D1F] dark:hover:text-white'
+                      ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white font-semibold shadow-[0_1px_4px_rgba(0,0,0,0.12)]'
+                      : 'hover:text-black dark:hover:text-white'
                   }`}
                 >
                   {tab.label}
@@ -338,7 +412,7 @@ export default function LandingPage() {
           </div>
 
           {/* Tab Content Container */}
-          <div ref={tabContentRef} className="p-5 sm:p-7 min-h-[310px]">
+          <div ref={tabContentRef} className="p-5 sm:p-7 min-h-[320px]">
             {/* TAB 1: PRESENSI */}
             {activeTab === 'presensi' && (
               <div className="space-y-4">
@@ -347,12 +421,12 @@ export default function LandingPage() {
                     <h3 className="text-[16px] font-semibold text-[#1D1D1F] dark:text-white">
                       Presensi Orientasi Normal
                     </h3>
-                    <p className="text-[13px] text-[#6E6E73] dark:text-[#86868B]">
-                      Kamera tidak terbalik. Huruf pada pakaian dan latar tetap terbaca benar.
+                    <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
+                      Kamera tidak terbalik (anti-mirror). Watermark resmi mencatat identitas & detik kehadiran.
                     </p>
                   </div>
 
-                  {/* Mode Picker */}
+                  {/* Mode Picker: Daring vs Tatap Muka */}
                   <div className="inline-flex p-0.5 rounded-lg bg-black/[0.05] dark:bg-white/[0.08] text-[12px] font-medium">
                     <button
                       type="button"
@@ -360,13 +434,13 @@ export default function LandingPage() {
                         setPresensiMode('online');
                         setPresensiHadir(false);
                       }}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
+                      className={`px-3 py-1 rounded-md transition-all ${
                         presensiMode === 'online'
-                          ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white shadow-sm'
-                          : 'text-[#6E6E73]'
+                          ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white shadow-sm font-semibold'
+                          : 'text-zinc-500'
                       }`}
                     >
-                      Daring
+                      Daring (Zoom)
                     </button>
                     <button
                       type="button"
@@ -374,10 +448,10 @@ export default function LandingPage() {
                         setPresensiMode('offline');
                         setPresensiHadir(false);
                       }}
-                      className={`px-2.5 py-1 rounded-md transition-all ${
+                      className={`px-3 py-1 rounded-md transition-all ${
                         presensiMode === 'offline'
-                          ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white shadow-sm'
-                          : 'text-[#6E6E73]'
+                          ? 'bg-white dark:bg-[#2C2C2E] text-black dark:text-white shadow-sm font-semibold'
+                          : 'text-zinc-500'
                       }`}
                     >
                       Tatap Muka
@@ -386,50 +460,53 @@ export default function LandingPage() {
                 </div>
 
                 {/* Camera Viewfinder */}
-                <div className="relative w-full h-[180px] rounded-2xl bg-[#1D1D1F] overflow-hidden flex flex-col items-center justify-center text-white">
+                <div className="relative w-full h-[190px] rounded-2xl bg-[#121214] border border-white/10 overflow-hidden flex flex-col items-center justify-center text-white">
                   {/* Viewfinder Target Frame */}
-                  <div className="relative w-32 h-32 rounded-xl border border-white/30 flex items-center justify-center">
-                    <div className="absolute top-0 left-0 w-2.5 h-2.5 border-t-2 border-l-2 border-white" />
-                    <div className="absolute top-0 right-0 w-2.5 h-2.5 border-t-2 border-r-2 border-white" />
-                    <div className="absolute bottom-0 left-0 w-2.5 h-2.5 border-b-2 border-l-2 border-white" />
-                    <div className="absolute bottom-0 right-0 w-2.5 h-2.5 border-b-2 border-r-2 border-white" />
+                  <div className="relative w-36 h-36 rounded-xl border border-white/25 flex items-center justify-center">
+                    <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-white" />
+                    <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-white" />
+                    <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-white" />
+                    <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-white" />
 
                     {presensiLoading ? (
-                      <span className="text-[11px] text-white/80 font-mono animate-pulse">
-                        Verifikasi...
+                      <span className="text-[11px] text-white/90 font-mono animate-pulse tracking-wide">
+                        Memproses Pindaian...
                       </span>
                     ) : presensiHadir ? (
-                      <div className="text-center space-y-1">
-                        <div className="w-8 h-8 rounded-full bg-emerald-500 text-white flex items-center justify-center mx-auto">
-                          <Check className="w-5 h-5 stroke-[2.5]" />
+                      <div className="text-center space-y-1.5">
+                        <div className="w-9 h-9 rounded-full bg-white text-black flex items-center justify-center mx-auto shadow-lg">
+                          <Check className="w-5 h-5 stroke-[3]" />
                         </div>
-                        <span className="text-[11px] font-medium text-emerald-400 block">
-                          Tepat Waktu
+                        <span className="text-[11.5px] font-semibold text-white tracking-wide block">
+                          Presensi Terverifikasi
                         </span>
                       </div>
                     ) : (
-                      <Camera className="w-6 h-6 text-white/50" />
+                      <div className="text-center space-y-1">
+                        <Camera className="w-6 h-6 text-white/50 mx-auto" />
+                        <span className="text-[10px] text-zinc-400 font-mono">Orientasi Asli</span>
+                      </div>
                     )}
                   </div>
 
                   {/* Clean Watermark */}
-                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[10px] font-mono text-white/80">
+                  <div className="absolute bottom-2.5 left-3 right-3 flex items-center justify-between text-[10.5px] font-mono text-white/85">
                     <div className="text-left">
-                      <span className="block font-semibold text-white">
+                      <span className="block font-bold text-white tracking-tight">
                         Yossika Putra Erlangga • 103112430026
                       </span>
-                      <span className="block text-[9px] text-white/60">
-                        {presensiMode === 'online' ? 'KULIAH DARING (ZOOM)' : 'LABORATORIUM 2 (OFFLINE)'}
+                      <span className="block text-[9.5px] text-zinc-400">
+                        {presensiMode === 'online' ? 'KULIAH DARING (ZOOM MEETING)' : 'LABORATORIUM 2 (OFFLINE)'}
                       </span>
                     </div>
-                    <span className="font-bold text-emerald-400">{currentTime}</span>
+                    <span className="font-bold text-zinc-200 tracking-wider">{currentTime}</span>
                   </div>
                 </div>
 
                 {/* Actions */}
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-[12px] text-[#86868B]">
-                    {presensiHadir ? 'Foto kehadiran tersimpan di riwayat.' : 'Uji respons tombol snapshot.'}
+                  <span className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                    {presensiHadir ? 'Foto kehadiran tersimpan di riwayat Cloud.' : 'Uji respons tombol snapshot kamera normal.'}
                   </span>
 
                   <div className="flex gap-2">
@@ -437,7 +514,7 @@ export default function LandingPage() {
                       <button
                         type="button"
                         onClick={() => setPresensiHadir(false)}
-                        className="text-[12px] font-medium text-[#6E6E73] hover:text-black dark:hover:text-white px-2 py-1"
+                        className="text-[12px] font-medium text-zinc-500 hover:text-black dark:hover:text-white px-2 py-1"
                       >
                         Reset
                       </button>
@@ -447,9 +524,9 @@ export default function LandingPage() {
                       size="sm"
                       disabled={presensiLoading || presensiHadir}
                       onClick={handleCapturePresensi}
-                      className="bg-[#0071E3] hover:bg-[#0077ED] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-medium text-[12.5px] px-4 rounded-full h-8"
+                      className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[12.5px] px-4 rounded-full h-8"
                     >
-                      {presensiLoading ? 'Memproses...' : 'Ambil Foto'}
+                      {presensiLoading ? 'Memverifikasi...' : 'Ambil Foto'}
                     </Button>
                   </div>
                 </div>
@@ -461,22 +538,22 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-[16px] font-semibold text-[#1D1D1F] dark:text-white">
-                    Pendeteksi Tabrakan Jam
+                    Pendeteksi Tabrakan Jam Kuliah
                   </h3>
-                  <p className="text-[13px] text-[#6E6E73] dark:text-[#86868B]">
-                    Mencegah pemilihan dua mata kuliah yang bertabrakan pada hari dan jam yang sama.
+                  <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
+                    Mencegah pemilihan dua kelas kuliah yang bertabrakan pada slot hari dan jam yang sama.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {/* Slot 1 */}
-                  <div className="p-3.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.05] dark:border-white/[0.08] space-y-1">
-                    <div className="flex justify-between items-center text-[11px] text-[#86868B]">
+                  <div className="p-3.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.08] space-y-1">
+                    <div className="flex justify-between items-center text-[11px] text-zinc-500">
                       <span>Senin • 3 SKS</span>
                       <span className="font-mono">08:30 - 11:30</span>
                     </div>
                     <h4 className="font-semibold text-[14px]">Jaringan Komputer</h4>
-                    <p className="text-[12px] text-[#6E6E73] dark:text-[#86868B]">Lab Komputer 2</p>
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400">Lab Jaringan • Dr. Haryanto</p>
                   </div>
 
                   {/* Slot 2 (Conflict or Resolved) */}
@@ -484,41 +561,41 @@ export default function LandingPage() {
                     className={`p-3.5 rounded-xl border transition-all space-y-1 ${
                       jadwalBentrok
                         ? 'bg-rose-500/[0.08] border-rose-500/30'
-                        : 'bg-emerald-500/[0.08] border-emerald-500/30'
+                        : 'bg-black/[0.03] dark:bg-white/[0.05] border-zinc-400/40 dark:border-zinc-300/40'
                     }`}
                   >
                     <div className="flex justify-between items-center text-[11px]">
-                      <span className={jadwalBentrok ? 'text-rose-600 font-medium' : 'text-emerald-600 font-medium'}>
-                        {jadwalBentrok ? 'Bertabrakan' : 'Slot Terbuka'}
+                      <span className={jadwalBentrok ? 'text-rose-600 dark:text-rose-400 font-semibold' : 'text-zinc-700 dark:text-zinc-200 font-semibold'}>
+                        {jadwalBentrok ? 'Bertabrakan (Bentrok)' : 'Slot Terbuka (Aman)'}
                       </span>
-                      <span className="font-mono text-[11px] text-[#86868B]">
+                      <span className="font-mono text-[11px] text-zinc-500">
                         {jadwalBentrok ? '09:00 - 12:00' : '13:30 - 16:30'}
                       </span>
                     </div>
                     <h4 className="font-semibold text-[14px]">Algoritma & Struktur Data</h4>
-                    <p className="text-[12px] text-[#6E6E73] dark:text-[#86868B]">
-                      {jadwalBentrok ? 'Lab Komputer 2 (Bentrok)' : 'Ruang R204 (Tersedia)'}
+                    <p className="text-[12px] text-zinc-500 dark:text-zinc-400">
+                      {jadwalBentrok ? 'Lab Jaringan (Bentrok)' : 'Ruang R204 (Tersedia)'}
                     </p>
                   </div>
                 </div>
 
                 {/* Resolution Banner */}
-                <div className="p-3 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] flex items-center justify-between gap-3 text-[12.5px]">
+                <div className="p-3.5 rounded-xl bg-black/[0.03] dark:bg-white/[0.05] flex items-center justify-between gap-3 text-[12.5px]">
                   <div className="flex items-center gap-2">
                     {jadwalBentrok ? (
                       <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
                     ) : (
-                      <Check className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-zinc-800 dark:text-zinc-100 flex-shrink-0" />
                     )}
-                    <span className="text-[#6E6E73] dark:text-[#86868B]">
-                      {jadwalBentrok ? 'Dua kelas menempati slot waktu yang sama.' : 'Semua mata kuliah tersusun rapi tanpa bentrok.'}
+                    <span className="text-zinc-600 dark:text-zinc-300">
+                      {jadwalBentrok ? 'Dua kelas menempati slot waktu yang tumpang tindih.' : 'Semua mata kuliah tersusun rapi tanpa bentrok waktu.'}
                     </span>
                   </div>
 
                   <button
                     type="button"
                     onClick={() => setJadwalBentrok(!jadwalBentrok)}
-                    className="text-[12px] font-semibold text-[#0071E3] dark:text-emerald-400 hover:underline whitespace-nowrap"
+                    className="text-[12px] font-semibold text-black dark:text-white underline whitespace-nowrap"
                   >
                     {jadwalBentrok ? 'Pindahkan ke 13:30' : 'Ulangi Bentrok'}
                   </button>
@@ -531,19 +608,19 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div>
                   <h3 className="text-[16px] font-semibold text-[#1D1D1F] dark:text-white">
-                    Simulasi Indeks Prestasi
+                    Simulasi Indeks Prestasi (IPS/IPK)
                   </h3>
-                  <p className="text-[13px] text-[#6E6E73] dark:text-[#86868B]">
-                    Geser nilai untuk memprediksi indeks akhir berdasarkan bobot dosen.
+                  <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
+                    Geser nilai untuk memprediksi indeks akhir berdasarkan bobot resmi dosen.
                   </p>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
-                  <div className="sm:col-span-2 space-y-3 bg-black/[0.02] dark:bg-white/[0.04] p-3.5 rounded-2xl">
+                  <div className="sm:col-span-2 space-y-3 bg-black/[0.02] dark:bg-white/[0.04] p-4 rounded-2xl">
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[12px] text-[#6E6E73] dark:text-[#86868B]">
+                      <div className="flex justify-between text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">
                         <span>Tugas (20%)</span>
-                        <span className="font-mono font-medium text-black dark:text-white">{nilaiTugas}</span>
+                        <span className="font-mono font-semibold text-black dark:text-white">{nilaiTugas}</span>
                       </div>
                       <input
                         type="range"
@@ -551,14 +628,14 @@ export default function LandingPage() {
                         max="100"
                         value={nilaiTugas}
                         onChange={(e) => setNilaiTugas(Number(e.target.value))}
-                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#0071E3] dark:accent-emerald-500"
+                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-zinc-900 dark:accent-white"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[12px] text-[#6E6E73] dark:text-[#86868B]">
+                      <div className="flex justify-between text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">
                         <span>UTS (30%)</span>
-                        <span className="font-mono font-medium text-black dark:text-white">{nilaiUTS}</span>
+                        <span className="font-mono font-semibold text-black dark:text-white">{nilaiUTS}</span>
                       </div>
                       <input
                         type="range"
@@ -566,14 +643,14 @@ export default function LandingPage() {
                         max="100"
                         value={nilaiUTS}
                         onChange={(e) => setNilaiUTS(Number(e.target.value))}
-                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#0071E3] dark:accent-emerald-500"
+                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-zinc-900 dark:accent-white"
                       />
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex justify-between text-[12px] text-[#6E6E73] dark:text-[#86868B]">
+                      <div className="flex justify-between text-[12px] text-zinc-500 dark:text-zinc-400 font-medium">
                         <span>UAS (35%)</span>
-                        <span className="font-mono font-medium text-black dark:text-white">{nilaiUAS}</span>
+                        <span className="font-mono font-semibold text-black dark:text-white">{nilaiUAS}</span>
                       </div>
                       <input
                         type="range"
@@ -581,18 +658,18 @@ export default function LandingPage() {
                         max="100"
                         value={nilaiUAS}
                         onChange={(e) => setNilaiUAS(Number(e.target.value))}
-                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-[#0071E3] dark:accent-emerald-500"
+                        className="w-full h-1.5 bg-black/10 dark:bg-white/20 rounded-lg appearance-none cursor-pointer accent-zinc-900 dark:accent-white"
                       />
                     </div>
                   </div>
 
-                  {/* Clean Indicator */}
-                  <div className="text-center p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.04] space-y-1">
-                    <span className="text-[11px] text-[#86868B] uppercase tracking-wider block">Prediksi Nilai</span>
-                    <span className="text-[36px] font-semibold text-[#1D1D1F] dark:text-white leading-none block">
+                  {/* Clean Titanium Grade Card */}
+                  <div className="text-center p-4 rounded-2xl bg-black/[0.03] dark:bg-white/[0.05] border border-black/[0.06] dark:border-white/[0.08] space-y-1">
+                    <span className="text-[11px] text-zinc-400 uppercase tracking-widest font-mono block">Indeks Akhir</span>
+                    <span className="text-[42px] font-bold text-[#1D1D1F] dark:text-white leading-none block">
                       {ipkCalc.index}
                     </span>
-                    <span className="text-[12px] text-[#6E6E73] dark:text-[#86868B] font-mono block">
+                    <span className="text-[12px] text-zinc-600 dark:text-zinc-300 font-mono block pt-1">
                       Skor {ipkCalc.total} • Bobot {ipkCalc.gpa.toFixed(2)}
                     </span>
                   </div>
@@ -605,22 +682,22 @@ export default function LandingPage() {
               <div className="space-y-3.5">
                 <div>
                   <h3 className="text-[16px] font-semibold text-[#1D1D1F] dark:text-white">
-                    Tanya Aiko
+                    Asisten Kontekstual Aiko
                   </h3>
-                  <p className="text-[13px] text-[#6E6E73] dark:text-[#86868B]">
-                    Asisten yang memahami nama mahasiswa, mata kuliah, dan tenggat waktu tugas.
+                  <p className="text-[13px] text-zinc-500 dark:text-zinc-400">
+                    Memahami jadwal kuliah, deadline tugas, dan target nilai mahasiswa secara real-time.
                   </p>
                 </div>
 
-                <div className="p-3.5 rounded-2xl bg-black/[0.02] dark:bg-white/[0.04] space-y-2.5 min-h-[120px]">
-                  <div className="text-[13px] text-[#1D1D1F] dark:text-white leading-relaxed">
-                    <span className="font-medium text-[#0071E3] dark:text-emerald-400 mr-1.5">Aiko:</span>
+                <div className="p-4 rounded-2xl bg-black/[0.02] dark:bg-white/[0.04] border border-black/[0.05] dark:border-white/[0.08] space-y-2 min-h-[120px]">
+                  <div className="text-[13.5px] text-[#1D1D1F] dark:text-zinc-100 leading-relaxed">
+                    <span className="font-bold text-black dark:text-white mr-2 font-mono">Aiko:</span>
                     {aiTyping ? (
-                      <span className="text-[#86868B] animate-pulse">Meninjau jadwal perkuliahan...</span>
+                      <span className="text-zinc-400 animate-pulse">Meninjau kalender perkuliahan...</span>
                     ) : aiAnswer ? (
                       aiAnswer
                     ) : (
-                      'Halo Yossika! Ada pertanyaan seputar jadwal kuliah atau tugas minggu ini?'
+                      'Halo Yossika! Ada pertanyaan mengenai jadwal kuliah, tugas, atau persiapan ujian minggu ini?'
                     )}
                   </div>
                 </div>
@@ -634,18 +711,18 @@ export default function LandingPage() {
                     },
                     {
                       q: 'Ada kuliah apa hari ini?',
-                      a: 'Hari ini ada Jaringan Komputer (08:30 di Lab 2) dan Pemrograman Web (13:30 Daring).',
+                      a: 'Hari ini ada Jaringan Komputer (08:30 di Lab Jaringan) dan Kalkulus Lanjut (13:30 Daring).',
                     },
                     {
                       q: 'Target UAS untuk nilai A?',
-                      a: 'Untuk mengamankan nilai A, target minimal skor ujian akhirmu adalah 82.',
+                      a: 'Berdasarkan bobot tugas dan UTS kamu, target minimal skor ujian akhirmu adalah 82.',
                     },
                   ].map((p, idx) => (
                     <button
                       key={idx}
                       type="button"
                       onClick={() => handleSelectPrompt(p.q, p.a)}
-                      className="px-3 py-1.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.06] dark:hover:bg-white/[0.1] text-[12px] font-medium text-[#6E6E73] dark:text-[#86868B] transition-colors"
+                      className="px-3.5 py-1.5 rounded-full bg-black/[0.04] hover:bg-black/[0.08] dark:bg-white/[0.06] dark:hover:bg-white/[0.12] text-[12px] font-medium text-zinc-700 dark:text-zinc-300 transition-colors border border-black/[0.04] dark:border-white/[0.06]"
                     >
                       {p.q}
                     </button>
@@ -657,121 +734,319 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 4. ESSENTIAL CAPABILITIES — CLEAN APPLE CARDS (ANTI-SLOP) */}
-      <section id="fitur" className="py-20 px-4 sm:px-6 max-w-5xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
-        <div className="text-center space-y-2 mb-12">
-          <h2 className="text-[28px] sm:text-[36px] font-semibold tracking-tight text-[#1D1D1F] dark:text-white">
-            Dirancang untuk rutinitas nyata.
+      {/* 4. CARA KERJA — 3 LANGKAH SEDERHANA */}
+      <section id="cara-kerja" className="py-20 px-4 sm:px-6 max-w-5xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
+        <div className="text-center space-y-2 mb-14">
+          <span className="text-[11.5px] font-mono tracking-widest text-zinc-500 uppercase block font-semibold">
+            Alur Penggunaan
+          </span>
+          <h2 className="text-[28px] sm:text-[38px] font-bold tracking-tight text-[#1D1D1F] dark:text-white">
+            Mulai dalam 3 langkah sederhana.
           </h2>
-          <p className="text-[15px] text-[#6E6E73] dark:text-[#86868B]">
-            Setiap fitur hadir untuk menyelesaikan masalah sehari-hari mahasiswa, tanpa hiasan berlebih.
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto">
+            Tanpa konfigurasi rumit. Terstruktur dan siap digunakan dalam waktu kurang dari satu menit.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-            <Camera className="w-5 h-5 text-[#0071E3] dark:text-emerald-400" />
-            <h3 className="font-semibold text-[17px]">Presensi Orientasi Normal</h3>
-            <p className="text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed">
-              Foto bukti kehadiran tidak terbalik. Watermark mencatat tanggal, jam detik, dan mode daring atau luring secara otomatis.
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-3">
+            <div className="w-9 h-9 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08] flex items-center justify-center font-bold text-[14px] font-mono">
+              01
+            </div>
+            <h3 className="font-bold text-[17px]">Daftarkan Akun Mahasiswa</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Registrasi cepat dengan email kampus atau personal. Akun Anda sepenuhnya terisolasi dan dilindungi enkripsi cloud.
             </p>
           </div>
 
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-            <Calendar className="w-5 h-5 text-[#0071E3] dark:text-emerald-400" />
-            <h3 className="font-semibold text-[17px]">Penyusun Jadwal Cerdas</h3>
-            <p className="text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed">
-              Validasi bentrok mencegah kesalahan ambil kelas. Pantau sisa waktu menuju kelas berikutnya dari beranda.
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-3">
+            <div className="w-9 h-9 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08] flex items-center justify-center font-bold text-[14px] font-mono">
+              02
+            </div>
+            <h3 className="font-bold text-[17px]">Isi Jadwal & Beban Tugas</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Masukkan mata kuliah semester aktif Anda. Sistem otomatis memvalidasi jadwal agar tidak terjadi tabrakan jam maupun ruang.
             </p>
           </div>
 
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-            <Award className="w-5 h-5 text-[#0071E3] dark:text-emerald-400" />
-            <h3 className="font-semibold text-[17px]">Kalkulator Indeks Prestasi</h3>
-            <p className="text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed">
-              Hitung bobot komponen evaluasi dosen secara akurat. Simulasikan skor yang dibutuhkan sebelum ujian berlangsung.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-            <Sparkles className="w-5 h-5 text-[#0071E3] dark:text-emerald-400" />
-            <h3 className="font-semibold text-[17px]">Asisten Suara & Teks</h3>
-            <p className="text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed">
-              Didukung Web Speech API untuk membacakan sapaan dan tanggapan asisten langsung di perangkat Anda.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-            <Smartphone className="w-5 h-5 text-[#0071E3] dark:text-emerald-400" />
-            <h3 className="font-semibold text-[17px]">Notifikasi Web Push OS</h3>
-            <p className="text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed">
-              Pengingat resmi sistem operasi muncul 15 menit sebelum kuliah dan H-1 tenggat waktu tugas tanpa membuka peramban.
-            </p>
-          </div>
-
-          <div className="p-6 rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] space-y-2">
-            <Shield className="w-5 h-5 text-[#0071E3] dark:text-emerald-400" />
-            <h3 className="font-semibold text-[17px]">Isolasi Akun Privat</h3>
-            <p className="text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed">
-              Autentikasi sesi terenkripsi dengan penyimpanan cloud serverless. Data akademik tidak pernah tercampur antar pengguna.
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-3">
+            <div className="w-9 h-9 rounded-2xl bg-black/[0.05] dark:bg-white/[0.08] flex items-center justify-center font-bold text-[14px] font-mono">
+              03
+            </div>
+            <h3 className="font-bold text-[17px]">Pantau & Raih IPK Maksimal</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Presensi dengan kamera orientasi normal, konsultasikan tugas ke Aiko AI, dan pantau estimasi indeks prestasi hingga lulus.
             </p>
           </div>
         </div>
       </section>
 
-      {/* 5. COMPARISON SECTION */}
+      {/* 5. ESSENTIAL CAPABILITIES — CLEAN APPLE CARDS (ANTI-SLOP) */}
+      <section id="fitur" className="py-20 px-4 sm:px-6 max-w-5xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
+        <div className="text-center space-y-2 mb-12">
+          <span className="text-[11.5px] font-mono tracking-widest text-zinc-500 uppercase block font-semibold">
+            Modul Lengkap
+          </span>
+          <h2 className="text-[28px] sm:text-[38px] font-bold tracking-tight text-[#1D1D1F] dark:text-white">
+            Dirancang untuk rutinitas nyata perkuliahan.
+          </h2>
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400">
+            Menyelesaikan masalah mahasiswa tanpa hiasan berlebih atau komponen yang tidak perlu.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-2.5 transition-all hover:border-black/20 dark:hover:border-white/20">
+            <Camera className="w-5 h-5 text-zinc-800 dark:text-zinc-200" />
+            <h3 className="font-semibold text-[17px]">Presensi Kamera Normal</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Kamera tidak terbalik. Watermark otomatis menyematkan tanggal, jam detik, dan mode daring atau tatap muka.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-2.5 transition-all hover:border-black/20 dark:hover:border-white/20">
+            <Calendar className="w-5 h-5 text-zinc-800 dark:text-zinc-200" />
+            <h3 className="font-semibold text-[17px]">Penyusun Jadwal Anti-Bentrok</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Validasi bentrok mencegah kesalahan ambil kelas saat KRS. Pantau countdown menuju perkuliahan berikutnya secara presisi.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-2.5 transition-all hover:border-black/20 dark:hover:border-white/20">
+            <Award className="w-5 h-5 text-zinc-800 dark:text-zinc-200" />
+            <h3 className="font-semibold text-[17px]">Kalkulator KHS & Nilai Akhir</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Kalkulasi bobot evaluasi dosen secara akurat. Simulasikan skor UTS dan UAS yang dibutuhkan sebelum ujian berlangsung.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-2.5 transition-all hover:border-black/20 dark:hover:border-white/20">
+            <Sparkles className="w-5 h-5 text-zinc-800 dark:text-zinc-200" />
+            <h3 className="font-semibold text-[17px]">Asisten AI Gemini Flash</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Didukung model Gemini Flash untuk konsultasi materi kuliah, rangkuman tugas, dan panduan belajar 24/7.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-2.5 transition-all hover:border-black/20 dark:hover:border-white/20">
+            <Smartphone className="w-5 h-5 text-zinc-800 dark:text-zinc-200" />
+            <h3 className="font-semibold text-[17px]">Notifikasi Web Push OS</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Pengingat resmi sistem operasi muncul 15 menit sebelum kuliah dan H-1 tenggat waktu tugas tanpa harus membuka tab browser.
+            </p>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-2.5 transition-all hover:border-black/20 dark:hover:border-white/20">
+            <Shield className="w-5 h-5 text-zinc-800 dark:text-zinc-200" />
+            <h3 className="font-semibold text-[17px]">Isolasi Akun Privat</h3>
+            <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Autentikasi sesi terenkripsi dengan database serverless cloud. Data akademik mahasiswa lain terisolasi penuh secara aman.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 6. TRANSPARENT PRICING / PLANS */}
+      <section id="harga" className="py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
+        <div className="text-center space-y-2 mb-12">
+          <span className="text-[11.5px] font-mono tracking-widest text-zinc-500 uppercase block font-semibold">
+            Akses Platform
+          </span>
+          <h2 className="text-[28px] sm:text-[36px] font-bold tracking-tight text-[#1D1D1F] dark:text-white">
+            Harga transparan untuk mahasiswa.
+          </h2>
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400">
+            Semua fitur esensial tersedia gratis tanpa biaya tersembunyi.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Free Tier */}
+          <div className="p-7 rounded-3xl bg-white dark:bg-[#121214] border-2 border-black/15 dark:border-white/20 space-y-5 relative">
+            <div className="space-y-1">
+              <div className="inline-flex px-2.5 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.1] text-[11px] font-bold tracking-wide uppercase font-mono">
+                Mahasiswa Aktif
+              </div>
+              <h3 className="text-[28px] font-bold text-black dark:text-white">Rp 0 <span className="text-[14px] font-normal text-zinc-500">/ selamanya</span></h3>
+              <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400">
+                Akses lengkap seluruh kebutuhan kuliah harian Anda tanpa batasan waktu.
+              </p>
+            </div>
+
+            <ul className="space-y-2.5 text-[13px] text-zinc-700 dark:text-zinc-300">
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-zinc-900 dark:text-white flex-shrink-0" />
+                <span>Presensi kamera orientasi normal</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-zinc-900 dark:text-white flex-shrink-0" />
+                <span>Pendeteksi jadwal bentrok otomatis</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-zinc-900 dark:text-white flex-shrink-0" />
+                <span>Kalkulator IPS & prediksi indeks nilai</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check className="w-4 h-4 text-zinc-900 dark:text-white flex-shrink-0" />
+                <span>Dukungan Web Push Notification OS</span>
+              </li>
+            </ul>
+
+            <div className="pt-3">
+              <Link href="/signup">
+                <Button variant="primary" className="w-full h-10 rounded-full font-semibold text-[13.5px] bg-zinc-950 dark:bg-white text-white dark:text-zinc-950">
+                  Daftar Akun Gratis
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Pro / Campus Tier */}
+          <div className="p-7 rounded-3xl bg-black/[0.02] dark:bg-white/[0.03] border border-black/[0.06] dark:border-white/[0.08] space-y-5 flex flex-col justify-between">
+            <div className="space-y-5">
+              <div className="space-y-1">
+                <div className="inline-flex px-2.5 py-0.5 rounded-full bg-black/[0.04] dark:bg-white/[0.06] text-[11px] font-medium tracking-wide uppercase font-mono text-zinc-500">
+                  Pro Campus
+                </div>
+                <h3 className="text-[28px] font-bold text-zinc-400">Waitlist</h3>
+                <p className="text-[13.5px] text-zinc-500 dark:text-zinc-400">
+                  Integrasi otomatis API akademik kampus (SSO) dan asisten suara Live Voice Duplex.
+                </p>
+              </div>
+
+              <ul className="space-y-2.5 text-[13px] text-zinc-500 dark:text-zinc-400">
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                  <span>Sinkronisasi otomatis jadwal i-Gracias / SIAKAD</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                  <span>Live Voice Duplex dengan avatar 3D interaktif</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-zinc-400 flex-shrink-0" />
+                  <span>Ekspor PDF transkrip berstandar resmi</span>
+                </li>
+              </ul>
+            </div>
+
+            <div className="pt-3">
+              <Link href="/signup">
+                <Button variant="secondary" className="w-full h-10 rounded-full font-semibold text-[13.5px]">
+                  Gabung Waitlist Pro
+                </Button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 7. TESTIMONIALS / DI PERCAYA MAHASISWA */}
+      <section id="testimoni" className="py-20 px-4 sm:px-6 max-w-5xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
+        <div className="text-center space-y-2 mb-12">
+          <span className="text-[11.5px] font-mono tracking-widest text-zinc-500 uppercase block font-semibold">
+            Ulasan Pengguna
+          </span>
+          <h2 className="text-[28px] sm:text-[36px] font-bold tracking-tight text-[#1D1D1F] dark:text-white">
+            Dipercaya mahasiswa aktif.
+          </h2>
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400">
+            Dukungan penuh untuk berbagai program studi di perguruan tinggi.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-3">
+            <p className="text-[13.5px] text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
+              &ldquo;Fitur anti-bentroknya sangat membantu saat KRS-an. Saya tidak perlu lagi cek Excel manual untuk memastikan jam praktikum dan teori tidak tabrakan.&rdquo;
+            </p>
+            <div className="pt-2 border-t border-black/[0.05] dark:border-white/[0.05]">
+              <h4 className="font-semibold text-[14px]">Rian Ardiansyah</h4>
+              <p className="text-[12px] text-zinc-500">Informatika • Semester 5</p>
+            </div>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-3">
+            <p className="text-[13.5px] text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
+              &ldquo;Presensi foto orientasi normal bikin bukti kehadiran kuliah jadi rapi. Tampilannya di iPhone dan laptop sangat bersih seperti aplikasi bawaan Apple.&rdquo;
+            </p>
+            <div className="pt-2 border-t border-black/[0.05] dark:border-white/[0.05]">
+              <h4 className="font-semibold text-[14px]">Siti Nurhaliza</h4>
+              <p className="text-[12px] text-zinc-500">Sistem Informasi • Semester 3</p>
+            </div>
+          </div>
+
+          <div className="p-6 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] space-y-3">
+            <p className="text-[13.5px] text-zinc-600 dark:text-zinc-300 leading-relaxed italic">
+              &ldquo;Forecasting nilainya akurat banget! Saya jadi tahu persis minimal nilai UTS yang harus didapat biar mata kuliah proyek akhir tetap dapat nilai A.&rdquo;
+            </p>
+            <div className="pt-2 border-t border-black/[0.05] dark:border-white/[0.05]">
+              <h4 className="font-semibold text-[14px]">Daffa Fauzan</h4>
+              <p className="text-[12px] text-zinc-500">Teknik Telekomunikasi • Semester 7</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. COMPARISON TABLE */}
       <section id="perbandingan" className="py-20 px-4 sm:px-6 max-w-4xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
         <div className="text-center space-y-2 mb-10">
-          <h2 className="text-[28px] sm:text-[34px] font-semibold tracking-tight text-[#1D1D1F] dark:text-white">
+          <span className="text-[11.5px] font-mono tracking-widest text-zinc-500 uppercase block font-semibold">
+            Komparasi Sistem
+          </span>
+          <h2 className="text-[28px] sm:text-[34px] font-bold tracking-tight text-[#1D1D1F] dark:text-white">
             Perbandingan dengan metode umum.
           </h2>
         </div>
 
-        <div className="rounded-3xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] overflow-hidden">
+        <div className="rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] overflow-hidden">
           <table className="w-full text-left text-[13.5px]">
             <thead>
-              <tr className="border-b border-black/[0.06] dark:border-white/[0.08] text-[#86868B]">
-                <th className="py-3.5 px-5 font-medium">Kemampuan</th>
-                <th className="py-3.5 px-5 font-semibold text-[#0071E3] dark:text-emerald-400">Semestr</th>
-                <th className="py-3.5 px-5 font-normal text-[#86868B]">Catatan Biasa</th>
+              <tr className="border-b border-black/[0.06] dark:border-white/[0.08] text-zinc-500 bg-zinc-50/50 dark:bg-white/[0.02]">
+                <th className="py-3.5 px-5 font-medium">Kemampuan Sistem</th>
+                <th className="py-3.5 px-5 font-bold text-black dark:text-white">Semestr OS</th>
+                <th className="py-3.5 px-5 font-normal text-zinc-400">Catatan Biasa / Spreadsheet</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-black/[0.04] dark:divide-white/[0.05]">
               <tr>
                 <td className="py-3 px-5 font-medium">Kamera Presensi Anti-Mirror</td>
-                <td className="py-3 px-5 text-emerald-600 dark:text-emerald-400 font-medium">Otomatis</td>
-                <td className="py-3 px-5 text-[#86868B]">Tidak Ada</td>
+                <td className="py-3 px-5 text-black dark:text-white font-semibold">Otomatis Normal</td>
+                <td className="py-3 px-5 text-zinc-400">Tidak Ada</td>
               </tr>
               <tr>
-                <td className="py-3 px-5 font-medium">Pencegahan Bentrok Jam</td>
-                <td className="py-3 px-5 text-emerald-600 dark:text-emerald-400 font-medium">Validasi Sistem</td>
-                <td className="py-3 px-5 text-[#86868B]">Manual</td>
+                <td className="py-3 px-5 font-medium">Pencegahan Bentrok Jam KRS</td>
+                <td className="py-3 px-5 text-black dark:text-white font-semibold">Validasi Real-time</td>
+                <td className="py-3 px-5 text-zinc-400">Manual & Rawan Salah</td>
               </tr>
               <tr>
                 <td className="py-3 px-5 font-medium">Kalkulasi Bobot Nilai & IPS</td>
-                <td className="py-3 px-5 text-emerald-600 dark:text-emerald-400 font-medium">Seketika</td>
-                <td className="py-3 px-5 text-[#86868B]">Rumus Manual</td>
+                <td className="py-3 px-5 text-black dark:text-white font-semibold">Interaktif Seketika</td>
+                <td className="py-3 px-5 text-zinc-400">Rumus Excel Manual</td>
               </tr>
               <tr>
                 <td className="py-3 px-5 font-medium">Notifikasi Sistem Operasi</td>
-                <td className="py-3 px-5 text-emerald-600 dark:text-emerald-400 font-medium">Web Push API</td>
-                <td className="py-3 px-5 text-[#86868B]">Email / Kalender</td>
+                <td className="py-3 px-5 text-black dark:text-white font-semibold">Web Push API</td>
+                <td className="py-3 px-5 text-zinc-400">Alarm Manual</td>
               </tr>
               <tr>
                 <td className="py-3 px-5 font-medium">Instalasi PWA Standalone</td>
-                <td className="py-3 px-5 text-emerald-600 dark:text-emerald-400 font-medium">iOS & Android</td>
-                <td className="py-3 px-5 text-[#86868B]">Tab Browser</td>
+                <td className="py-3 px-5 text-black dark:text-white font-semibold">iOS, iPad, Android & Mac</td>
+                <td className="py-3 px-5 text-zinc-400">Tab Browser Terpisah</td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      {/* 6. FAQ ACCORDION */}
+      {/* 9. FAQ ACCORDION */}
       <section id="faq" className="py-20 px-4 sm:px-6 max-w-3xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
         <div className="text-center space-y-2 mb-10">
-          <h2 className="text-[28px] sm:text-[34px] font-semibold tracking-tight text-[#1D1D1F] dark:text-white">
-            Pertanyaan yang sering diajukan.
+          <span className="text-[11.5px] font-mono tracking-widest text-zinc-500 uppercase block font-semibold">
+            FAQ
+          </span>
+          <h2 className="text-[28px] sm:text-[34px] font-bold tracking-tight text-[#1D1D1F] dark:text-white">
+            Pertanyaan yang kerap diajukan.
           </h2>
         </div>
 
@@ -779,39 +1054,39 @@ export default function LandingPage() {
           {[
             {
               q: 'Apakah Semestr gratis untuk seluruh mahasiswa?',
-              a: 'Ya, Semestr dapat digunakan sepenuhnya secara gratis tanpa biaya langganan, masa percobaan, atau iklan.',
+              a: 'Ya, Semestr dapat digunakan sepenuhnya secara gratis tanpa biaya langganan, masa percobaan berbayar, ataupun iklan yang mengganggu.',
             },
             {
-              q: 'Bagaimana foto presensi tidak terbalik?',
-              a: 'Sistem memproses kanvas foto agar menghasilkan orientasi normal lurus, sehingga teks pada pakaian atau papan tulis terbaca alami.',
+              q: 'Bagaimana cara kerja kamera presensi orientasi normal?',
+              a: 'Sistem secara otomatis mengoreksi orientasi cermin pada kanvas kamera peramban, sehingga teks pada pakaian, buku catatan, atau latar belakang tetap terbaca normal.',
             },
             {
               q: 'Apakah data akun saya terisolasi dari mahasiswa lain?',
-              a: 'Setiap akun diverifikasi dengan sesi autentikasi independen pada database cloud. Mahasiswa lain yang mendaftar hanya memiliki akses ke akun mereka sendiri.',
+              a: 'Ya, setiap akun diverifikasi dengan sesi autentikasi independen pada database cloud. Mahasiswa lain yang mendaftar hanya memiliki akses ke akun mereka sendiri.',
             },
             {
-              q: 'Bagaimana cara memasang aplikasi ini di iPhone?',
-              a: 'Buka tautan web di Safari, ketuk tombol Bagikan (Share), lalu pilih Tambahkan ke Layar Utama.',
+              q: 'Bagaimana cara memasang aplikasi ini di iPhone atau Android?',
+              a: 'Di Safari (iOS), ketuk tombol Bagikan (Share) lalu pilih "Tambahkan ke Layar Utama". Di Chrome (Android), ketuk tombol Install Aplikasi pada banner.',
             },
           ].map((faq, idx) => (
             <div
               key={idx}
-              className="rounded-2xl bg-white dark:bg-[#1C1C1E] border border-black/[0.06] dark:border-white/[0.08] overflow-hidden"
+              className="rounded-2xl bg-white dark:bg-[#121214] border border-black/[0.06] dark:border-white/[0.08] overflow-hidden"
             >
               <button
                 type="button"
                 onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-                className="w-full p-4 sm:p-5 flex items-center justify-between text-left font-medium text-[15px] text-[#1D1D1F] dark:text-white"
+                className="w-full p-4 sm:p-5 flex items-center justify-between text-left font-semibold text-[15px] text-[#1D1D1F] dark:text-white"
               >
                 <span>{faq.q}</span>
                 <ChevronDown
-                  className={`w-4 h-4 text-[#86868B] transition-transform duration-200 ${
+                  className={`w-4 h-4 text-zinc-400 transition-transform duration-200 ${
                     openFaq === idx ? 'rotate-180' : ''
                   }`}
                 />
               </button>
               {openFaq === idx && (
-                <div className="px-4 pb-5 sm:px-5 text-[13.5px] text-[#6E6E73] dark:text-[#86868B] leading-relaxed border-t border-black/[0.04] dark:border-white/[0.05] pt-3">
+                <div className="px-4 pb-5 sm:px-5 text-[13.5px] text-zinc-600 dark:text-zinc-400 leading-relaxed border-t border-black/[0.04] dark:border-white/[0.05] pt-3">
                   {faq.a}
                 </div>
               )}
@@ -820,38 +1095,69 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* 7. MINIMALIST CLOSING CTA */}
+      {/* 10. CREATOR SPOTLIGHT & WATERMARK SECTION */}
+      <section className="py-16 px-4 sm:px-6 max-w-3xl mx-auto border-t border-black/[0.06] dark:border-white/[0.08]">
+        <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-[#121214] border border-black/[0.08] dark:border-white/[0.12] shadow-sm flex flex-col sm:flex-row items-center justify-between gap-6">
+          <div className="space-y-2 text-center sm:text-left">
+            <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-black/[0.05] dark:bg-white/[0.08] text-[11px] font-mono uppercase tracking-wider text-zinc-600 dark:text-zinc-300 font-semibold">
+              Arsitek & Pengembang
+            </div>
+            <h3 className="text-[20px] sm:text-[22px] font-bold text-black dark:text-white">
+              Yossika Putra Erlangga
+            </h3>
+            <p className="text-[13px] text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              NIM 103112430026 • Telkom University. Didesain secara presisi dengan standar antarmuka Apple iOS & VisionOS Spatial UI.
+            </p>
+          </div>
+
+          <div className="flex-shrink-0">
+            <a
+              href="https://yossikaputra.my.id"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[13px] shadow-sm transition-transform active:scale-95"
+            >
+              <span>Lihat Portofolio</span>
+              <ExternalLink className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* 11. MINIMALIST CLOSING CTA */}
       <section className="py-20 px-4 sm:px-6 text-center">
         <div className="max-w-xl mx-auto space-y-4">
-          <h2 className="text-[30px] sm:text-[40px] font-semibold tracking-tight text-[#1D1D1F] dark:text-white leading-tight">
+          <h2 className="text-[32px] sm:text-[44px] font-bold tracking-tight text-[#1D1D1F] dark:text-white leading-tight">
             Mulai kelola perkuliahan Anda dengan tenang.
           </h2>
-          <p className="text-[15px] text-[#6E6E73] dark:text-[#86868B]">
-            Pendaftaran selesai dalam kurang dari satu menit.
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400">
+            Pendaftaran selesai dalam waktu kurang dari satu menit.
           </p>
-          <div className="pt-2">
+          <div className="pt-3">
             <Link href="/signup">
               <Button
                 variant="primary"
                 size="lg"
-                className="bg-[#0071E3] hover:bg-[#0077ED] dark:bg-emerald-600 dark:hover:bg-emerald-500 text-white font-medium text-[15px] px-7 h-11 rounded-full"
+                className="bg-zinc-950 hover:bg-zinc-800 dark:bg-white dark:hover:bg-zinc-200 text-white dark:text-zinc-950 font-semibold text-[15px] px-8 h-11 rounded-full shadow-md"
               >
-                Daftar Akun Gratis
+                Daftar Akun Mahasiswa Gratis
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* 8. FOOTER — SUBTLE APPLE ATTRIBUTION */}
-      <footer className="py-10 px-4 border-t border-black/[0.06] dark:border-white/[0.08] text-[12px] text-[#86868B]">
-        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <MascotIcon size={18} />
-            <span>Semestr • Sistem Operasi Akademik Mahasiswa</span>
+      {/* 12. FOOTER — SUBTLE APPLE MONOCHROME ATTRIBUTION */}
+      <footer className="py-12 px-4 border-t border-black/[0.06] dark:border-white/[0.08] text-[12px] text-zinc-500 dark:text-zinc-400">
+        <div className="max-w-5xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-6 h-6 rounded-lg bg-zinc-950 dark:bg-white flex items-center justify-center text-white dark:text-zinc-950">
+              <MascotIcon size={14} />
+            </div>
+            <span className="font-medium">Semestr • Academic OS Mahasiswa Modern</span>
           </div>
 
-          <div className="flex items-center gap-5">
+          <div className="flex items-center gap-6 font-medium">
             <Link href="/privacy" className="hover:text-black dark:hover:text-white transition-colors">
               Privasi
             </Link>
@@ -862,12 +1168,16 @@ export default function LandingPage() {
               href="https://yossikaputra.my.id"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1"
+              className="hover:text-black dark:hover:text-white transition-colors flex items-center gap-1 font-semibold text-black dark:text-white"
             >
-              <span>Pengembang</span>
+              <span>yossikaputra.my.id</span>
               <ExternalLink className="w-3 h-3" />
             </a>
           </div>
+        </div>
+
+        <div className="max-w-5xl mx-auto pt-6 mt-6 border-t border-black/[0.04] dark:border-white/[0.04] text-center sm:text-left text-[11px] text-zinc-400 dark:text-zinc-500">
+          © 2026 Semestr. Seluruh hak cipta dilindungi. Dibuat dengan presisi oleh Yossika Putra Erlangga (103112430026) — Software Engineer.
         </div>
       </footer>
     </div>

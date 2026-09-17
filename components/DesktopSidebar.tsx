@@ -237,11 +237,11 @@ export function DesktopSidebar({
         ))}
 
         {/* 4. AI Gemini 2.5 Flash Quick Action Card */}
-        <div className="p-3 rounded-2xl bg-gradient-to-br from-ios-accent/10 via-purple-500/10 to-transparent border border-ios-accent/20 mt-2 space-y-2">
-          <div className="flex items-center gap-1.5 text-[11px] font-bold text-ios-accent">
+        <div className="p-3 rounded-2xl bg-black/[0.03] dark:bg-white/[0.04] border border-black/[0.06] dark:border-white/[0.1] mt-2 space-y-2">
+          <div className="flex items-center gap-1.5 text-[11px] font-bold text-ios-textPrimary">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-zinc-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-zinc-300 dark:bg-white"></span>
             </span>
             <span>Gemini 2.5 Flash Aktif</span>
           </div>
@@ -252,9 +252,9 @@ export function DesktopSidebar({
             <button
               type="button"
               onClick={onOpenLiveVoice}
-              className="w-full py-1.5 px-2.5 rounded-btn bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
+              className="w-full py-1.5 px-2.5 rounded-btn bg-black/[0.05] hover:bg-black/[0.08] dark:bg-white/[0.1] dark:hover:bg-white/[0.15] border border-black/[0.08] dark:border-white/[0.15] text-ios-textPrimary text-[11px] font-semibold flex items-center justify-center gap-1.5 transition-all active:scale-95 shadow-sm"
             >
-              <PhoneCall className="w-3 h-3 text-emerald-500 animate-pulse" />
+              <PhoneCall className="w-3 h-3 text-zinc-500 dark:text-zinc-300 animate-pulse" />
               <span>Buka Live Voice 3D</span>
             </button>
           )}
