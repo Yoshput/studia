@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   1. COLOR SCHEMES & DESIGN TOKENS (4 THEMES)
+   1. COLOR SCHEMES & DESIGN TOKENS (5 THEMES)
    ========================================================================== */
 
 /* --- 🌸 THEME 1: PASTEL PINK (DEFAULT) --- */
@@ -54,7 +54,7 @@
   --danger: #E11D48;
 }
 
-/* --- 🌿 THEME 3: HIJAU FRESH (PUTIH HIJAU • DUOLINGO VIBES • ADEM & CLEAN) --- */
+/* --- 🌿 THEME 3: HIJAU FRESH (PUTIH HIJAU • DUOLINGO VIBES) --- */
 [data-theme="green"] {
   --bg: #F4FBF7;                        /* Soothing mint-cream, zero eye strain */
   --nav-bg: rgba(244, 251, 247, 0.88);
@@ -66,7 +66,7 @@
   --text-secondary: #305440;            /* Muted pine stone */
   --text-muted: #5B7E6B;
 
-  --accent: #16A34A;                    /* Duolingo fresh energetic green */
+  --accent: #16A34A;                    /* Duolingo energetic fresh green */
   --accent-light: #DCFCE7;
   --accent-dark: #15803D;
   --accent-subtle: rgba(34, 197, 94, 0.09);
@@ -78,7 +78,31 @@
   --danger: #EF4444;
 }
 
-/* --- 🌙 THEME 4: APPLE OBSIDIAN DARK --- */
+/* --- 🔷 THEME 4: BIRU PUTIH (APPLE iOS CUPERTINO BLUE • PURE & CLEAN) --- */
+[data-theme="blue"] {
+  --bg: #F5F7FA;                        /* Apple light ceramic canvas */
+  --nav-bg: rgba(245, 247, 250, 0.88);
+  --surface: #FFFFFF;                   /* Crisp pure white iOS cards */
+  --surface-secondary: #EDF2F8;         /* Soft Cupertino blue-gray surface */
+  --border: rgba(0, 113, 227, 0.14);   /* Apple System Blue hairline border */
+  --border-subtle: rgba(0, 113, 227, 0.08);
+  --text-primary: #0B1320;              /* Apple Midnight Slate */
+  --text-secondary: #475569;            /* Apple Slate subtext */
+  --text-muted: #64748B;
+
+  --accent: #0071E3;                    /* Apple HIG System Blue */
+  --accent-light: #E0EFFF;              /* Soft ice blue tint */
+  --accent-dark: #0056B3;               /* Cupertino Navy Blue */
+  --accent-subtle: rgba(0, 113, 227, 0.08);
+  --accent-glow: rgba(0, 113, 227, 0.28);
+  --accent-border: rgba(0, 113, 227, 0.22);
+
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+}
+
+/* --- 🌙 THEME 5: APPLE OBSIDIAN DARK --- */
 .dark,
 [data-theme="dark"] {
   --bg: #090A0F;                        /* True Apple OLED Obsidian */
@@ -104,7 +128,7 @@
 }
 
 /* ==========================================================================
-   2. BASE RESET & SCROLLBAR
+   2. BASE RESET & APPLE iOS SMOOTH SCROLLING
    ========================================================================== */
 * {
   box-sizing: border-box;
@@ -117,15 +141,16 @@ html {
 body {
   background-color: var(--bg);
   color: var(--text-primary);
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Icons", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   margin: 0;
   padding: 0;
   min-height: 100vh;
-  transition: background-color 0.35s ease, color 0.35s ease;
+  transition: background-color 0.35s cubic-bezier(0.32, 0.72, 0, 1), color 0.35s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
+/* Custom iOS minimal scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -134,7 +159,7 @@ body {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.15);
+  background: rgba(0, 0, 0, 0.14);
   border-radius: 9999px;
 }
 .dark ::-webkit-scrollbar-thumb {
@@ -142,7 +167,23 @@ body {
 }
 
 /* ==========================================================================
-   3. BULLETPROOF THEMED COMPONENTS
+   3. APPLE iOS ANIMATIONS & INTERACTIVE FEEDBACK
+   ========================================================================== */
+
+/* Authentic iOS spring transitions */
+.ios-spring {
+  transition: all 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.ios-card {
+  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.3s cubic-bezier(0.32, 0.72, 0, 1), border-color 0.3s ease;
+}
+.ios-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ==========================================================================
+   4. BULLETPROOF THEMED COMPONENTS
    ========================================================================== */
 
 /* A. Headline Gradient Text */
@@ -170,6 +211,14 @@ body {
   color: transparent !important;
 }
 
+[data-theme="blue"] .headline-gradient {
+  background: linear-gradient(135deg, #0056B3 0%, #0071E3 50%, #2997FF 100%) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  color: transparent !important;
+}
+
 .dark .headline-gradient,
 [data-theme="dark"] .headline-gradient {
   background: linear-gradient(135deg, #F472B6 0%, #FB7185 50%, #FDA4AF 100%) !important;
@@ -179,16 +228,19 @@ body {
   color: transparent !important;
 }
 
-/* B. Primary Theme Button */
+/* B. Primary Theme Button with iOS Spring Feedback */
 .btn-theme-primary {
   background: linear-gradient(135deg, #EC4899 0%, #F472B6 100%);
   color: #FFFFFF !important;
   box-shadow: 0 8px 24px rgba(236, 72, 153, 0.25);
-  transition: all 0.2s ease;
+  transition: transform 0.15s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.2s ease, box-shadow 0.2s ease;
 }
 .btn-theme-primary:hover {
-  opacity: 0.95;
+  opacity: 0.96;
   transform: translateY(-1px);
+}
+.btn-theme-primary:active {
+  transform: scale(0.97);
 }
 
 [data-theme="maroon"] .btn-theme-primary {
@@ -201,6 +253,12 @@ body {
   background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
   color: #FFFFFF !important;
   box-shadow: 0 8px 24px rgba(34, 197, 94, 0.28) !important;
+}
+
+[data-theme="blue"] .btn-theme-primary {
+  background: linear-gradient(135deg, #0071E3 0%, #2997FF 100%) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 8px 24px rgba(0, 113, 227, 0.30) !important;
 }
 
 .dark .btn-theme-primary,
@@ -220,13 +278,16 @@ body {
 [data-theme="green"] .brand-mascot {
   background: linear-gradient(135deg, #15803D 0%, #16A34A 50%, #22C55E 100%) !important;
 }
+[data-theme="blue"] .brand-mascot {
+  background: linear-gradient(135deg, #0056B3 0%, #0071E3 50%, #2997FF 100%) !important;
+}
 .dark .brand-mascot,
 [data-theme="dark"] .brand-mascot {
   background: linear-gradient(135deg, #F472B6 0%, #EC4899 100%) !important;
 }
 
 /* ==========================================================================
-   4. MAROON X PUTIH OVERRIDES
+   5. MAROON X PUTIH OVERRIDES
    ========================================================================== */
 [data-theme="maroon"] {
   header {
@@ -321,7 +382,7 @@ body {
 }
 
 /* ==========================================================================
-   5. HIJAU FRESH (DUOLINGO VIBES) OVERRIDES
+   6. HIJAU FRESH OVERRIDES
    ========================================================================== */
 [data-theme="green"] {
   header {
@@ -339,7 +400,6 @@ body {
     color: #16A34A !important;
   }
 
-  /* Creator badges & pills */
   .bg-pink-500\/\[0\.08\],
   .bg-pink-500\/\[0\.15\] {
     background-color: rgba(34, 197, 94, 0.09) !important;
@@ -351,7 +411,6 @@ body {
     color: #15803D !important;
   }
 
-  /* Text & elements */
   h1, h2, h3, h4 {
     color: #0D2818 !important;
   }
@@ -365,13 +424,11 @@ body {
     background-color: #22C55E !important;
   }
 
-  /* Cards */
   .bg-white {
     background-color: #FFFFFF !important;
     border-color: rgba(22, 163, 74, 0.14) !important;
   }
 
-  /* Simulator */
   #simulator {
     background-color: #FFFFFF !important;
     border-color: rgba(22, 163, 74, 0.18) !important;
@@ -388,12 +445,10 @@ body {
     color: #16A34A !important;
   }
 
-  /* Range sliders */
   .accent-pink-500 {
     accent-color: #16A34A !important;
   }
 
-  /* Pricing */
   .bg-zinc-950 {
     background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%) !important;
     color: #FFFFFF !important;
@@ -402,7 +457,6 @@ body {
     color: #FFFFFF !important;
   }
 
-  /* Comparison table */
   table th {
     color: #0D2818 !important;
   }
@@ -410,7 +464,6 @@ body {
     border-color: rgba(22, 163, 74, 0.12) !important;
   }
 
-  /* Footer */
   footer {
     border-top: 1px solid rgba(22, 163, 74, 0.14) !important;
     color: #5B7E6B !important;
@@ -424,7 +477,110 @@ body {
 }
 
 /* ==========================================================================
-   6. ANIMATIONS
+   7. BIRU PUTIH (APPLE iOS CUPERTINO BLUE) OVERRIDES
+   ========================================================================== */
+[data-theme="blue"] {
+  header {
+    background-color: rgba(245, 247, 250, 0.88) !important;
+    border-bottom: 1px solid rgba(0, 113, 227, 0.12) !important;
+  }
+  header span[class*="text-[#1A0A12]"],
+  header span[class*="text-black"] {
+    color: #0B1320 !important;
+  }
+  header nav a {
+    color: #475569 !important;
+  }
+  header nav a:hover {
+    color: #0071E3 !important;
+  }
+
+  /* Creator badges & pills */
+  .bg-pink-500\/\[0\.08\],
+  .bg-pink-500\/\[0\.15\] {
+    background-color: rgba(0, 113, 227, 0.08) !important;
+    border-color: rgba(0, 113, 227, 0.20) !important;
+    color: #0056B3 !important;
+  }
+  .bg-pink-500\/\[0\.08\] *,
+  .bg-pink-500\/\[0\.15\] * {
+    color: #0056B3 !important;
+  }
+
+  /* Text & elements */
+  h1, h2, h3, h4 {
+    color: #0B1320 !important;
+  }
+  p, .text-stone-600, .text-stone-500, .text-zinc-500, .text-zinc-600 {
+    color: #475569 !important;
+  }
+  .text-pink-600, .text-pink-500 {
+    color: #0071E3 !important;
+  }
+  .bg-pink-500 {
+    background-color: #0071E3 !important;
+  }
+
+  /* Cards */
+  .bg-white {
+    background-color: #FFFFFF !important;
+    border-color: rgba(0, 113, 227, 0.12) !important;
+  }
+
+  /* Simulator */
+  #simulator {
+    background-color: #FFFFFF !important;
+    border-color: rgba(0, 113, 227, 0.16) !important;
+    box-shadow: 0 16px 50px rgba(0, 113, 227, 0.08) !important;
+  }
+  #simulator > div:first-child {
+    background-color: #EDF2F8 !important;
+    border-bottom: 1px solid rgba(0, 113, 227, 0.10) !important;
+  }
+  #simulator button {
+    color: #475569 !important;
+  }
+  #simulator button:hover {
+    color: #0071E3 !important;
+  }
+
+  /* Range sliders */
+  .accent-pink-500 {
+    accent-color: #0071E3 !important;
+  }
+
+  /* Pricing */
+  .bg-zinc-950 {
+    background: linear-gradient(135deg, #0071E3 0%, #2997FF 100%) !important;
+    color: #FFFFFF !important;
+  }
+  .bg-zinc-950 * {
+    color: #FFFFFF !important;
+  }
+
+  /* Comparison table */
+  table th {
+    color: #0B1320 !important;
+  }
+  tr.border-b {
+    border-color: rgba(0, 113, 227, 0.10) !important;
+  }
+
+  /* Footer */
+  footer {
+    border-top: 1px solid rgba(0, 113, 227, 0.12) !important;
+    color: #64748B !important;
+  }
+  footer a {
+    color: #475569 !important;
+  }
+  footer a:hover {
+    color: #0071E3 !important;
+  }
+}
+
+/* ==========================================================================
+   8. ANIMATIONS
    ========================================================================== */
 @keyframes laserScan {
   0%   { top: 5%; opacity: 0.2; }

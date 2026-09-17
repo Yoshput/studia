@@ -262,6 +262,17 @@ export function ThreeTitaniumOrb({
         keyLight.color.setHex(0x86efac);
         rimLight.color.setHex(0x16a34a);
         specularFill.color.setHex(0xffffff);
+      } else if (themeName === "blue") {
+        sphereMat.color.setHex(0x0071e3);      // Apple Pacific Blue
+        sphereMat.emissive.setHex(0x002855);   // Deep royal navy glow
+        innerWireMat.color.setHex(0xbfe0ff);   // Icy azure wireframe
+        innerWireMat.opacity = 0.35;
+        ringMat1.color.setHex(0x2997ff);       // Apple iOS blue ring
+        ringMat2.color.setHex(0xffffff);       // Crisp white ring
+        particleMat.color.setHex(0xd0e8ff);    // Sapphire stardust
+        keyLight.color.setHex(0x99ccff);
+        rimLight.color.setHex(0x0071e3);
+        specularFill.color.setHex(0xffffff);
       } else if (themeName === "dark") {
         sphereMat.color.setHex(0x1e293b);      // Titanium obsidian
         sphereMat.emissive.setHex(0x0f172a);
