@@ -12,10 +12,10 @@ interface DesktopHeaderProps {
 
 const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
   "/dashboard": { title: "Dashboard Akademik", subtitle: "Ikhtisar jadwal, tugas, dan performa kuliah harian" },
-  "/jadwal": { title: "Jadwal Perkuliahan", subtitle: "Tabel shift dan ruang kelas semester 5 iGracias" },
+  "/jadwal": { title: "Jadwal Perkuliahan", subtitle: "Tabel shift dan ruang kelas semester aktif" },
   "/tugas": { title: "Tugas & Deadline", subtitle: "Daftar to-do dan batas waktu pengerjaan tugas aktif" },
   "/absen": { title: "Presensi Scan Wajah", subtitle: "Verifikasi kehadiran biometrik berbasis kamera" },
-  "/nilai": { title: "Nilai & Transkrip", subtitle: "KHS kumulatif resmi IPK 3.64 dan grafik performa" },
+  "/nilai": { title: "Nilai & Transkrip", subtitle: "KHS kumulatif resmi dan grafik performa akademik" },
   "/progress": { title: "Progress Belajar", subtitle: "Catatan pemahaman materi dan log belajar mandiri" },
   "/profil": { title: "Profil Mahasiswa", subtitle: "Identitas dan biodata mahasiswa Telkom University" },
 };

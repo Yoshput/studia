@@ -401,24 +401,34 @@ export default function DashboardPage() {
           </p>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-[32px] sm:text-[36px] font-black text-ios-textPrimary leading-none">
-              {semesterInfo?.ipk ? semesterInfo.ipk.toFixed(2) : "3.64"}
+              {semesterInfo?.ipk !== null && semesterInfo?.ipk !== undefined && semesterInfo.ipk > 0
+                ? semesterInfo.ipk.toFixed(2)
+                : totalSks > 0
+                ? "0.00"
+                : "-"}
             </span>
             <span className="text-[11.5px] font-bold text-ios-success">
-              Sangat Memuaskan
+              {semesterInfo?.ipk && semesterInfo.ipk >= 3.5
+                ? "Sangat Memuaskan"
+                : semesterInfo?.ipk && semesterInfo.ipk >= 3.0
+                ? "Memuaskan"
+                : totalSks > 0
+                ? "Semester Berjalan"
+                : "Akun Baru"}
             </span>
           </div>
           <p className="text-[11px] text-ios-textSecondary mt-2">
-            84 SKS Selesai • Tingkat III Ganjil
+            {totalSks > 0 ? `${totalSks} SKS Terdaftar` : "Mulai susun mata kuliah kamu"}
           </p>
         </Card>
 
         <Card className="p-4 bg-ios-surface border border-ios-border hover:shadow-iosHover transition-shadow">
           <p className="text-[11.5px] font-semibold text-ios-textSecondary uppercase tracking-wider">
-            Beban Semester 5
+            Beban {semesterInfo?.nama_semester || "Semester Aktif"}
           </p>
           <div className="mt-1 flex items-baseline gap-2">
             <span className="text-[32px] sm:text-[36px] font-black text-ios-textPrimary leading-none">
-              {totalSks || 22}
+              {totalSks}
             </span>
             <span className="text-[13px] font-semibold text-ios-textSecondary">
               SKS
@@ -702,7 +712,7 @@ export default function DashboardPage() {
               <span>Sistem Akademik Terverifikasi</span>
             </div>
             <p className="text-[12px] text-ios-textSecondary mt-1 leading-relaxed">
-              Jadwal shift kuliah, IPK resmi 3.64 (84 SKS), dan tugas terindeks otomatis ke database. Mode Live Voice 3D didukung oleh Google Gemini 2.5 Flash.
+              Jadwal shift kuliah, IPK kumulatif resmi, dan tugas terindeks otomatis ke database. Mode Live Voice 3D didukung oleh Google Gemini 2.5 Flash.
             </p>
           </Card>
         </div>

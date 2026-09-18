@@ -275,7 +275,7 @@ export default function NilaiPage() {
             Transkrip &amp; Nilai
           </h1>
           <p className="text-[13px] text-ios-textSecondary">
-            IPK Kumulatif: <strong className="text-ios-accent">3.64</strong> (84 SKS Resmi Tel-U)
+            IPK Kumulatif: <strong className="text-ios-accent">{semestersList.length > 0 ? (semestersList[semestersList.length - 1]?.ipk ?? 0).toFixed(2) : "-"}</strong> (KHS Resmi)
           </p>
         </div>
 
@@ -616,7 +616,7 @@ export default function NilaiPage() {
               <span>Grafik Pertumbuhan IPK (Semester 1 s.d. 5)</span>
             </h2>
             <p className="text-[12px] text-ios-textSecondary mb-4">
-              Performa akademik konsisten dengan IPK kumulatif 3.64 di tingkat aktif.
+              Performa akademik konsisten sesuai catatan KHS aktif semester ini.
             </p>
 
             <div className="h-56 w-full">

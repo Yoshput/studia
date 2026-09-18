@@ -30,31 +30,6 @@ interface DesktopSidebarProps {
   onOpenLiveVoice?: () => void;
 }
 
-const navSections = [
-  {
-    title: "Menu Utama",
-    items: [
-      { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
-      { href: "/jadwal", label: "Jadwal Perkuliahan", icon: CalendarDays, badge: "8 Matkul" },
-      { href: "/tugas", label: "Tugas & Deadline", icon: CheckSquare, badge: "3 Aktif" },
-      { href: "/absen", label: "Presensi Scan Wajah", icon: Camera, badge: "Biometrik" },
-    ],
-  },
-  {
-    title: "Akademik & Performa",
-    items: [
-      { href: "/nilai", label: "Nilai & Transkrip", icon: GraduationCap, badge: "IPK 3.64" },
-      { href: "/progress", label: "Progress Belajar", icon: BookOpenCheck, badge: null },
-    ],
-  },
-  {
-    title: "Akun & Preferensi",
-    items: [
-      { href: "/profil", label: "Profil Mahasiswa", icon: User, badge: null },
-    ],
-  },
-];
-
 import { useSession } from "next-auth/react";
 
 export function DesktopSidebar({
@@ -70,6 +45,7 @@ export function DesktopSidebar({
   const [studentClass, setStudentClass] = useState<string>("");
   const [isPro, setIsPro] = useState<boolean>((session?.user as any)?.is_pro ?? false);
   const [isProModalOpen, setIsProModalOpen] = useState<boolean>(false);
+  const [counts, setCounts] = useState<{ matkul?: number; tugas?: number; ipk?: number | null }>({});
 
   const userIdentifier = session?.user?.email || (session?.user as { id?: string })?.id;
 
@@ -116,6 +92,19 @@ export function DesktopSidebar({
       })
       .catch(() => {});
 
+    // Fetch dynamic counts for logged in user
+    Promise.all([
+      fetch("/api/matkul").then((r) => r.json()).catch(() => ({})),
+      fetch("/api/tugas").then((r) => r.json()).catch(() => ({})),
+      fetch("/api/semester").then((r) => r.json()).catch(() => ({})),
+    ]).then(([mData, tData, sData]) => {
+      setCounts({
+        matkul: mData?.matkul?.length ?? 0,
+        tugas: tData?.tugas?.filter((t: any) => t.status !== "selesai")?.length ?? 0,
+        ipk: sData?.activeSemester?.ipk ?? null,
+      });
+    });
+
     // Listen for instant avatar update event
     const handleAvatarUpdated = (e: Event) => {
       const customEvent = e as CustomEvent<{ avatar_url?: string | null }>;
@@ -131,6 +120,46 @@ export function DesktopSidebar({
     window.addEventListener("avatar-updated", handleAvatarUpdated);
     return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
   }, [session, userIdentifier]);
+
+  const navSections = [
+    {
+      title: "Menu Utama",
+      items: [
+        { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, badge: null },
+        {
+          href: "/jadwal",
+          label: "Jadwal Perkuliahan",
+          icon: CalendarDays,
+          badge: counts.matkul !== undefined && counts.matkul > 0 ? `${counts.matkul} Matkul` : null,
+        },
+        {
+          href: "/tugas",
+          label: "Tugas & Deadline",
+          icon: CheckSquare,
+          badge: counts.tugas !== undefined && counts.tugas > 0 ? `${counts.tugas} Aktif` : null,
+        },
+        { href: "/absen", label: "Presensi Scan Wajah", icon: Camera, badge: "Biometrik" },
+      ],
+    },
+    {
+      title: "Akademik & Performa",
+      items: [
+        {
+          href: "/nilai",
+          label: "Nilai & Transkrip",
+          icon: GraduationCap,
+          badge: counts.ipk && counts.ipk > 0 ? `IPK ${counts.ipk.toFixed(2)}` : null,
+        },
+        { href: "/progress", label: "Progress Belajar", icon: BookOpenCheck, badge: null },
+      ],
+    },
+    {
+      title: "Akun & Preferensi",
+      items: [
+        { href: "/profil", label: "Profil Mahasiswa", icon: User, badge: null },
+      ],
+    },
+  ];
 
   // Hide on landing, login, signup
   if (pathname === "/" || pathname === "/login" || pathname === "/signup") {
