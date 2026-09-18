@@ -3,6 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
+import { ensureUserWorkspace } from "./workspace";
 
 export const authOptions: NextAuthOptions = {
   session: {
@@ -98,12 +99,15 @@ export const authOptions: NextAuthOptions = {
           (user as any).is_pro = existingUser.is_pro;
           (user as any).pro_plan = existingUser.pro_plan;
 
-          const { ensureUserWorkspace } = await import("./workspace");
-          await ensureUserWorkspace(existingUser.id);
+          try {
+            await ensureUserWorkspace(existingUser.id);
+          } catch (wsErr) {
+            console.error("Workspace provision warning:", wsErr);
+          }
 
           return true;
         } catch (error) {
-          console.error("Error signing in with Google:", error);
+          console.error("Critical error in Google signIn callback:", error);
           return false;
         }
       }
