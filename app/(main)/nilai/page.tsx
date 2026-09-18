@@ -32,7 +32,7 @@ import {
   Cell,
   CartesianGrid,
 } from "recharts";
-import { formatShortDateIndo, calculateEstimatedGrade } from "@/lib/utils";
+import { formatShortDateIndo, calculateEstimatedGrade, getGradeLetter } from "@/lib/utils";
 import { Matkul, Nilai } from "@/types";
 import { GpaOptimizerModal } from "@/components/pro/GpaOptimizerModal";
 import { exportKhsToCsv } from "@/lib/export";
@@ -76,6 +76,9 @@ export default function NilaiPage() {
   const [nilaiAngka, setNilaiAngka] = useState<number | "">(85);
   const [tanggal, setTanggal] = useState(new Date().toISOString().slice(0, 10));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [inputMode, setInputMode] = useState<"standard" | "lms">("standard");
+  const [lmsScore, setLmsScore] = useState<number | "">(8);
+  const [lmsMaxScore, setLmsMaxScore] = useState<number | "">(10);
 
   // Bobot editing state
   const [editBobotList, setEditBobotList] = useState<{ kategori: string; bobot_persen: number }[]>([]);
@@ -177,7 +180,16 @@ export default function NilaiPage() {
 
   const handleSaveNilai = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedMatkulId || !namaItem.trim() || nilaiAngka === "") return;
+    const finalNilai =
+      inputMode === "lms"
+        ? lmsScore !== "" && Number(lmsMaxScore) > 0
+          ? Math.min(100, Math.round(((Number(lmsScore) / Number(lmsMaxScore)) * 100) * 10) / 10)
+          : 0
+        : Number(nilaiAngka);
+
+    if (!selectedMatkulId || !namaItem.trim()) return;
+    if (inputMode === "standard" && nilaiAngka === "") return;
+    if (inputMode === "lms" && (lmsScore === "" || Number(lmsMaxScore) <= 0)) return;
 
     setIsSubmitting(true);
     try {
@@ -188,7 +200,7 @@ export default function NilaiPage() {
           matkul_id: selectedMatkulId,
           kategori,
           nama_item: namaItem,
-          nilai: Number(nilaiAngka),
+          nilai: finalNilai,
           tanggal: new Date(tanggal).toISOString(),
         }),
       });
@@ -696,25 +708,152 @@ export default function NilaiPage() {
             required
           />
 
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label="Nilai Angka (0-100)"
-              type="number"
-              min={0}
-              max={100}
-              step={0.5}
-              value={nilaiAngka}
-              onChange={(e) => setNilaiAngka(e.target.value === "" ? "" : Number(e.target.value))}
-              required
-            />
-            <Input
-              label="Tanggal"
-              type="date"
-              value={tanggal}
-              onChange={(e) => setTanggal(e.target.value)}
-              required
+          {/* Format Selector */}
+          <div className="space-y-1.5 pt-1">
+            <label className="text-[11px] font-semibold text-ios-textSecondary uppercase tracking-wider">
+              Format Penilaian
+            </label>
+            <SegmentedControl
+              options={[
+                { value: "standard", label: "Skala 100 (Standar)" },
+                { value: "lms", label: "Skor LMS CeLOE (Pecahan)" },
+              ]}
+              value={inputMode}
+              onChange={(v) => setInputMode(v as "standard" | "lms")}
             />
           </div>
+
+          {inputMode === "standard" ? (
+            <div className="space-y-2.5">
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Nilai Angka (0-100)"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={0.1}
+                  value={nilaiAngka}
+                  onChange={(e) => setNilaiAngka(e.target.value === "" ? "" : Number(e.target.value))}
+                  required
+                />
+                <Input
+                  label="Tanggal"
+                  type="date"
+                  value={tanggal}
+                  onChange={(e) => setTanggal(e.target.value)}
+                  required
+                />
+              </div>
+
+              {/* Smart Guard: Jika terketik angka <= 10 di mode 100 */}
+              {typeof nilaiAngka === "number" && nilaiAngka > 0 && nilaiAngka <= 10 && (
+                <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/25 text-[12px] text-amber-700 dark:text-amber-300 flex flex-col gap-2">
+                  <div className="flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5 text-amber-600 dark:text-amber-400" />
+                    <span>
+                      Kamu memasukkan angka <strong>{nilaiAngka}</strong>. Apakah ini nilai kuis CeLOE skala 10? Kalau ya, nilai setaranya adalah <strong>{nilaiAngka * 10}</strong> (Skala 100).
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 pl-6">
+                    <button
+                      type="button"
+                      onClick={() => setNilaiAngka(nilaiAngka * 10)}
+                      className="px-2.5 py-1 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white transition-colors"
+                    >
+                      Ubah jadi {nilaiAngka * 10}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setLmsScore(nilaiAngka);
+                        setLmsMaxScore(10);
+                        setInputMode("lms");
+                      }}
+                      className="px-2 py-1 text-xs font-medium text-ios-textSecondary hover:underline"
+                    >
+                      Hitung di Mode LMS
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3 p-3.5 rounded-2xl bg-ios-surfaceSecondary/70 border border-ios-border">
+              <div className="text-xs text-ios-textSecondary">
+                💡 Masukkan skor yang tertera di LMS CeLOE (misal <strong>8.00</strong> dari total <strong>10.00</strong>). Sistem akan otomatis mengonversi ke skala 100.
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <Input
+                  label="Skor Diperoleh"
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  placeholder="Misal: 8.00"
+                  value={lmsScore}
+                  onChange={(e) => setLmsScore(e.target.value === "" ? "" : Number(e.target.value))}
+                  required
+                />
+                <Input
+                  label="Skor Maksimal LMS"
+                  type="number"
+                  min={0.1}
+                  step={0.01}
+                  placeholder="Misal: 10"
+                  value={lmsMaxScore}
+                  onChange={(e) => setLmsMaxScore(e.target.value === "" ? "" : Number(e.target.value))}
+                  required
+                />
+              </div>
+
+              {/* Preset cepat untuk Total Skor LMS */}
+              <div className="flex items-center gap-1.5 flex-wrap text-xs text-ios-textSecondary">
+                <span className="text-[11px]">Preset Max:</span>
+                {[10, 20, 50, 100].map((val) => (
+                  <button
+                    key={val}
+                    type="button"
+                    onClick={() => setLmsMaxScore(val)}
+                    className={`px-2.5 py-0.5 rounded-lg border text-[11px] font-semibold transition-all ${
+                      Number(lmsMaxScore) === val
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-ios-surface border-ios-border text-ios-text hover:border-primary/50"
+                    }`}
+                  >
+                    /{val}
+                  </button>
+                ))}
+              </div>
+
+              {/* Live Preview Konversi */}
+              {lmsScore !== "" && Number(lmsMaxScore) > 0 && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-between">
+                  <div>
+                    <div className="text-[11px] font-medium text-emerald-700 dark:text-emerald-400">
+                      Terkonversi ke Skala 100
+                    </div>
+                    <div className="text-xl font-black text-emerald-700 dark:text-emerald-300">
+                      {Math.min(100, Math.round(((Number(lmsScore) / Number(lmsMaxScore)) * 100) * 10) / 10)}
+                      <span className="text-xs font-normal opacity-75 ml-1">/ 100</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-sm">
+                      {getGradeLetter(Math.min(100, (Number(lmsScore) / Number(lmsMaxScore)) * 100)).letter} • Indeks {getGradeLetter(Math.min(100, (Number(lmsScore) / Number(lmsMaxScore)) * 100)).gpa.toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              <Input
+                label="Tanggal"
+                type="date"
+                value={tanggal}
+                onChange={(e) => setTanggal(e.target.value)}
+                required
+              />
+            </div>
+          )}
 
           <div className="pt-3">
             <Button
