@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { ensureUserWorkspace } from "@/lib/workspace";
 import { z } from "zod";
 
 const matkulSchema = z.object({
@@ -15,7 +18,6 @@ const matkulSchema = z.object({
   semester_id: z.string().optional(),
 });
 
-// Helper to check time overlap
 function isTimeOverlapping(
   startA: string,
   endA: string,
@@ -27,14 +29,23 @@ function isTimeOverlapping(
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const semesterId = searchParams.get("semester_id");
 
     let activeSemesterId: string | null = semesterId;
     if (!activeSemesterId) {
-      const activeSem = await db.semester.findFirst({
-        where: { is_active: true },
+      let activeSem = await db.semester.findFirst({
+        where: { user_id: userId, is_active: true },
       });
+      if (!activeSem) {
+        activeSem = await ensureUserWorkspace(userId);
+      }
       activeSemesterId = activeSem?.id ?? null;
     }
 
@@ -43,7 +54,10 @@ export async function GET(req: NextRequest) {
     }
 
     const matkulList = await db.matkul.findMany({
-      where: { semester_id: activeSemesterId },
+      where: {
+        semester_id: activeSemesterId,
+        semester: { user_id: userId },
+      },
       include: {
         bobot_nilai: true,
         nilai: true,
@@ -70,22 +84,41 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const validated = matkulSchema.parse(body);
 
-    // Ensure semester_id
     let semesterId = validated.semester_id;
     if (!semesterId) {
-      const activeSem = await db.semester.findFirst({
-        where: { is_active: true },
+      let activeSem = await db.semester.findFirst({
+        where: { user_id: userId, is_active: true },
       });
       if (!activeSem) {
+        activeSem = await ensureUserWorkspace(userId);
+      }
+      if (!activeSem) {
         return NextResponse.json(
-          { error: "Belum ada semester aktif yang terdaftar" },
+          { error: "Gagal menemukan semester aktif untuk akun Anda" },
           { status: 400 }
         );
       }
       semesterId = activeSem.id;
+    } else {
+      // Pastikan semester_id memang milik user yang bersangkutan
+      const userSem = await db.semester.findFirst({
+        where: { id: semesterId, user_id: userId },
+      });
+      if (!userSem) {
+        return NextResponse.json(
+          { error: "Semester tidak ditemukan atau Anda tidak memiliki akses" },
+          { status: 403 }
+        );
+      }
     }
 
     if (validated.jam_mulai >= validated.jam_selesai) {
@@ -95,7 +128,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Check schedule clashes on the same day in the same semester
+    // Deteksi bentrok jadwal
     const existingSameDay = await db.matkul.findMany({
       where: {
         semester_id: semesterId,
@@ -121,15 +154,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Default weight setup
-    const defaultBobot = [
-      { kategori: "Quiz", bobot_persen: 15 },
-      { kategori: "Tugas", bobot_persen: 20 },
-      { kategori: "UTS", bobot_persen: 25 },
-      { kategori: "UAS", bobot_persen: 25 },
-      { kategori: "Tubes", bobot_persen: 15 },
-    ];
-
     const newMatkul = await db.matkul.create({
       data: {
         semester_id: semesterId,
@@ -141,9 +165,14 @@ export async function POST(req: NextRequest) {
         jam_mulai: validated.jam_mulai,
         jam_selesai: validated.jam_selesai,
         ruang: validated.ruang,
-        warna: validated.warna || "#007AFF",
+        warna: validated.warna || "#B6252A",
         bobot_nilai: {
-          create: defaultBobot,
+          create: [
+            { kategori: "TUGAS", bobot_persen: 20 },
+            { kategori: "KUIS", bobot_persen: 15 },
+            { kategori: "UTS", bobot_persen: 30 },
+            { kategori: "UAS", bobot_persen: 35 },
+          ],
         },
       },
       include: {
@@ -169,6 +198,12 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id, ...data } = body;
 
@@ -188,18 +223,21 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const currentMatkul = await db.matkul.findUnique({
-      where: { id },
+    // Pastikan matkul ini milik user yang bersangkutan via semester.user_id
+    const currentMatkul = await db.matkul.findFirst({
+      where: {
+        id,
+        semester: { user_id: userId },
+      },
     });
 
     if (!currentMatkul) {
       return NextResponse.json(
-        { error: "Mata kuliah tidak ditemukan" },
+        { error: "Mata kuliah tidak ditemukan atau Anda tidak memiliki akses" },
         { status: 404 }
       );
     }
 
-    // Clash detection excluding self
     const existingSameDay = await db.matkul.findMany({
       where: {
         semester_id: currentMatkul.semester_id,
@@ -259,6 +297,12 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -266,6 +310,20 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { error: "ID mata kuliah wajib disertakan" },
         { status: 400 }
+      );
+    }
+
+    const currentMatkul = await db.matkul.findFirst({
+      where: {
+        id,
+        semester: { user_id: userId },
+      },
+    });
+
+    if (!currentMatkul) {
+      return NextResponse.json(
+        { error: "Mata kuliah tidak ditemukan atau Anda tidak memiliki hak akses" },
+        { status: 404 }
       );
     }
 

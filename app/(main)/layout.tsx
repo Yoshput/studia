@@ -7,6 +7,8 @@ import { MascotWidget } from "@/components/assistant/MascotWidget";
 import { ReminderOverlay } from "@/components/reminders/ReminderOverlay";
 import { db } from "@/lib/db";
 import { getDaysRemaining } from "@/lib/utils";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +22,14 @@ export default async function MainLayout({
   let hasUrgentDeadline = false;
 
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string } | undefined)?.id;
+
     const activeSem = await db.semester.findFirst({
-      where: { is_active: true },
+      where: {
+        is_active: true,
+        ...(userId ? { user_id: userId } : {}),
+      },
       include: {
         matkul: {
           include: {

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
@@ -12,34 +14,22 @@ const presensiSchema = z.object({
 
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
-
 export async function GET(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const matkulId = searchParams.get("matkul_id");
 
-    const session = await getServerSession(authOptions);
-    const userId = (session?.user as { id?: string })?.id;
-    const userEmail = session?.user?.email;
+    const whereClause: Record<string, unknown> = {
+      user_id: userId,
+    };
 
-    let currentUser = null;
-    if (userId || userEmail) {
-      currentUser = await db.user.findFirst({
-        where: {
-          OR: [
-            ...(userId ? [{ id: userId }] : []),
-            ...(userEmail ? [{ email: userEmail }] : []),
-          ],
-        },
-      });
-    }
-
-    const whereClause: Record<string, unknown> = {};
-    if (currentUser) {
-      whereClause.user_id = currentUser.id;
-    }
     if (matkulId) {
       whereClause.matkul_id = matkulId;
     }
@@ -78,31 +68,29 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const validated = presensiSchema.parse(body);
 
-    const session = await getServerSession(authOptions);
-    const userId = (session?.user as { id?: string })?.id;
-    const userEmail = session?.user?.email;
+    // Pastikan matkul_id milik user yang bersangkutan
+    const userMatkul = await db.matkul.findFirst({
+      where: {
+        id: validated.matkul_id,
+        semester: { user_id: userId },
+      },
+    });
 
-    let user = null;
-    if (userId || userEmail) {
-      user = await db.user.findFirst({
-        where: {
-          OR: [
-            ...(userId ? [{ id: userId }] : []),
-            ...(userEmail ? [{ email: userEmail }] : []),
-          ],
-        },
-      });
-    }
-
-    if (!user) {
-      user = await db.user.findFirst();
-    }
-
-    if (!user) {
-      return NextResponse.json({ error: "User tidak ditemukan" }, { status: 404 });
+    if (!userMatkul) {
+      return NextResponse.json(
+        { error: "Mata kuliah tidak valid atau bukan milik akun Anda" },
+        { status: 403 }
+      );
     }
 
     const now = new Date();
@@ -113,7 +101,7 @@ export async function POST(req: NextRequest) {
 
     const newPresensi = await db.presensi.create({
       data: {
-        user_id: user.id,
+        user_id: userId,
         matkul_id: validated.matkul_id,
         tanggal: now,
         hari,
@@ -148,6 +136,13 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id, foto_base64, status, catatan } = body;
 
@@ -155,6 +150,17 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(
         { error: "ID presensi wajib disertakan" },
         { status: 400 }
+      );
+    }
+
+    const existing = await db.presensi.findFirst({
+      where: { id, user_id: userId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Data presensi tidak ditemukan atau Anda tidak memiliki akses" },
+        { status: 404 }
       );
     }
 
@@ -182,6 +188,13 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -189,6 +202,17 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { error: "ID presensi wajib disertakan" },
         { status: 400 }
+      );
+    }
+
+    const existing = await db.presensi.findFirst({
+      where: { id, user_id: userId },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Data presensi tidak ditemukan atau Anda tidak memiliki akses" },
+        { status: 404 }
       );
     }
 

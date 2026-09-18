@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
@@ -13,12 +15,25 @@ const tugasSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const matkulId = searchParams.get("matkul_id");
     const status = searchParams.get("status");
     const prioritas = searchParams.get("prioritas");
 
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = {
+      matkul: {
+        semester: {
+          user_id: userId,
+        },
+      },
+    };
+
     if (matkulId) whereClause.matkul_id = matkulId;
     if (status) whereClause.status = status;
     if (prioritas) whereClause.prioritas = prioritas;
@@ -50,8 +65,29 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const validated = tugasSchema.parse(body);
+
+    // Validasi bahwa matkul_id milik user yang bersangkutan
+    const userMatkul = await db.matkul.findFirst({
+      where: {
+        id: validated.matkul_id,
+        semester: { user_id: userId },
+      },
+    });
+
+    if (!userMatkul) {
+      return NextResponse.json(
+        { error: "Mata kuliah tidak ditemukan atau bukan milik akun Anda" },
+        { status: 403 }
+      );
+    }
 
     const newTugas = await db.tugasDeadline.create({
       data: {
@@ -85,6 +121,12 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id, ...data } = body;
 
@@ -95,9 +137,35 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Allow partial updates (e.g. just toggling status)
+    // Pastikan tugas ini milik user yang sedang login
+    const currentTugas = await db.tugasDeadline.findFirst({
+      where: {
+        id,
+        matkul: { semester: { user_id: userId } },
+      },
+    });
+
+    if (!currentTugas) {
+      return NextResponse.json(
+        { error: "Tugas tidak ditemukan atau Anda tidak memiliki akses" },
+        { status: 404 }
+      );
+    }
+
     const updateData: Record<string, unknown> = {};
-    if (data.matkul_id) updateData.matkul_id = data.matkul_id;
+    if (data.matkul_id) {
+      // Jika matkul dipindahkan, pastikan matkul tujuan milik user
+      const targetMatkul = await db.matkul.findFirst({
+        where: { id: data.matkul_id, semester: { user_id: userId } },
+      });
+      if (!targetMatkul) {
+        return NextResponse.json(
+          { error: "Mata kuliah target tidak valid" },
+          { status: 400 }
+        );
+      }
+      updateData.matkul_id = data.matkul_id;
+    }
     if (data.judul) updateData.judul = data.judul;
     if (data.deskripsi !== undefined) updateData.deskripsi = data.deskripsi;
     if (data.deadline) updateData.deadline = new Date(data.deadline);
@@ -124,6 +192,12 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -131,6 +205,20 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { error: "ID tugas wajib disertakan" },
         { status: 400 }
+      );
+    }
+
+    const currentTugas = await db.tugasDeadline.findFirst({
+      where: {
+        id,
+        matkul: { semester: { user_id: userId } },
+      },
+    });
+
+    if (!currentTugas) {
+      return NextResponse.json(
+        { error: "Tugas tidak ditemukan atau Anda tidak memiliki hak akses" },
+        { status: 404 }
       );
     }
 

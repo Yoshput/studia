@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
@@ -13,12 +15,25 @@ const progressSchema = z.object({
 
 export async function GET(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const matkulId = searchParams.get("matkul_id");
     const startDate = searchParams.get("start_date");
     const endDate = searchParams.get("end_date");
 
-    const whereClause: Record<string, unknown> = {};
+    const whereClause: Record<string, unknown> = {
+      matkul: {
+        semester: {
+          user_id: userId,
+        },
+      },
+    };
+
     if (matkulId) {
       whereClause.matkul_id = matkulId;
     }
@@ -57,8 +72,29 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const validated = progressSchema.parse(body);
+
+    // Validasi bahwa matkul_id milik user yang bersangkutan
+    const userMatkul = await db.matkul.findFirst({
+      where: {
+        id: validated.matkul_id,
+        semester: { user_id: userId },
+      },
+    });
+
+    if (!userMatkul) {
+      return NextResponse.json(
+        { error: "Mata kuliah tidak ditemukan atau bukan milik akun Anda" },
+        { status: 403 }
+      );
+    }
 
     const entry = await db.progressHarian.create({
       data: {
@@ -92,6 +128,12 @@ export async function POST(req: NextRequest) {
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { id, ...data } = body;
 
@@ -99,6 +141,20 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(
         { error: "ID progress wajib disertakan" },
         { status: 400 }
+      );
+    }
+
+    const currentProgress = await db.progressHarian.findFirst({
+      where: {
+        id,
+        matkul: { semester: { user_id: userId } },
+      },
+    });
+
+    if (!currentProgress) {
+      return NextResponse.json(
+        { error: "Catatan progress tidak ditemukan atau Anda tidak memiliki akses" },
+        { status: 404 }
       );
     }
 
@@ -137,6 +193,12 @@ export async function PUT(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const id = searchParams.get("id");
 
@@ -144,6 +206,20 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json(
         { error: "ID progress wajib disertakan" },
         { status: 400 }
+      );
+    }
+
+    const currentProgress = await db.progressHarian.findFirst({
+      where: {
+        id,
+        matkul: { semester: { user_id: userId } },
+      },
+    });
+
+    if (!currentProgress) {
+      return NextResponse.json(
+        { error: "Catatan progress tidak ditemukan atau Anda tidak memiliki akses" },
+        { status: 404 }
       );
     }
 

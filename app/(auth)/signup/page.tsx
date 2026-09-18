@@ -10,7 +10,7 @@ import { Input, Select } from "@/components/ui/Input";
 import { MascotIcon } from "@/components/assistant/MascotIcon";
 import { TelkomLogo } from "@/components/TelkomLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, UserPlus, CheckCircle2, ArrowLeft } from "lucide-react";
+import { ArrowRight, UserPlus, CheckCircle2, ArrowLeft, Eye, EyeOff, ShieldCheck } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -21,10 +21,28 @@ export default function SignupPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: "", color: "", text: "" };
+    let score = 0;
+    if (pass.length >= 8) score += 1;
+    if (pass.length >= 12) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+    if (/[A-Z]/.test(pass) && /[a-z]/.test(pass)) score += 1;
+
+    if (score <= 1) return { score: 1, label: "Lemah (< 8 karakter / variasi)", color: "bg-red-500", text: "text-red-500" };
+    if (score <= 3) return { score: 2, label: "Cukup Baik", color: "bg-amber-500", text: "text-amber-500" };
+    return { score: 3, label: "Sangat Kuat & Aman", color: "bg-emerald-500", text: "text-emerald-500" };
+  };
+
+  const strength = getPasswordStrength(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,8 +53,8 @@ export default function SignupPage() {
       return;
     }
 
-    if (password.length < 6) {
-      setError("Kata sandi minimal 6 karakter");
+    if (password.length < 8) {
+      setError("Kata sandi minimal 8 karakter demi keamanan akun");
       return;
     }
 
@@ -169,24 +187,61 @@ export default function SignupPage() {
                 required
               />
 
-              <div className="grid grid-cols-2 gap-3">
-                <Input
-                  label="Kata Sandi"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-                <Input
-                  label="Konfirmasi Sandi"
-                  type="password"
-                  placeholder="••••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="relative">
+                  <Input
+                    label="Kata Sandi (Min 8 Karakter)"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-[34px] text-ios-textSecondary hover:text-ios-textPrimary transition-colors p-1"
+                    title={showPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+
+                <div className="relative">
+                  <Input
+                    label="Konfirmasi Sandi"
+                    type={showConfirmPassword ? "text" : "password"}
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="pr-10"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-[34px] text-ios-textSecondary hover:text-ios-textPrimary transition-colors p-1"
+                    title={showConfirmPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
+
+              {password.length > 0 && (
+                <div className="p-2.5 rounded-xl bg-ios-surfaceSecondary border border-ios-border space-y-1.5 animate-in fade-in duration-200">
+                  <div className="flex items-center justify-between text-[11px] font-semibold">
+                    <span className="text-ios-textSecondary">Kekuatan Sandi:</span>
+                    <span className={strength.text}>{strength.label}</span>
+                  </div>
+                  <div className="grid grid-cols-3 gap-1 h-1.5 w-full bg-ios-border rounded-full overflow-hidden">
+                    <div className={`h-full rounded-full transition-all duration-300 ${strength.score >= 1 ? strength.color : "bg-transparent"}`} />
+                    <div className={`h-full rounded-full transition-all duration-300 ${strength.score >= 2 ? strength.color : "bg-transparent"}`} />
+                    <div className={`h-full rounded-full transition-all duration-300 ${strength.score >= 3 ? strength.color : "bg-transparent"}`} />
+                  </div>
+                </div>
+              )}
 
               <Button
                 type="submit"

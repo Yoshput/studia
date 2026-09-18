@@ -16,8 +16,12 @@ import {
   Edit2,
   AlertCircle,
   BookOpen,
+  Download,
 } from "lucide-react";
 import { Matkul } from "@/types";
+import { AttendanceRadarCard } from "@/components/pro/AttendanceRadarCard";
+import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
+import { exportJadwalToCsv } from "@/lib/export";
 
 const HARI_OPTIONS = [
   { value: "Senin", label: "Senin" },
@@ -35,6 +39,8 @@ export default function JadwalPage() {
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [editingMatkul, setEditingMatkul] = useState<Matkul | null>(null);
+  const [isPro, setIsPro] = useState(false);
+  const [isProModalOpen, setIsProModalOpen] = useState(false);
 
   // Form states
   const [nama, setNama] = useState("");
@@ -64,6 +70,12 @@ export default function JadwalPage() {
 
   useEffect(() => {
     fetchMatkul();
+    fetch("/api/user/profile")
+      .then((r) => r.json())
+      .then((d) => {
+        if (d.user?.is_pro) setIsPro(true);
+      })
+      .catch(() => {});
   }, []);
 
   const resetForm = () => {
@@ -212,11 +224,28 @@ export default function JadwalPage() {
             {matkulList.length} Mata Kuliah • Total {totalSks} SKS
           </p>
         </div>
-        <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5">
-          <Plus className="w-4 h-4" />
-          <span>Tambah</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => exportJadwalToCsv(matkulList, "Semester 5")}
+            className="gap-1.5 font-semibold text-[12px]"
+          >
+            <Download className="w-3.5 h-3.5 text-ios-accent" />
+            <span>Export CSV</span>
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5">
+            <Plus className="w-4 h-4" />
+            <span>Tambah</span>
+          </Button>
+        </div>
       </div>
+
+      {/* PRO Attendance Radar Card */}
+      <AttendanceRadarCard
+        isPro={isPro}
+        onUpgradeClick={() => setIsProModalOpen(true)}
+      />
 
       {/* Segmented Control for Days */}
       <SegmentedControl
@@ -533,6 +562,13 @@ export default function JadwalPage() {
           </div>
         </form>
       </Sheet>
+
+      <ProUpgradeModal
+        isOpen={isProModalOpen}
+        onClose={() => setIsProModalOpen(false)}
+        currentPlan={isPro ? "PRO_SEMESTER" : "free"}
+        onSuccess={() => setIsPro(true)}
+      />
     </div>
   );
 }

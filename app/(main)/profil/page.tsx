@@ -24,7 +24,11 @@ import {
   Bell,
   Edit3,
   Trash2,
+  Crown,
+  Zap,
+  Sparkles,
 } from "lucide-react";
+import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
 
 interface UserProfile {
   id: string;
@@ -35,6 +39,8 @@ interface UserProfile {
   prodi: string | null;
   dosen_wali: string | null;
   avatar_url: string | null;
+  is_pro?: boolean;
+  pro_plan?: string;
 }
 
 export default function ProfilPage() {
@@ -43,6 +49,7 @@ export default function ProfilPage() {
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [voiceEnabled, setVoiceEnabled] = useState(false);
   const [isUploadSheetOpen, setIsUploadSheetOpen] = useState(false);
+  const [isProModalOpen, setIsProModalOpen] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [isSubmittingAvatar, setIsSubmittingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -588,6 +595,54 @@ export default function ProfilPage() {
         </div>
       </Card>
 
+      {/* Membership / PRO Tier Status */}
+      <Card className="p-4 bg-gradient-to-r from-ios-surface to-ios-surfaceSecondary border border-ios-border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+        <div className="flex items-center gap-3">
+          <div className="p-2.5 rounded-2xl bg-amber-500/15 text-amber-600 dark:text-amber-400 flex-shrink-0">
+            <Crown className="w-5 h-5 fill-current" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h4 className="text-[14px] font-bold text-ios-textPrimary">
+                {profile?.is_pro ? "Keanggotaan Semestr PRO" : "Paket Standar (Free)"}
+              </h4>
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                profile?.is_pro
+                  ? "bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                  : "bg-ios-surface border border-ios-border text-ios-textSecondary"
+              }`}>
+                {profile?.is_pro ? (profile?.pro_plan === "PRO_LIFETIME" ? "Lifetime" : "Semester") : "Gratis"}
+              </span>
+            </div>
+            <p className="text-[11.5px] text-ios-textSecondary mt-0.5">
+              {profile?.is_pro
+                ? "Akses tak terbatas ke Simulator Cum Laude, Radar Absen & Aiko Unlimited."
+                : "Tingkatkan ke PRO untuk membuka fitur pintar Simulator IPK & Radar Absen."}
+            </p>
+          </div>
+        </div>
+
+        <Button
+          type="button"
+          variant={profile?.is_pro ? "secondary" : "primary"}
+          size="sm"
+          onClick={() => setIsProModalOpen(true)}
+          className="w-full sm:w-auto flex-shrink-0 font-bold text-[12px] gap-1.5"
+        >
+          {profile?.is_pro ? (
+            <>
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Detail PRO</span>
+            </>
+          ) : (
+            <>
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>Upgrade PRO</span>
+            </>
+          )}
+        </Button>
+      </Card>
+
       {/* Academic Milestones Summary */}
       <Card className="p-4 divide-y divide-ios-border">
         <div className="flex items-center justify-between pb-3">
@@ -947,6 +1002,13 @@ export default function ProfilPage() {
           </div>
         </form>
       </Sheet>
+
+      <ProUpgradeModal
+        isOpen={isProModalOpen}
+        onClose={() => setIsProModalOpen(false)}
+        currentPlan={profile?.pro_plan || (profile?.is_pro ? "PRO_SEMESTER" : "free")}
+        onSuccess={fetchProfile}
+      />
     </div>
   );
 }

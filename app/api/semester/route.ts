@@ -1,10 +1,27 @@
 import { NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { ensureUserWorkspace } from "@/lib/workspace";
 
 export async function GET() {
   try {
-    const activeSemester = await db.semester.findFirst({
-      where: { is_active: true },
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+
+    if (!userId) {
+      return NextResponse.json(
+        { error: "Autentikasi diperlukan" },
+        { status: 401 }
+      );
+    }
+
+    // Pastikan user memiliki workspace terisolasi
+    let activeSemester = await db.semester.findFirst({
+      where: {
+        user_id: userId,
+        is_active: true,
+      },
       include: {
         matkul: {
           include: {
@@ -17,7 +34,14 @@ export async function GET() {
       },
     });
 
+    if (!activeSemester) {
+      activeSemester = await ensureUserWorkspace(userId);
+    }
+
     const allSemesters = await db.semester.findMany({
+      where: {
+        user_id: userId,
+      },
       include: {
         khs_items: true,
         matkul: true,

@@ -6,7 +6,7 @@ import { z } from "zod";
 const registerSchema = z.object({
   nama: z.string().min(2, "Nama lengkap minimal 2 karakter"),
   email: z.string().email("Format email tidak valid"),
-  password: z.string().min(6, "Kata sandi minimal 6 karakter"),
+  password: z.string().min(8, "Kata sandi minimal 8 karakter"),
   nim: z.string().optional().nullable(),
   kelas: z.string().optional().nullable(),
   prodi: z.string().optional().nullable(),
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const passwordHash = await bcrypt.hash(validated.password, 10);
+    const passwordHash = await bcrypt.hash(validated.password, 12);
 
     const newUser = await db.user.create({
       data: {
@@ -38,6 +38,8 @@ export async function POST(req: NextRequest) {
         nim: validated.nim,
         kelas: validated.kelas,
         prodi: validated.prodi,
+        is_pro: false,
+        pro_plan: "free",
       },
       select: {
         id: true,
@@ -48,6 +50,10 @@ export async function POST(req: NextRequest) {
         prodi: true,
       },
     });
+
+    // Otomatis siapkan workspace semester terisolasi untuk user baru
+    const { ensureUserWorkspace } = await import("@/lib/workspace");
+    await ensureUserWorkspace(newUser.id);
 
     return NextResponse.json({ user: newUser }, { status: 201 });
   } catch (error) {

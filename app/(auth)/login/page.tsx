@@ -10,12 +10,13 @@ import { Input } from "@/components/ui/Input";
 import { MascotIcon } from "@/components/assistant/MascotIcon";
 import { TelkomLogo } from "@/components/TelkomLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Eye, EyeOff } from "lucide-react";
 
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -132,16 +133,25 @@ export default function LoginPage() {
                   />
                 </div>
 
-                <div>
+                <div className="relative">
                   <Input
                     label="Kata Sandi"
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
                     required
                     autoComplete="current-password"
+                    className="pr-10"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-[34px] text-ios-textSecondary hover:text-ios-textPrimary transition-colors p-1"
+                    title={showPassword ? "Sembunyikan sandi" : "Tampilkan sandi"}
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
 
                 <Button

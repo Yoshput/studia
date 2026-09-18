@@ -55,7 +55,9 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           name: user.nama,
           email: user.email,
-        };
+          is_pro: user.is_pro,
+          pro_plan: user.pro_plan,
+        } as any;
       },
     }),
   ],
@@ -91,8 +93,14 @@ export const authOptions: NextAuthOptions = {
             });
           }
 
-          // Hubungkan ID database ke sesi user
+          // Hubungkan ID database ke sesi user & pastikan workspace terisolasi siap
           user.id = existingUser.id;
+          (user as any).is_pro = existingUser.is_pro;
+          (user as any).pro_plan = existingUser.pro_plan;
+
+          const { ensureUserWorkspace } = await import("./workspace");
+          await ensureUserWorkspace(existingUser.id);
+
           return true;
         } catch (error) {
           console.error("Error signing in with Google:", error);
@@ -104,12 +112,16 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.is_pro = (user as any).is_pro ?? false;
+        token.pro_plan = (user as any).pro_plan ?? "free";
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
-        (session.user as { id?: string }).id = token.id as string;
+        (session.user as any).id = token.id as string;
+        (session.user as any).is_pro = (token.is_pro as boolean) ?? false;
+        (session.user as any).pro_plan = (token.pro_plan as string) ?? "free";
       }
       return session;
     },

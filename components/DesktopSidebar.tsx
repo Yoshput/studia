@@ -17,11 +17,13 @@ import {
   ChevronRight,
   ShieldCheck,
   Download,
+  Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
 import { signOut } from "next-auth/react";
 import { usePWAInstall } from "@/components/pwa/PWAInstallContext";
+import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
 
 interface DesktopSidebarProps {
   semesterName?: string;
@@ -66,6 +68,8 @@ export function DesktopSidebar({
   const [studentName, setStudentName] = useState<string>(session?.user?.name || "Mahasiswa");
   const [studentNim, setStudentNim] = useState<string>("");
   const [studentClass, setStudentClass] = useState<string>("");
+  const [isPro, setIsPro] = useState<boolean>((session?.user as any)?.is_pro ?? false);
+  const [isProModalOpen, setIsProModalOpen] = useState<boolean>(false);
 
   const userIdentifier = session?.user?.email || (session?.user as { id?: string })?.id;
 
@@ -107,6 +111,7 @@ export function DesktopSidebar({
           if (d.user.nama) setStudentName(d.user.nama);
           if (d.user.nim) setStudentNim(d.user.nim);
           if (d.user.kelas) setStudentClass(d.user.kelas);
+          if (d.user.is_pro !== undefined) setIsPro(Boolean(d.user.is_pro));
         }
       })
       .catch(() => {});
@@ -179,10 +184,22 @@ export function DesktopSidebar({
           </div>
         </div>
         <div className="mt-2.5 pt-2 border-t border-ios-border/40 flex items-center justify-between text-[11px]">
-          <span className="text-ios-textSecondary">Akun:</span>
-          <span className="font-semibold text-ios-success px-1.5 py-0.5 rounded bg-ios-success/10">
-            Terverifikasi Aktif
-          </span>
+          <span className="text-ios-textSecondary">Status:</span>
+          {isPro ? (
+            <span className="font-extrabold text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center gap-1">
+              <Crown className="w-3 h-3 fill-current" />
+              <span>PRO MEMBER</span>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setIsProModalOpen(true)}
+              className="font-bold text-ios-accent px-2 py-0.5 rounded-full bg-ios-accent/10 hover:bg-ios-accent/20 border border-ios-accent/20 flex items-center gap-1 transition-colors active:scale-95"
+            >
+              <Crown className="w-3 h-3 text-amber-500 fill-current" />
+              <span>Upgrade PRO</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -302,6 +319,13 @@ export function DesktopSidebar({
           <span>Keluar</span>
         </button>
       </div>
+
+      <ProUpgradeModal
+        isOpen={isProModalOpen}
+        onClose={() => setIsProModalOpen(false)}
+        currentPlan={isPro ? "pro" : "free"}
+        onSuccess={() => setIsPro(true)}
+      />
     </aside>
   );
 }

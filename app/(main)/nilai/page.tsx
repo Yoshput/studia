@@ -17,6 +17,8 @@ import {
   FileText,
   AlertCircle,
   CheckCircle2,
+  Sparkles,
+  Download,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -32,6 +34,8 @@ import {
 } from "recharts";
 import { formatShortDateIndo, calculateEstimatedGrade } from "@/lib/utils";
 import { Matkul, Nilai } from "@/types";
+import { GpaOptimizerModal } from "@/components/pro/GpaOptimizerModal";
+import { exportKhsToCsv } from "@/lib/export";
 
 const KATEGORI_OPTIONS = ["Quiz", "Tugas", "UTS", "UAS", "Project", "Tubes"] as const;
 
@@ -64,6 +68,7 @@ export default function NilaiPage() {
   // Sheet states
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isBobotSheetOpen, setIsBobotSheetOpen] = useState(false);
+  const [isGpaModalOpen, setIsGpaModalOpen] = useState(false);
 
   // Form add nilai
   const [kategori, setKategori] = useState<string>("Quiz");
@@ -77,7 +82,7 @@ export default function NilaiPage() {
   const [bobotError, setBobotError] = useState("");
   const [isSubmittingBobot, setIsSubmittingBobot] = useState(false);
 
-  const [userProfile, setUserProfile] = useState<{ prodi?: string | null } | null>(null);
+  const [userProfile, setUserProfile] = useState<{ prodi?: string | null; nama?: string | null; nim?: string | null } | null>(null);
 
   const fetchData = async () => {
     try {
@@ -262,12 +267,24 @@ export default function NilaiPage() {
           </p>
         </div>
 
-        {tabView === "aktif" && (
-          <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5">
-            <Plus className="w-4 h-4" />
-            <span>Input Nilai</span>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsGpaModalOpen(true)}
+            className="gap-1.5 border-amber-500/30 text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20 font-semibold"
+          >
+            <Sparkles className="w-3.5 h-3.5 fill-current" />
+            <span>Simulator Cum Laude</span>
           </Button>
-        )}
+
+          {tabView === "aktif" && (
+            <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5">
+              <Plus className="w-4 h-4" />
+              <span>Input Nilai</span>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Main View Switcher */}
@@ -501,13 +518,30 @@ export default function NilaiPage() {
                     {userProfile?.prodi || "Kartu Hasil Studi Resmi"}
                   </p>
                 </div>
-                <div className="text-right">
-                  <span className="text-[10px] uppercase font-bold text-ios-textSecondary block">
-                    Indeks Semester (IPS)
-                  </span>
-                  <span className="text-[24px] font-black text-ios-accent">
-                    {currentKhsSemester.ipk?.toFixed(2)}
-                  </span>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => {
+                      exportKhsToCsv(
+                        currentKhsSemester.nama_semester,
+                        currentKhsSemester.khs_items || [],
+                        { nama: userProfile?.nama || "Mahasiswa Telkom", nim: userProfile?.nim || "" }
+                      );
+                    }}
+                    className="gap-1.5 text-[12px] font-semibold"
+                  >
+                    <Download className="w-3.5 h-3.5 text-ios-accent" />
+                    <span>Export KHS (CSV)</span>
+                  </Button>
+                  <div className="text-right pl-2 border-l border-ios-border">
+                    <span className="text-[10px] uppercase font-bold text-ios-textSecondary block">
+                      Indeks Semester (IPS)
+                    </span>
+                    <span className="text-[24px] font-black text-ios-accent">
+                      {currentKhsSemester.ipk?.toFixed(2)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -764,6 +798,12 @@ export default function NilaiPage() {
           </div>
         </form>
       </Sheet>
+
+      <GpaOptimizerModal
+        isOpen={isGpaModalOpen}
+        onClose={() => setIsGpaModalOpen(false)}
+        matkulList={matkulList}
+      />
     </div>
   );
 }

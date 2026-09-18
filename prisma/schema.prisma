@@ -17,6 +17,10 @@ model User {
   prodi              String?
   dosen_wali         String?
   avatar_url         String?            @db.LongText
+  is_pro             Boolean            @default(false)
+  pro_plan           String             @default("free")
+  pro_expires_at     DateTime?
+  semesters          Semester[]
   presensi           Presensi[]
   push_subscriptions PushSubscription[]
   createdAt          DateTime           @default(now())
@@ -27,6 +31,8 @@ model User {
 
 model Semester {
   id            String         @id @default(cuid())
+  user_id       String?
+  user          User?          @relation(fields: [user_id], references: [id], onDelete: Cascade)
   nama_semester String
   tahun_ajaran  String
   ipk           Float?
@@ -36,6 +42,7 @@ model Semester {
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
+  @@index([user_id])
   @@map("semester")
 }
 

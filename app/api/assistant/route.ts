@@ -30,26 +30,69 @@ export async function POST(req: NextRequest) {
     const geminiApiKey = clientGeminiKey || process.env.GEMINI_API_KEY?.trim();
     const anthropicApiKey = process.env.ANTHROPIC_API_KEY?.trim();
 
-    // Fetch student's academic context
-    const activeSemester = await db.semester.findFirst({
-      where: { is_active: true },
-      include: {
-        matkul: {
+    // Fetch logged in user identity for personalized conversation
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    const userEmail = session?.user?.email;
+
+    let studentUser = null;
+    if (userId || userEmail) {
+      studentUser = await db.user.findFirst({
+        where: {
+          OR: [
+            ...(userId ? [{ id: userId }] : []),
+            ...(userEmail ? [{ email: userEmail }] : []),
+          ],
+        },
+      });
+    }
+
+    const targetUserId = studentUser?.id || userId;
+
+    // Fetch student's academic context scoped to current user
+    let activeSemester = targetUserId
+      ? await db.semester.findFirst({
+          where: { is_active: true, user_id: targetUserId },
           include: {
-            bobot_nilai: true,
-            nilai: true,
-            progress: {
-              orderBy: { tanggal: "desc" },
-              take: 5,
+            matkul: {
+              include: {
+                bobot_nilai: true,
+                nilai: true,
+                progress: {
+                  orderBy: { tanggal: "desc" },
+                  take: 5,
+                },
+                tugas: {
+                  where: { status: { not: "selesai" } },
+                  orderBy: { deadline: "asc" },
+                },
+              },
             },
-            tugas: {
-              where: { status: { not: "selesai" } },
-              orderBy: { deadline: "asc" },
+          },
+        })
+      : null;
+
+    if (!activeSemester) {
+      activeSemester = await db.semester.findFirst({
+        where: { is_active: true },
+        include: {
+          matkul: {
+            include: {
+              bobot_nilai: true,
+              nilai: true,
+              progress: {
+                orderBy: { tanggal: "desc" },
+                take: 5,
+              },
+              tugas: {
+                where: { status: { not: "selesai" } },
+                orderBy: { deadline: "asc" },
+              },
             },
           },
         },
-      },
-    });
+      });
+    }
 
     if (!activeSemester) {
       return NextResponse.json({
@@ -103,23 +146,6 @@ export async function POST(req: NextRequest) {
     const needAttentionList = matkulStats.filter(
       (m) => m.attention.status === "perlu_perhatian" || m.attention.status === "waspada"
     );
-
-    // Fetch logged in user identity for personalized conversation
-    const session = await getServerSession(authOptions);
-    const userId = (session?.user as { id?: string })?.id;
-    const userEmail = session?.user?.email;
-
-    let studentUser = null;
-    if (userId || userEmail) {
-      studentUser = await db.user.findFirst({
-        where: {
-          OR: [
-            ...(userId ? [{ id: userId }] : []),
-            ...(userEmail ? [{ email: userEmail }] : []),
-          ],
-        },
-      });
-    }
 
     const studentFullName = studentUser?.nama || session?.user?.name || "Mahasiswa";
     const studentCallName = studentFullName.split(" ")[0] || "Teman";

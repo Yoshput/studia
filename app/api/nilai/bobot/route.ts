@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
@@ -14,10 +16,31 @@ const bobotArraySchema = z.object({
 
 export async function PUT(req: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as { id?: string })?.id;
+    if (!userId) {
+      return NextResponse.json({ error: "Autentikasi diperlukan" }, { status: 401 });
+    }
+
     const body = await req.json();
     const validated = bobotArraySchema.parse(body);
 
-    // Sum validation check: warn or ensure valid
+    // Pastikan matkul_id milik user yang bersangkutan
+    const userMatkul = await db.matkul.findFirst({
+      where: {
+        id: validated.matkul_id,
+        semester: { user_id: userId },
+      },
+    });
+
+    if (!userMatkul) {
+      return NextResponse.json(
+        { error: "Mata kuliah tidak ditemukan atau bukan milik akun Anda" },
+        { status: 403 }
+      );
+    }
+
+    // Sum validation check: 100%
     const totalPercent = validated.bobot.reduce((acc, b) => acc + b.bobot_persen, 0);
     if (Math.abs(totalPercent - 100) > 0.01) {
       return NextResponse.json(
@@ -26,7 +49,6 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    // Upsert each category weight
     const updates = await Promise.all(
       validated.bobot.map((item) =>
         db.nilaiBobot.upsert({

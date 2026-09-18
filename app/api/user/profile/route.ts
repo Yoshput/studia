@@ -35,6 +35,8 @@ export async function GET(req: NextRequest) {
         prodi: true,
         dosen_wali: true,
         avatar_url: true,
+        is_pro: true,
+        pro_plan: true,
         createdAt: true,
       },
     });
