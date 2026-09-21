@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Sheet } from "@/components/ui/Sheet";
@@ -141,14 +141,15 @@ export default function NilaiPage() {
     };
   });
 
-  // GPA Trend Chart Data across semesters
-  const gpaTrendData = [
-    { name: "Sem 1", ips: 3.63, label: "2024/2025 Ganjil (3.63)" },
-    { name: "Sem 2", ips: 3.73, label: "2024/2025 Genap (3.73)" },
-    { name: "Sem 3", ips: 3.61, label: "2025/2026 Ganjil (3.61)" },
-    { name: "Sem 4", ips: 3.61, label: "2025/2026 Genap (3.61)" },
-    { name: "Sem 5", ips: 3.64, label: "2026/2027 Ganjil (IPK 3.64)" },
-  ];
+  // GPA Trend Chart Data across semesters — dynamically from user's semester list
+  const gpaTrendData = useMemo(() => {
+    if (!semestersList || semestersList.length === 0) return [];
+    return semestersList.map((sem, idx) => ({
+      name: `Sem ${idx + 1}`,
+      ips: typeof sem.ipk === "number" ? sem.ipk : 0,
+      label: `${sem.nama_semester} — ${sem.tahun_ajaran} (IPS: ${typeof sem.ipk === "number" ? sem.ipk.toFixed(2) : "-"})`,
+    }));
+  }, [semestersList]);
 
   const handleOpenAdd = () => {
     setKategori("Quiz");
@@ -613,55 +614,65 @@ export default function NilaiPage() {
           <Card className="p-4">
             <h2 className="text-[15px] font-bold text-ios-textPrimary mb-1 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-ios-success" />
-              <span>Grafik Pertumbuhan IPK (Semester 1 s.d. 5)</span>
+              <span>Grafik Pertumbuhan IPS per Semester</span>
             </h2>
             <p className="text-[12px] text-ios-textSecondary mb-4">
-              Performa akademik konsisten sesuai catatan KHS aktif semester ini.
+              Data diambil dari catatan KHS tiap semester yang sudah kamu isi.
             </p>
 
-            <div className="h-56 w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={gpaTrendData} margin={{ top: 15, right: 15, left: -25, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.6} />
-                  <XAxis
-                    dataKey="name"
-                    tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
-                    axisLine={{ stroke: "var(--border)" }}
-                    tickLine={false}
-                  />
-                  <YAxis
-                    domain={[3.0, 4.0]}
-                    tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
-                    axisLine={{ stroke: "var(--border)" }}
-                    tickLine={false}
-                  />
-                  <Tooltip
-                    content={({ active, payload }) => {
-                      if (active && payload && payload.length) {
-                        const d = payload[0].payload;
-                        return (
-                          <div className="bg-ios-surface border border-ios-border rounded-lg p-2.5 shadow-md text-[12px]">
-                            <p className="font-bold text-ios-textPrimary">{d.label}</p>
-                            <p className="text-ios-success font-black text-[14px] mt-0.5">
-                              IP: {d.ips.toFixed(2)}
-                            </p>
-                          </div>
-                        );
-                      }
-                      return null;
-                    }}
-                  />
-                  <Line
-                    type="monotone"
-                    dataKey="ips"
-                    stroke="#34C759"
-                    strokeWidth={3}
-                    dot={{ fill: "#34C759", r: 5 }}
-                    activeDot={{ r: 7 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
+            {gpaTrendData.length === 0 || gpaTrendData.every(d => d.ips === 0) ? (
+              <div className="h-56 w-full flex flex-col items-center justify-center text-center gap-3 text-ios-textSecondary">
+                <TrendingUp className="w-10 h-10 opacity-25" />
+                <div>
+                  <p className="text-[14px] font-semibold text-ios-textPrimary">Belum Ada Data Semester</p>
+                  <p className="text-[12px] mt-0.5">Isi IPK di tiap semester kamu agar grafik ini terisi.</p>
+                </div>
+              </div>
+            ) : (
+              <div className="h-56 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={gpaTrendData} margin={{ top: 15, right: 15, left: -25, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.6} />
+                    <XAxis
+                      dataKey="name"
+                      tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                      axisLine={{ stroke: "var(--border)" }}
+                      tickLine={false}
+                    />
+                    <YAxis
+                      domain={["auto", 4.0]}
+                      tick={{ fontSize: 11, fill: "var(--text-secondary)" }}
+                      axisLine={{ stroke: "var(--border)" }}
+                      tickLine={false}
+                    />
+                    <Tooltip
+                      content={({ active, payload }) => {
+                        if (active && payload && payload.length) {
+                          const d = payload[0].payload;
+                          return (
+                            <div className="bg-ios-surface border border-ios-border rounded-lg p-2.5 shadow-md text-[12px]">
+                              <p className="font-bold text-ios-textPrimary">{d.label}</p>
+                              <p className="text-ios-success font-black text-[14px] mt-0.5">
+                                IP: {d.ips.toFixed(2)}
+                              </p>
+                            </div>
+                          );
+                        }
+                        return null;
+                      }}
+                    />
+                    <Line
+                      type="monotone"
+                      dataKey="ips"
+                      stroke="#34C759"
+                      strokeWidth={3}
+                      dot={{ fill: "#34C759", r: 5 }}
+                      activeDot={{ r: 7 }}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </Card>
         </div>
       )}

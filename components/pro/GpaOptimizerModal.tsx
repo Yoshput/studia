@@ -24,7 +24,7 @@ export function GpaOptimizerModal({
   isOpen,
   onClose,
   matkulList,
-  currentIpk = 3.64,
+  currentIpk = 0.0,
 }: GpaOptimizerModalProps) {
   const [targetGpa, setTargetGpa] = useState<number>(3.80);
   const totalSks = useMemo(
