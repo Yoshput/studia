@@ -23,12 +23,11 @@ export function AttendanceRadarCard({
   onUpgradeClick,
   isPro = false,
 }: AttendanceRadarCardProps) {
-  // Mock kalkulasi jika courses belum terisi
-  const calculatedCourses = courses.length > 0 ? courses : [
-    { id: "1", nama: "Grafika Komputer", kode: "CSG2H3", totalPertemuan: 14, hadirCount: 11, alpaCount: 2 },
-    { id: "2", nama: "Pemrograman Berorientasi Objek", kode: "CSG2J3", totalPertemuan: 14, hadirCount: 13, alpaCount: 0 },
-    { id: "3", nama: "Kecerdasan Buatan", kode: "CSG3A3", totalPertemuan: 14, hadirCount: 12, alpaCount: 1 },
-  ];
+  if (!courses || courses.length === 0) {
+    return null;
+  }
+
+  const calculatedCourses = courses;
 
   return (
     <div className="p-4 rounded-2xl bg-ios-surface border border-ios-border shadow-sm space-y-3">

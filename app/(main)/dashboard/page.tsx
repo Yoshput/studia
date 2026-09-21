@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { BadgeStatus } from "@/components/ui/BadgeStatus";
 import { Sheet } from "@/components/ui/Sheet";
 import { Input, Textarea, Select } from "@/components/ui/Input";
+import { DeadlinePicker } from "@/components/ui/DeadlinePicker";
 import {
   Calendar,
   Clock,
@@ -819,11 +820,10 @@ export default function DashboardPage() {
             required
           />
 
-          <Input
+          <DeadlinePicker
             label="Batas Waktu (Deadline)"
-            type="datetime-local"
             value={tugasDeadline}
-            onChange={(e) => setTugasDeadline(e.target.value)}
+            onChange={setTugasDeadline}
             required
           />
 

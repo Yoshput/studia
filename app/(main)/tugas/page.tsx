@@ -7,6 +7,7 @@ import { Sheet } from "@/components/ui/Sheet";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import { BadgeStatus } from "@/components/ui/BadgeStatus";
 import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { DeadlinePicker } from "@/components/ui/DeadlinePicker";
 import {
   CheckSquare,
   Clock,
@@ -460,11 +461,10 @@ export default function TugasPage() {
             rows={3}
           />
 
-          <Input
+          <DeadlinePicker
             label="Batas Waktu (Deadline)"
-            type="datetime-local"
             value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
+            onChange={setDeadline}
             required
           />
 
@@ -538,11 +538,10 @@ export default function TugasPage() {
             rows={3}
           />
 
-          <Input
+          <DeadlinePicker
             label="Batas Waktu"
-            type="datetime-local"
             value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
+            onChange={setDeadline}
             required
           />
 

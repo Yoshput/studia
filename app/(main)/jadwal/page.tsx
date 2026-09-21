@@ -54,13 +54,19 @@ export default function JadwalPage() {
   const [warna, setWarna] = useState("#007AFF");
   const [formError, setFormError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [presensiList, setPresensiList] = useState<any[]>([]);
 
   const fetchMatkul = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/matkul");
-      const data = await res.json();
+      const [mRes, pRes] = await Promise.all([
+        fetch("/api/matkul"),
+        fetch("/api/presensi"),
+      ]);
+      const data = await mRes.json();
+      const pData = await pRes.json();
       if (data.matkul) setMatkulList(data.matkul);
+      if (pData.presensi) setPresensiList(pData.presensi);
     } catch (err) {
       console.error("Failed to load matkul:", err);
     } finally {
@@ -212,6 +218,27 @@ export default function JadwalPage() {
 
   const totalSks = matkulList.reduce((acc, m) => acc + m.sks, 0);
 
+  const attendanceCourses = matkulList.map((m) => {
+    const totalPertemuan = 14;
+    const hadirCount = presensiList.filter(
+      (p) => p.matkul_id === m.id && p.status?.toLowerCase().includes("hadir")
+    ).length;
+    const alpaCount = presensiList.filter(
+      (p) =>
+        p.matkul_id === m.id &&
+        (p.status?.toLowerCase().includes("alpa") || p.status?.toLowerCase().includes("tidak"))
+    ).length;
+
+    return {
+      id: m.id,
+      nama: m.nama,
+      kode: m.kode,
+      totalPertemuan,
+      hadirCount,
+      alpaCount,
+    };
+  });
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -243,6 +270,7 @@ export default function JadwalPage() {
 
       {/* PRO Attendance Radar Card */}
       <AttendanceRadarCard
+        courses={attendanceCourses}
         isPro={isPro}
         onUpgradeClick={() => setIsProModalOpen(true)}
       />
