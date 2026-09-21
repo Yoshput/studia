@@ -72,27 +72,64 @@ export function ProUpgradeModal({
     }
   };
 
-  const handleDirectUpgrade = async () => {
+  const [paymentState, setPaymentState] = useState<"idle" | "loading" | "pending" | "success" | "error">("idle");
+  const [paymentError, setPaymentError] = useState("");
+
+  const handleCheckout = async () => {
     setIsSubmitting(true);
+    setPaymentState("loading");
+    setPaymentError("");
+
     try {
-      const res = await fetch("/api/user/pro", {
+      const res = await fetch("/api/payment/create-transaction", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "upgrade",
-          plan: selectedTier,
-        }),
+        body: JSON.stringify({ plan: selectedTier }),
       });
 
-      if (res.ok) {
-        setPromoSuccess("Selamat! Akses Semestr PRO Anda telah aktif.");
-        if (onSuccess) onSuccess();
-        setTimeout(() => {
-          onClose();
-        }, 1200);
+      const data = await res.json();
+
+      if (!res.ok) {
+        setPaymentError(data.error || "Gagal membuat sesi pembayaran.");
+        setPaymentState("error");
+        setIsSubmitting(false);
+        return;
+      }
+
+      const snapToken = data.snap_token;
+
+      // Buka Midtrans Snap popup
+      if (typeof window !== "undefined" && (window as any).snap) {
+        (window as any).snap.pay(snapToken, {
+          onSuccess: () => {
+            setPaymentState("success");
+            if (onSuccess) onSuccess();
+            setTimeout(() => onClose(), 2000);
+          },
+          onPending: () => {
+            setPaymentState("pending");
+          },
+          onError: () => {
+            setPaymentError("Pembayaran gagal. Silakan coba lagi.");
+            setPaymentState("error");
+          },
+          onClose: () => {
+            // User menutup popup tanpa bayar
+            setPaymentState("idle");
+          },
+        });
+      } else {
+        // Fallback: buka redirect URL jika Snap.js belum load
+        if (data.redirect_url) {
+          window.open(data.redirect_url, "_blank");
+        } else {
+          setPaymentError("Snap payment tidak tersedia. Coba refresh halaman.");
+          setPaymentState("error");
+        }
       }
     } catch {
-      setPromoError("Kendala koneksi, silakan coba lagi.");
+      setPaymentError("Kendala koneksi, silakan coba lagi.");
+      setPaymentState("error");
     } finally {
       setIsSubmitting(false);
     }
@@ -240,31 +277,58 @@ export function ProUpgradeModal({
 
         {/* Action Button */}
         <div className="space-y-2 pt-1">
+          {paymentState === "success" && (
+            <div className="p-3 rounded-xl bg-ios-success/15 border border-ios-success/30 text-center">
+              <p className="text-[13px] font-bold text-ios-success">🎉 Pembayaran berhasil! Semestr PRO aktif.</p>
+            </div>
+          )}
+          {paymentState === "pending" && (
+            <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/30">
+              <p className="text-[12px] font-semibold text-amber-600 dark:text-amber-400">
+                ⏳ Pembayaran diproses. Akses PRO akan aktif otomatis setelah konfirmasi.
+              </p>
+            </div>
+          )}
+          {(paymentError || paymentState === "error") && (
+            <div className="p-3 rounded-xl bg-ios-danger/15 border border-ios-danger/30">
+              <p className="text-[12px] font-semibold text-ios-danger">
+                {paymentError || "Pembayaran gagal. Silakan coba lagi."}
+              </p>
+            </div>
+          )}
+
           <Button
             type="button"
             variant="primary"
             className="w-full py-3 text-[14px] font-bold shadow-md gap-2"
-            isLoading={isSubmitting}
-            onClick={handleDirectUpgrade}
+            isLoading={isSubmitting || paymentState === "loading"}
+            disabled={paymentState === "success"}
+            onClick={handleCheckout}
           >
             <Zap className="w-4 h-4 fill-current" />
             <span>
-              Aktifkan Sekarang (Rp {selectedTier === "lifetime" ? "39.000" : "19.000"})
+              {paymentState === "loading"
+                ? "Membuka Pembayaran..."
+                : `Bayar Sekarang — Rp ${selectedTier === "lifetime" ? "39.000" : "19.000"}`}
             </span>
             <ArrowRight className="w-4 h-4" />
           </Button>
 
+          <p className="text-center text-[11px] text-ios-textSecondary">
+            🔒 Pembayaran aman via Midtrans • QRIS, GoPay, OVO, Bank Transfer tersedia
+          </p>
+
           <a
-            href={`https://wa.me/6281234567890?text=${encodeURIComponent(
-              `Halo Admin Semestr, saya mahasiswa Telkom University ingin konfirmasi upgrade ke Semestr ${
-                selectedTier === "lifetime" ? "PRO Lifetime" : "PRO Semester"
-              }.`
+            href={`https://wa.me/6285219671234?text=${encodeURIComponent(
+              `Halo Admin Semestr, saya ingin upgrade ke Semestr ${
+                selectedTier === "lifetime" ? "PRO Lifetime (Rp 39.000)" : "PRO Semester (Rp 19.000)"
+              }. Mohon bantuannya.`
             )}`}
             target="_blank"
             rel="noopener noreferrer"
             className="w-full flex items-center justify-center gap-1.5 py-2 text-[12px] font-semibold text-ios-textSecondary hover:text-ios-accent transition-colors"
           >
-            <span>Tanya Admin / Bantuan Pembayaran via WhatsApp</span>
+            <span>Ada kendala? Tanya Admin via WhatsApp</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </a>
         </div>

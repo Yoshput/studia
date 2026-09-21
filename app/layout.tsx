@@ -67,6 +67,15 @@ export default function RootLayout({
             `,
           }}
         />
+        {/* Midtrans Snap.js — payment gateway */}
+        <script
+          src={
+            process.env.NEXT_PUBLIC_MIDTRANS_IS_PRODUCTION === "true"
+              ? "https://app.midtrans.com/snap/snap.js"
+              : "https://app.sandbox.midtrans.com/snap/snap.js"
+          }
+          data-client-key={process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || ""}
+        />
       </head>
       <body className="bg-ios-bg text-ios-textPrimary min-h-screen antialiased selection:bg-ios-accent/20">
         <Providers>{children}</Providers>

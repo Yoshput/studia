@@ -91,33 +91,13 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Direct Upgrade Request (e.g. mock test or upgrade handler)
+    // Direct Upgrade without payment is DISABLED — must go through Midtrans payment
+    // Action "upgrade" intentionally removed to prevent free PRO activation
     if (action === "upgrade") {
-      const selectedPlan = plan === "lifetime" ? "PRO_LIFETIME" : "PRO_SEMESTER";
-      const days = selectedPlan === "PRO_LIFETIME" ? 3650 : 180;
-      const expiresAt = new Date();
-      expiresAt.setDate(expiresAt.getDate() + days);
-
-      const updated = await db.user.update({
-        where: { id: userId },
-        data: {
-          is_pro: true,
-          pro_plan: selectedPlan,
-          pro_expires_at: expiresAt,
-        },
-        select: {
-          id: true,
-          is_pro: true,
-          pro_plan: true,
-          pro_expires_at: true,
-        },
-      });
-
-      return NextResponse.json({
-        success: true,
-        message: "Status PRO Anda telah aktif!",
-        user: updated,
-      });
+      return NextResponse.json(
+        { error: "Pembayaran diperlukan. Gunakan halaman upgrade resmi." },
+        { status: 403 }
+      );
     }
 
     return NextResponse.json({ error: "Aksi tidak valid" }, { status: 400 });
