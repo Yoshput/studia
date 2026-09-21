@@ -19,6 +19,7 @@ import {
   CheckCircle2,
   Circle,
   AlertCircle,
+  ExternalLink,
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo, getDaysRemaining } from "@/lib/utils";
 import { TugasDeadline, Matkul } from "@/types";
@@ -325,9 +326,26 @@ export default function TugasPage() {
                       </h3>
 
                       {t.deskripsi && (
-                        <p className="text-[13px] text-ios-textSecondary mt-1 line-clamp-2">
-                          {t.deskripsi}
-                        </p>
+                        <div className="mt-1.5 space-y-1.5">
+                          <p className="text-[13px] text-ios-textSecondary whitespace-pre-line leading-relaxed">
+                            {t.deskripsi}
+                          </p>
+                          {(() => {
+                            const urlMatch = t.deskripsi.match(/(https?:\/\/[^\s]+)/);
+                            if (!urlMatch) return null;
+                            return (
+                              <a
+                                href={urlMatch[0]}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-ios-accent hover:underline bg-ios-accent/10 hover:bg-ios-accent/15 px-2.5 py-1 rounded-lg border border-ios-accent/20 transition-colors"
+                              >
+                                <ExternalLink className="w-3.5 h-3.5" />
+                                <span>Buka Link Pengumpulan / Berkas</span>
+                              </a>
+                            );
+                          })()}
+                        </div>
                       )}
 
                       <div className="mt-2.5 flex items-center justify-between text-[12px] pt-2 border-t border-ios-border/60">
