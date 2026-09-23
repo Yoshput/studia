@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { motion } from "framer-motion";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -248,13 +249,22 @@ export function DesktopSidebar({
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    "flex items-center justify-between px-3 py-2 rounded-btn text-[13px] font-medium transition-all group min-h-[40px]",
+                    "relative flex items-center justify-between px-3 py-2 rounded-btn text-[13px] font-medium transition-all group min-h-[40px] select-none active:scale-[0.97]",
                     isActive
-                      ? "bg-ios-accent text-white font-semibold shadow-sm"
+                      ? "text-white font-semibold"
                       : "text-ios-textSecondary hover:text-ios-textPrimary hover:bg-ios-surfaceSecondary/80"
                   )}
                 >
-                  <div className="flex items-center gap-2.5">
+                  {/* Sliding Active Pill Background */}
+                  {isActive && (
+                    <motion.div
+                      layoutId="desktopSidebarActivePill"
+                      className="absolute inset-0 bg-ios-accent rounded-btn shadow-sm -z-10"
+                      transition={{ type: "spring", stiffness: 450, damping: 35 }}
+                    />
+                  )}
+
+                  <div className="flex items-center gap-2.5 z-10">
                     <Icon
                       className={cn(
                         "w-4 h-4 transition-transform group-hover:scale-110",
@@ -267,7 +277,7 @@ export function DesktopSidebar({
                   {item.badge && (
                     <span
                       className={cn(
-                        "text-[10px] px-1.5 py-0.5 rounded-full font-semibold transition-colors",
+                        "text-[10px] px-1.5 py-0.5 rounded-full font-semibold transition-colors z-10",
                         isActive
                           ? "bg-white/20 text-white"
                           : "bg-ios-surfaceSecondary text-ios-textSecondary border border-ios-border/60"

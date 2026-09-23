@@ -5,6 +5,7 @@ import { DesktopHeader } from "@/components/DesktopHeader";
 import { BottomTabBar } from "@/components/BottomTabBar";
 import { MascotWidget } from "@/components/assistant/MascotWidget";
 import { ReminderOverlay } from "@/components/reminders/ReminderOverlay";
+import { NavigationProgress } from "@/components/ui/NavigationProgress";
 import { db } from "@/lib/db";
 import { getDaysRemaining } from "@/lib/utils";
 import { getServerSession } from "next-auth";
@@ -59,6 +60,9 @@ export default async function MainLayout({
 
   return (
     <div className="min-h-screen bg-ios-bg text-ios-textPrimary transition-colors duration-200">
+      {/* Top Navigation Visual Feedback Bar */}
+      <NavigationProgress />
+
       {/* Desktop CMS Left Sidebar (Hidden on Mobile) */}
       <DesktopSidebar semesterName={semesterName} />
 

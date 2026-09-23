@@ -35,9 +35,10 @@ export function SegmentedControl<T extends string>({
       {options.map((option) => {
         const isSelected = option.value === value;
         return (
-          <button
+          <motion.button
             key={option.value}
             type="button"
+            whileTap={{ scale: 0.95 }}
             onClick={() => onChange(option.value)}
             className={cn(
               "relative flex-1 flex items-center justify-center gap-1.5 px-3 py-1.5 text-[13px] rounded-lg transition-colors select-none z-10 whitespace-nowrap min-h-[36px]",
@@ -55,7 +56,7 @@ export function SegmentedControl<T extends string>({
             )}
             {option.icon}
             <span>{option.label}</span>
-          </button>
+          </motion.button>
         );
       })}
     </div>

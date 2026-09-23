@@ -210,3 +210,16 @@ body {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* F. Interactive Tap & Motion Feedback */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tap-interactive {
+  transition: transform 0.14s cubic-bezier(0.2, 0.8, 0.4, 1), opacity 0.14s ease;
+}
+.tap-interactive:active {
+  transform: scale(0.96);
+  opacity: 0.88;
+}
