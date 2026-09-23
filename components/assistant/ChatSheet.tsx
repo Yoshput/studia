@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
+import { useSession } from "next-auth/react";
 import { Sheet } from "@/components/ui/Sheet";
 import { Button } from "@/components/ui/Button";
 import { LiveAnimeAvatar, AvatarStatus } from "./LiveAnimeAvatar";
@@ -39,11 +40,11 @@ interface ChatSheetProps {
 }
 
 const QUICK_PROMPTS = [
-  "Apa jadwal kuliah saya hari ini?",
-  "Deadline tugas apa yang paling mendesak?",
-  "Mood makan apa ya enaknya hari ini?",
-  "Tips praktikum Kali Linux di VMware",
-  "Berapa estimasi nilai & IPK saya saat ini?",
+  "Jadwal kuliah hari ini",
+  "Deadline tugas paling mendesak",
+  "Coba buatkan jadwal terbaik untuk kuliah",
+  "Tips persiapan praktikum dan tugas",
+  "Rekomendasi tempat nugas tenang",
 ];
 
 export function ChatSheet({
@@ -52,11 +53,14 @@ export function ChatSheet({
   voiceEnabled = false,
   onToggleVoice = () => {},
 }: ChatSheetProps) {
+  const { data: session } = useSession();
+  const userName = session?.user?.name?.split(" ")[0] || "Teman";
+
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "init-1",
       sender: "assistant",
-      text: "Halo! Aku Aiko, asisten akademik & sahabat belajar digitalmu di Semestr. Ada yang ingin kamu tanyakan atau diskusikan hari ini?",
+      text: `Halo ${userName}! Aiko di sini memantau seluruh agenda kuliah dan tugasmu hari ini. Ada materi yang mau dibahas atau tugas yang ingin dikerjakan bareng?`,
       timestamp: new Date().toLocaleTimeString("id-ID", {
         hour: "2-digit",
         minute: "2-digit",
@@ -332,31 +336,28 @@ export function ChatSheet({
               )}
 
               <div>
-                <div className="flex items-center gap-1.5">
+                <div className="flex items-center gap-2">
                   <span className="font-bold text-[15px] text-ios-textPrimary tracking-tight">
                     Aiko
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-ios-accent/15 text-ios-accent">
-                    Telkom Purwokerto
+                  <span className="text-[10px] px-2 py-0.5 rounded-full font-semibold bg-ios-accent/10 text-ios-accent border border-ios-accent/20">
+                    Telkom University
                   </span>
-                  <button
-                    type="button"
-                    onClick={() => setUse3DAvatar(!use3DAvatar)}
-                    className="text-[10px] px-1.5 py-0.5 rounded bg-black/5 dark:bg-white/10 hover:bg-ios-accent/20 text-ios-textSecondary hover:text-ios-accent font-medium flex items-center gap-1 transition-all"
-                    title="Ganti mode render 3D WebGL / 2D Canvas"
-                  >
-                    <Box className="w-2.5 h-2.5" />
-                    <span>{use3DAvatar ? "3D WebGL" : "2D"}</span>
-                  </button>
                 </div>
-                <p className="text-[12px] text-ios-textSecondary">
-                  {avatarStatus === "listening"
-                    ? "🎙️ Sedang mendengarkan suaramu..."
-                    : avatarStatus === "thinking"
-                    ? "🧠 Sedang memproses jawaban dengan Gemini..."
-                    : avatarStatus === "talking"
-                    ? "🔊 Sedang berbicara..."
-                    : "✨ Siap membantumu kapan saja!"}
+                <p className="text-[11.5px] text-ios-textSecondary flex items-center gap-1.5 mt-0.5">
+                  <span className={cn(
+                    "w-1.5 h-1.5 rounded-full",
+                    avatarStatus === "idle" ? "bg-emerald-500" : "bg-ios-accent animate-ping"
+                  )} />
+                  <span>
+                    {avatarStatus === "listening"
+                      ? "Mendengarkan suaramu..."
+                      : avatarStatus === "thinking"
+                      ? "Menyusun jawaban..."
+                      : avatarStatus === "talking"
+                      ? "Sedang berbicara..."
+                      : "Aktif mendampingi perkuliahanmu"}
+                  </span>
                 </p>
               </div>
             </div>
@@ -367,11 +368,11 @@ export function ChatSheet({
               <button
                 type="button"
                 onClick={() => setIsLiveVoiceOpen(true)}
-                className="px-2.5 py-1.5 rounded-btn border border-emerald-500/35 bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 active:scale-95 transition-all flex items-center gap-1.5 text-[11px] font-bold shadow-sm"
-                title="Buka Panggilan Suara Interaktif Penuh (Gemini Live Voice Call)"
+                className="px-2.5 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition-all flex items-center gap-1 text-[11px] font-semibold"
+                title="Buka Panggilan Suara Interaktif"
               >
-                <PhoneCall className="w-3.5 h-3.5 text-emerald-500 animate-pulse" />
-                <span className="hidden sm:inline">Live Call</span>
+                <PhoneCall className="w-3 h-3 text-emerald-500" />
+                <span>Live Call</span>
               </button>
 
               {/* Voice Output Toggle */}
@@ -379,7 +380,7 @@ export function ChatSheet({
                 type="button"
                 onClick={onToggleVoice}
                 className={cn(
-                  "p-2 rounded-btn border transition-all flex items-center gap-1 text-[11px] font-medium",
+                  "p-1.5 rounded-full border transition-all flex items-center justify-center",
                   voiceEnabled
                     ? "bg-ios-accent/15 border-ios-accent/30 text-ios-accent"
                     : "bg-ios-surfaceSecondary border-ios-border text-ios-textSecondary hover:text-ios-textPrimary"
@@ -393,23 +394,12 @@ export function ChatSheet({
                 )}
               </button>
 
-              {/* Gemini API Settings Modal Button */}
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                className="p-2 rounded-btn border transition-all flex items-center gap-1 text-[11px] font-medium bg-emerald-500/15 border-emerald-500/30 text-emerald-600 dark:text-emerald-400"
-                title="Google Gemini 2.5 Flash Aktif"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="hidden sm:inline font-semibold">Gemini 2.5</span>
-              </button>
-
               {/* Clear Chat */}
               <button
                 type="button"
                 onClick={handleClear}
-                className="p-2 rounded-btn border border-ios-border bg-ios-surfaceSecondary text-ios-textSecondary hover:text-ios-danger hover:border-ios-danger/30 transition-all"
-                title="Bersihkan riwayat chat"
+                className="p-1.5 rounded-full border border-ios-border bg-ios-surfaceSecondary text-ios-textSecondary hover:text-ios-danger hover:border-ios-danger/30 transition-all"
+                title="Bersihkan percakapan"
               >
                 <Trash2 className="w-3.5 h-3.5" />
               </button>
@@ -484,31 +474,24 @@ export function ChatSheet({
                 >
                   {!isUser && (
                     <div className="flex-shrink-0 mt-0.5">
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-ios-accent/20 to-purple-500/20 border border-ios-border flex items-center justify-center shadow-sm">
-                        <Sparkles className="w-4 h-4 text-ios-accent" />
+                      <div className="w-7 h-7 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-surfaceSecondary shadow-xs">
+                        <LiveAnimeAvatar size="sm" showStatusBadge={false} />
                       </div>
                     </div>
                   )}
                   <div
                     className={cn(
-                      "px-4 py-3 rounded-2xl text-[13.5px] leading-relaxed shadow-sm",
+                      "px-3.5 py-2.5 rounded-2xl text-[13px] leading-relaxed shadow-xs",
                       isUser
-                        ? "bg-ios-accent text-white rounded-br-sm font-medium"
-                        : "bg-ios-surfaceSecondary text-ios-textPrimary border border-ios-border rounded-bl-sm whitespace-pre-wrap"
+                        ? "bg-ios-accent text-white rounded-br-xs font-medium"
+                        : "bg-ios-surfaceSecondary text-ios-textPrimary border border-ios-border/70 rounded-bl-xs whitespace-pre-wrap"
                     )}
                   >
                     <p>{m.text}</p>
-                    <div className="flex items-center justify-between gap-3 mt-1.5 pt-1 border-t border-black/5 dark:border-white/5 text-[10px]">
-                      {!isUser && (
-                        <span className="text-ios-accent font-semibold flex items-center gap-1">
-                          <Sparkles className="w-2.5 h-2.5" />
-                          Gemini 2.5 Flash
-                        </span>
-                      )}
+                    <div className="flex items-center justify-end mt-1 text-[10px]">
                       <span
                         className={cn(
-                          "ml-auto",
-                          isUser ? "text-white/70" : "text-ios-textSecondary"
+                          isUser ? "text-white/70" : "text-ios-textSecondary/70"
                         )}
                       >
                         {m.timestamp}
@@ -521,15 +504,13 @@ export function ChatSheet({
 
             {/* Thinking / Loading Animation */}
             {isLoading && (
-              <div className="flex gap-2.5 items-center">
-                <div className="w-8 h-8 rounded-full bg-ios-accent/10 border border-ios-border flex items-center justify-center">
-                  <Sparkles className="w-4 h-4 text-ios-accent animate-spin" />
+              <div className="flex gap-2 items-center">
+                <div className="w-7 h-7 rounded-full overflow-hidden border border-ios-border flex items-center justify-center bg-ios-surfaceSecondary">
+                  <LiveAnimeAvatar size="sm" showStatusBadge={false} />
                 </div>
-                <div className="bg-ios-surfaceSecondary border border-ios-border px-4 py-2.5 rounded-2xl text-[12.5px] text-ios-textSecondary flex items-center gap-2">
-                  <span>Aiko sedang merangkai jawaban...</span>
-                  <span className="w-1.5 h-1.5 bg-ios-accent rounded-full animate-bounce" />
-                  <span className="w-1.5 h-1.5 bg-ios-accent rounded-full animate-bounce [animation-delay:0.2s]" />
-                  <span className="w-1.5 h-1.5 bg-ios-accent rounded-full animate-bounce [animation-delay:0.4s]" />
+                <div className="bg-ios-surfaceSecondary border border-ios-border px-3.5 py-2 rounded-2xl text-[12px] text-ios-textSecondary flex items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 bg-ios-accent rounded-full animate-ping" />
+                  <span>Aiko sedang menulis...</span>
                 </div>
               </div>
             )}

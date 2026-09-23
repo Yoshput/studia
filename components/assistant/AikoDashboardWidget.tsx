@@ -22,10 +22,10 @@ interface AikoDashboardWidgetProps {
 }
 
 const QUICK_PROMPTS = [
-  { label: "📅 Buatkan jadwal terbaik kuliah", text: "coba buatkan saya jadwal terbaik buat kuliah saat ini" },
-  { label: "⏰ Tugas paling mendesak", text: "deadline tugas apa yang paling mendesak?" },
-  { label: "🎯 Tips lolos praktikum & IPK", text: "berikan tips belajar dan menjaga performa nilai semester ini" },
-  { label: "☕ Kafe & kuliner nugas", text: "rekomendasi tempat nugas dan kuliner enak sekitar kampus" },
+  { label: "Buatkan jadwal terbaik kuliah", text: "coba buatkan saya jadwal terbaik buat kuliah saat ini" },
+  { label: "Deadline tugas paling mendesak", text: "deadline tugas apa yang paling mendesak?" },
+  { label: "Tips praktikum & performa IPK", text: "berikan tips belajar dan menjaga performa nilai semester ini" },
+  { label: "Rekomendasi alur belajar", text: "bagaimana alur belajar yang efektif untuk matkul semester ini?" },
 ];
 
 export function AikoDashboardWidget({
@@ -37,7 +37,7 @@ export function AikoDashboardWidget({
   const [chatHistory, setChatHistory] = useState<Array<{ role: "user" | "aiko"; text: string }>>([
     {
       role: "aiko",
-      text: `Halo ${studentName.split(" ")[0]}! Aku Aiko, asisten akademikmu. Butuh bantuan jadwal kuliah, deadline tugas, atau strategi belajar hari ini?`,
+      text: `Halo ${studentName.split(" ")[0]}! Aiko di sini memantau seluruh agenda kuliah dan tugasmu. Ada materi yang mau dibahas atau tugas yang ingin dikerjakan bareng?`,
     },
   ]);
   const [isCopied, setIsCopied] = useState(false);

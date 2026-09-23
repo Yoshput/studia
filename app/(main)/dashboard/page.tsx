@@ -10,6 +10,7 @@ import { Input, Textarea, Select } from "@/components/ui/Input";
 import { DeadlinePicker } from "@/components/ui/DeadlinePicker";
 import { AikoDashboardWidget } from "@/components/assistant/AikoDashboardWidget";
 import { ChatSheet } from "@/components/assistant/ChatSheet";
+import { TaskDeadlineWidget } from "@/components/widgets/TaskDeadlineWidget";
 import {
   Calendar,
   Clock,
@@ -39,6 +40,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [matkulList, setMatkulList] = useState<Matkul[]>([]);
   const [tugasList, setTugasList] = useState<TugasDeadline[]>([]);
+  const [allTugasList, setAllTugasList] = useState<TugasDeadline[]>([]);
   const [semesterInfo, setSemesterInfo] = useState<{
     nama_semester: string;
     tahun_ajaran: string;
@@ -95,6 +97,7 @@ export default function DashboardPage() {
       if (matkulData.matkul) setMatkulList(matkulData.matkul);
       if (semData.activeSemester) setSemesterInfo(semData.activeSemester);
       if (tugasData.tugas) {
+        setAllTugasList(tugasData.tugas);
         // Active (uncompleted) tasks
         const activeOnly = tugasData.tugas.filter((t: TugasDeadline) => t.status !== "selesai");
         setTugasList(activeOnly);
@@ -603,83 +606,11 @@ export default function DashboardPage() {
 
         {/* Right / Sidebar Section (4 Columns on Desktop CMS) */}
         <div className="lg:col-span-5 xl:col-span-4 space-y-6">
-          {/* Deadlines Section */}
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Clock className="w-4 h-4 text-ios-warning" />
-                <h2 className="text-[17px] font-bold text-ios-textPrimary tracking-tight">
-                  Tugas &amp; Batas Waktu
-                </h2>
-                <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-ios-warning/15 text-ios-warning border border-ios-warning/30">
-                  {tugasList.length} Aktif
-                </span>
-              </div>
-              <Link
-                href="/tugas"
-                className="text-[12.5px] font-semibold text-ios-accent hover:underline flex items-center gap-0.5"
-              >
-                <span>Lihat Semua</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
-
-            {upcomingDeadlines.length === 0 ? (
-              <Card className="p-4 text-center">
-                <p className="text-[14px] text-ios-textPrimary font-medium">
-                  Semua tugas telah terselesaikan
-                </p>
-                <p className="text-[12px] text-ios-textSecondary mt-0.5">
-                  Belum ada deadline tugas baru yang tercatat.
-                </p>
-              </Card>
-            ) : (
-              <div className="space-y-2.5">
-                {upcomingDeadlines.map((t) => (
-                  <Card key={t.id} className="p-3.5 hover:shadow-iosHover transition-shadow border border-ios-border">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-1.5 mb-1">
-                          <span className="text-[11px] font-semibold text-ios-textSecondary truncate">
-                            {t.matkul?.nama || "Mata Kuliah"}
-                          </span>
-                          <BadgeStatus
-                            size="sm"
-                            variant={
-                              t.prioritas === "tinggi"
-                                ? "urgent"
-                                : t.prioritas === "sedang"
-                                ? "proses"
-                                : "neutral"
-                            }
-                          >
-                            {t.prioritas}
-                          </BadgeStatus>
-                        </div>
-                        <h4 className="text-[13.5px] font-bold text-ios-textPrimary leading-snug">
-                          {t.judul}
-                        </h4>
-                        {t.deskripsi && (
-                          <p className="text-[11.5px] text-ios-textSecondary line-clamp-2 mt-1 leading-normal">
-                            {t.deskripsi}
-                          </p>
-                        )}
-                      </div>
-
-                      <div className="text-right flex-shrink-0 mt-0.5">
-                        <BadgeStatus
-                          size="sm"
-                          variant={t.remaining.isUrgent ? "urgent" : "neutral"}
-                        >
-                          {t.remaining.label}
-                        </BadgeStatus>
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Scrollable Task & Deadline Widget */}
+          <TaskDeadlineWidget
+            tasks={allTugasList}
+            onTaskUpdated={fetchData}
+          />
 
           {/* Attention Required Card (if any) */}
           {attentionList.length > 0 && (

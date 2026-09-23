@@ -55,7 +55,8 @@ export default function RootLayout({
             __html: `
               try {
                 const t = localStorage.getItem('semestr-theme');
-                const isDark = t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches);
+                // Default selalu putih (style terang) kecuali jika pengguna sengaja memilih 'dark'
+                const isDark = t === 'dark';
                 if (isDark) {
                   document.documentElement.classList.add('dark');
                   document.documentElement.setAttribute('data-theme', 'dark');

@@ -11,15 +11,13 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
     setMounted(true);
     const savedTheme = localStorage.getItem("semestr-theme") as "light" | "dark" | null;
 
-    if (savedTheme) {
-      setTheme(savedTheme);
-      applyTheme(savedTheme);
+    if (savedTheme === "dark") {
+      setTheme("dark");
+      applyTheme("dark");
     } else {
-      // Default initial preference detection
-      const systemDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const initialTheme = systemDark ? "dark" : "light";
-      setTheme(initialTheme);
-      applyTheme(initialTheme);
+      // Default selalu putih (style terang)
+      setTheme("light");
+      applyTheme("light");
     }
   }, []);
 
