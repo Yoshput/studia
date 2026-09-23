@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   Download,
   Crown,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
@@ -47,6 +48,7 @@ export function DesktopSidebar({
   const [isPro, setIsPro] = useState<boolean>((session?.user as any)?.is_pro ?? false);
   const [isProModalOpen, setIsProModalOpen] = useState<boolean>(false);
   const [counts, setCounts] = useState<{ matkul?: number; tugas?: number; ipk?: number | null }>({});
+  const [lastLoginText, setLastLoginText] = useState<string>("");
 
   const userIdentifier = session?.user?.email || (session?.user as { id?: string })?.id;
 
@@ -117,6 +119,28 @@ export function DesktopSidebar({
         localStorage.removeItem(userCacheKey);
       }
     };
+
+    // Track and retrieve last login timestamp
+    const loginKey = `semestr_last_login_${userIdentifier || "default"}`;
+    const stored = localStorage.getItem(loginKey);
+    if (stored) {
+      setLastLoginText(stored);
+    } else {
+      const formatted =
+        new Date().toLocaleDateString("id-ID", {
+          weekday: "short",
+          day: "numeric",
+          month: "short",
+        }) +
+        ", " +
+        new Date().toLocaleTimeString("id-ID", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }) +
+        " WIB";
+      setLastLoginText(formatted);
+      localStorage.setItem(loginKey, formatted);
+    }
 
     window.addEventListener("avatar-updated", handleAvatarUpdated);
     return () => window.removeEventListener("avatar-updated", handleAvatarUpdated);
@@ -334,7 +358,19 @@ export function DesktopSidebar({
         )}
       </div>
 
-      {/* 5. Footer: Theme Toggle & Logout */}
+      {/* 5. Last Login Info Badge in Bottom Left */}
+      {lastLoginText && (
+        <div className="px-3.5 py-2 border-t border-ios-border/60 bg-ios-surfaceSecondary/40 flex items-center justify-between text-[11px] text-ios-textSecondary select-none">
+          <div className="flex items-center gap-1.5 truncate">
+            <Clock className="w-3.5 h-3.5 text-ios-accent flex-shrink-0" />
+            <span className="truncate">
+              Terakhir login: <span className="font-semibold text-ios-textPrimary">{lastLoginText}</span>
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* 6. Footer: Theme Toggle & Logout */}
       <div className="p-3 border-t border-ios-border/70 flex items-center justify-between bg-ios-surfaceSecondary/30">
         <div className="flex items-center gap-1">
           <ThemeToggle />

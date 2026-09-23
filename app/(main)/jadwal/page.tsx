@@ -17,10 +17,14 @@ import {
   AlertCircle,
   BookOpen,
   Download,
+  LayoutGrid,
+  List,
+  Eye,
 } from "lucide-react";
 import { Matkul } from "@/types";
 import { AttendanceRadarCard } from "@/components/pro/AttendanceRadarCard";
 import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
+import { IgraciasScheduleGrid } from "@/components/jadwal/IgraciasScheduleGrid";
 import { exportJadwalToCsv } from "@/lib/export";
 
 const HARI_OPTIONS = [
@@ -29,6 +33,8 @@ const HARI_OPTIONS = [
   { value: "Rabu", label: "Rabu" },
   { value: "Kamis", label: "Kamis" },
   { value: "Jumat", label: "Jumat" },
+  { value: "Sabtu", label: "Sabtu" },
+  { value: "Minggu", label: "Minggu" },
   { value: "Semua", label: "Semua" },
 ];
 
@@ -41,6 +47,9 @@ export default function JadwalPage() {
   const [editingMatkul, setEditingMatkul] = useState<Matkul | null>(null);
   const [isPro, setIsPro] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
+
+  const [scheduleViewMode, setScheduleViewMode] = useState<"grid" | "hari">("grid");
+  const [activeSemester, setActiveSemester] = useState<{ nama_semester: string; tahun_ajaran: string } | null>(null);
 
   // Form states
   const [nama, setNama] = useState("");
@@ -59,14 +68,17 @@ export default function JadwalPage() {
   const fetchMatkul = async () => {
     try {
       setLoading(true);
-      const [mRes, pRes] = await Promise.all([
+      const [mRes, pRes, sRes] = await Promise.all([
         fetch("/api/matkul"),
         fetch("/api/presensi"),
+        fetch("/api/semester"),
       ]);
       const data = await mRes.json();
       const pData = await pRes.json();
+      const sData = await sRes.json();
       if (data.matkul) setMatkulList(data.matkul);
       if (pData.presensi) setPresensiList(pData.presensi);
+      if (sData.activeSemester) setActiveSemester(sData.activeSemester);
     } catch (err) {
       console.error("Failed to load matkul:", err);
     } finally {
@@ -275,27 +287,56 @@ export default function JadwalPage() {
         onUpgradeClick={() => setIsProModalOpen(true)}
       />
 
-      {/* Segmented Control for Days */}
-      <SegmentedControl
-        name="jadwal-day-filter"
-        options={HARI_OPTIONS}
-        value={selectedHari}
-        onChange={setSelectedHari}
-      />
+      {/* View Switcher: Matriks iGracias vs Daftar Per Hari */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="w-full sm:w-80">
+          <SegmentedControl
+            name="schedule-view-mode"
+            options={[
+              { value: "grid", label: "Matriks iGracias", icon: <LayoutGrid className="w-3.5 h-3.5" /> },
+              { value: "hari", label: "Daftar Per Hari", icon: <List className="w-3.5 h-3.5" /> },
+            ]}
+            value={scheduleViewMode}
+            onChange={(v) => setScheduleViewMode(v as "grid" | "hari")}
+          />
+        </div>
 
-      {/* List Matkul */}
-      <div className="space-y-3">
-        {filteredMatkul.length === 0 ? (
-          <Card className="p-8 text-center bg-ios-surface">
-            <CalendarDays className="w-8 h-8 text-ios-textSecondary mx-auto mb-2 opacity-50" />
-            <p className="text-[15px] font-semibold text-ios-textPrimary">
-              Tidak ada jadwal untuk {selectedHari}
-            </p>
-            <p className="text-[13px] text-ios-textSecondary mt-1">
-              Gunakan tombol Tambah untuk mendaftarkan jadwal mata kuliah baru.
-            </p>
-          </Card>
-        ) : (
+        <span className="hidden md:inline-block text-[11.5px] font-medium text-ios-textSecondary">
+          {scheduleViewMode === "grid" ? "📊 Tampilan matriks resmi 7 hari & shift jam" : `📅 Menampilkan jadwal: ${selectedHari}`}
+        </span>
+      </div>
+
+      {/* VIEW 1: Matriks Mingguan iGracias */}
+      {scheduleViewMode === "grid" ? (
+        <IgraciasScheduleGrid
+          matkulList={matkulList}
+          semesterName={activeSemester?.nama_semester || "Ganjil"}
+          tahunAjaran={activeSemester?.tahun_ajaran || "2026/2027"}
+        />
+      ) : (
+        /* VIEW 2: Daftar Per Hari */
+        <div className="space-y-3">
+          {/* Segmented Control for Days */}
+          <SegmentedControl
+            name="jadwal-day-filter"
+            options={HARI_OPTIONS}
+            value={selectedHari}
+            onChange={setSelectedHari}
+          />
+
+          {/* List Matkul */}
+          <div className="space-y-3">
+            {filteredMatkul.length === 0 ? (
+              <Card className="p-8 text-center bg-ios-surface">
+                <CalendarDays className="w-8 h-8 text-ios-textSecondary mx-auto mb-2 opacity-50" />
+                <p className="text-[15px] font-semibold text-ios-textPrimary">
+                  Tidak ada jadwal untuk {selectedHari}
+                </p>
+                <p className="text-[13px] text-ios-textSecondary mt-1">
+                  Gunakan tombol Tambah untuk mendaftarkan jadwal mata kuliah baru.
+                </p>
+              </Card>
+            ) : (
           filteredMatkul.map((m) => (
             <Card
               key={m.id}
@@ -361,7 +402,9 @@ export default function JadwalPage() {
             </Card>
           ))
         )}
+        </div>
       </div>
+    )}
 
       {/* Add Sheet */}
       <Sheet
