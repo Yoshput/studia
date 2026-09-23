@@ -34,8 +34,8 @@ interface Message {
 interface ChatSheetProps {
   isOpen: boolean;
   onClose: () => void;
-  voiceEnabled: boolean;
-  onToggleVoice: () => void;
+  voiceEnabled?: boolean;
+  onToggleVoice?: () => void;
 }
 
 const QUICK_PROMPTS = [
@@ -49,8 +49,8 @@ const QUICK_PROMPTS = [
 export function ChatSheet({
   isOpen,
   onClose,
-  voiceEnabled,
-  onToggleVoice,
+  voiceEnabled = false,
+  onToggleVoice = () => {},
 }: ChatSheetProps) {
   const [messages, setMessages] = useState<Message[]>([
     {

@@ -214,10 +214,10 @@ ${academicContextText}`;
     if (geminiApiKey && geminiApiKey.length > 5) {
       try {
         const geminiModels = [
-          "gemini-2.5-flash",
-          "gemini-flash-latest",
-          "gemini-2.5-flash-lite",
-          "gemini-3.5-flash",
+          "gemini-1.5-flash",
+          "gemini-1.5-flash-latest",
+          "gemini-2.0-flash",
+          "gemini-1.5-pro",
         ];
         for (const model of geminiModels) {
           try {
@@ -237,8 +237,8 @@ ${academicContextText}`;
                     },
                   ],
                   generationConfig: {
-                    temperature: 0.75,
-                    maxOutputTokens: 600,
+                    temperature: 0.7,
+                    maxOutputTokens: 2048,
                   },
                 }),
               }
@@ -246,7 +246,8 @@ ${academicContextText}`;
 
             if (geminiRes.ok) {
               const gData = await geminiRes.json();
-              const replyText = gData.candidates?.[0]?.content?.parts?.[0]?.text;
+              const candidate = gData.candidates?.[0];
+              const replyText = candidate?.content?.parts?.[0]?.text;
               if (replyText && replyText.trim().length > 0) {
                 return NextResponse.json({
                   reply: replyText.trim(),
@@ -338,6 +339,44 @@ ${academicContextText}`;
 2. Pasang \`open-vm-tools-desktop\` (\`sudo apt update && sudo apt install -y open-vm-tools-desktop\`) supaya resolusi layar otomatis pas dan clipboard copy-paste host-guest berfungsi mulus.
 3. Gunakan mode Network **NAT** untuk koneksi internet dasar, atau **Bridged** jika butuh latihan scanning jaringan lab.
 Sudah siap kelompok praktikumnya?`,
+        engine: "smart-local",
+      });
+    }
+
+    // 2.5. Rekomendasi Jadwal Terbaik & Manajemen Waktu Kuliah
+    if (
+      lower.includes("jadwal terbaik") ||
+      lower.includes("buatkan saya jadwal") ||
+      lower.includes("buatkan jadwal") ||
+      lower.includes("rekomendasi jadwal") ||
+      lower.includes("atur waktu") ||
+      lower.includes("manajemen waktu") ||
+      lower.includes("time management") ||
+      lower.includes("jadwal belajar")
+    ) {
+      const todayScheduleText = todayMatkul.length > 0
+        ? todayMatkul.map(m => `• **${m.jam_mulai} - ${m.jam_selesai} WIB**: Kuliah **${m.nama}** (Ruang: ${m.ruang})`).join("\n")
+        : "• **Waktu Fleksibel**: Hari ini tidak ada kelas tatap muka di kampus.";
+
+      const urgentTaskText = allPendingTasks.length > 0
+        ? allPendingTasks.slice(0, 2).map(t => `• Prioritaskan tugas **${t.judul}** (${t.matkulNama})`).join("\n")
+        : "• Seluruh tugas aktif dalam kondisi aman & terpantau!";
+
+      return NextResponse.json({
+        reply: `Hai ${studentCallName}! Ini rancangan **Jadwal & Ritme Harian Terbaik** yang Aiko susun khusus sesuai perkuliahanmu:\n\n` +
+          `🌅 **1. Pagi (06:00 - 08:30 WIB) — Fresh Start**\n` +
+          `• Sarapan bergizi & cek pengingat agenda di Semestr.\n` +
+          `• Baca sekilas materi kuliah sebelum masuk kelas.\n\n` +
+          `🏛️ **2. Siang (08:30 - 15:30 WIB) — Perkuliahan Utama**\n` +
+          `${todayScheduleText}\n` +
+          `• *Tips:* Presensi scan wajah tepat waktu sebelum batas toleransi habis.\n\n` +
+          `⚡ **3. Sore (16:00 - 18:30 WIB) — Fokus Tugas & Praktikum**\n` +
+          `${urgentTaskText}\n` +
+          `• Gunakan teknik Pomodoro (50 menit fokus, 10 menit istirahat) untuk ngoding atau bikin laporan.\n\n` +
+          `🌙 **4. Malam (19:30 - 22:30 WIB) — Review & Istirahat**\n` +
+          `• 19:30 - 21:00: Diskusi kelompok atau santai ngopi di sekitar Dukuhwaluh/HR Soebronto.\n` +
+          `• 21:00 - 22:30: Siapkan berkas esok hari & tidur cukup 7 jam agar besok tetap prima!\n\n` +
+          `Kunci sukses mahasiswa cum laude adalah konsistensi ritme, bukan begadang SKS. Semangat terus ya ${studentCallName}! 💪✨`,
         engine: "smart-local",
       });
     }

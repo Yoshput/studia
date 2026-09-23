@@ -2,6 +2,8 @@
 
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { MascotIcon } from '@/components/assistant/MascotIcon';
 import { Button } from '@/components/ui/Button';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -30,8 +32,20 @@ import {
 import gsap from 'gsap';
 
 export default function LandingPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+
+  // Auto-Redirect ke Dashboard jika user sudah login sebelumnya
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const isLoggedOut = window.location.search.includes('logged_out=1');
+
+    if (status === 'authenticated' && !isLoggedOut) {
+      router.replace('/dashboard');
+    }
+  }, [status, router]);
 
   // Active Simulator Tab
   const [activeTab, setActiveTab] = useState<'presensi' | 'jadwal' | 'nilai' | 'asisten'>('presensi');
@@ -151,6 +165,25 @@ export default function LandingPage() {
       setAiAnswer(answer);
     }, 600);
   };
+
+  // Jika user sudah login, tampilkan splash auto-redirect ke dashboard
+  if (status === 'authenticated') {
+    return (
+      <div className="min-h-screen bg-[var(--bg)] flex flex-col items-center justify-center p-4">
+        <div className="flex flex-col items-center gap-3 animate-in fade-in duration-300">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-ios-accent to-red-600 flex items-center justify-center text-white font-black text-xl shadow-md animate-pulse">
+            S
+          </div>
+          <p className="text-[14px] font-bold text-ios-textPrimary tracking-tight">
+            Membuka Dashboard Mahasiswa...
+          </p>
+          <span className="text-[12px] text-ios-textSecondary">
+            Sesi akun aktif ditemukan • Auto-login aktif
+          </span>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[var(--bg)] text-[var(--text-primary)] selection:bg-ios-accent/20 selection:text-ios-accent transition-colors duration-300 font-sans antialiased">

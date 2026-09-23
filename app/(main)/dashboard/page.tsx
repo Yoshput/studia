@@ -8,6 +8,8 @@ import { BadgeStatus } from "@/components/ui/BadgeStatus";
 import { Sheet } from "@/components/ui/Sheet";
 import { Input, Textarea, Select } from "@/components/ui/Input";
 import { DeadlinePicker } from "@/components/ui/DeadlinePicker";
+import { AikoDashboardWidget } from "@/components/assistant/AikoDashboardWidget";
+import { ChatSheet } from "@/components/assistant/ChatSheet";
 import {
   Calendar,
   Clock,
@@ -69,6 +71,7 @@ export default function DashboardPage() {
   } | null>(null);
 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [isFullChatOpen, setIsFullChatOpen] = useState(false);
 
   const todayDate = new Date();
   const todayDayName = DAYS_ID[todayDate.getDay()];
@@ -479,6 +482,12 @@ export default function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left / Main Section (8 Columns on Desktop) */}
         <div className="lg:col-span-7 xl:col-span-8 space-y-6">
+          {/* Aiko AI Interactive Companion Widget */}
+          <AikoDashboardWidget
+            studentName={userProfile?.nama || "Mahasiswa"}
+            onOpenFullChat={() => setIsFullChatOpen(true)}
+          />
+
           {/* Presensi Biometrik Banner Card */}
           <Card className="p-4 sm:p-5 bg-gradient-to-r from-ios-surfaceSecondary/90 via-ios-surfaceSecondary/50 to-ios-surface border border-ios-accent/30 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
@@ -861,6 +870,12 @@ export default function DashboardPage() {
           </div>
         </form>
       </Sheet>
+
+      {/* Full Aiko 3D Chat Sheet */}
+      <ChatSheet
+        isOpen={isFullChatOpen}
+        onClose={() => setIsFullChatOpen(false)}
+      />
     </div>
   );
 }
