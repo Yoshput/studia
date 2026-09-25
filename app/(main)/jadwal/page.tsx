@@ -26,6 +26,7 @@ import { AttendanceRadarCard } from "@/components/pro/AttendanceRadarCard";
 import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
 import { IgraciasScheduleGrid } from "@/components/jadwal/IgraciasScheduleGrid";
 import { exportJadwalToCsv } from "@/lib/export";
+import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
 
 const HARI_OPTIONS = [
   { value: "Senin", label: "Senin" },
@@ -67,18 +68,14 @@ export default function JadwalPage() {
 
   const fetchMatkul = async () => {
     try {
-      setLoading(true);
-      const [mRes, pRes, sRes] = await Promise.all([
-        fetch("/api/matkul"),
-        fetch("/api/presensi"),
-        fetch("/api/semester"),
+      const [data, pData, sData] = await Promise.all([
+        fetchWithCache("/api/matkul"),
+        fetchWithCache("/api/presensi"),
+        fetchWithCache("/api/semester"),
       ]);
-      const data = await mRes.json();
-      const pData = await pRes.json();
-      const sData = await sRes.json();
-      if (data.matkul) setMatkulList(data.matkul);
-      if (pData.presensi) setPresensiList(pData.presensi);
-      if (sData.activeSemester) setActiveSemester(sData.activeSemester);
+      if (data?.matkul) setMatkulList(data.matkul);
+      if (pData?.presensi) setPresensiList(pData.presensi);
+      if (sData?.activeSemester) setActiveSemester(sData.activeSemester);
     } catch (err) {
       console.error("Failed to load matkul:", err);
     } finally {

@@ -36,6 +36,7 @@ import { formatShortDateIndo, calculateEstimatedGrade, getGradeLetter } from "@/
 import { Matkul, Nilai } from "@/types";
 import { GpaOptimizerModal } from "@/components/pro/GpaOptimizerModal";
 import { exportKhsToCsv } from "@/lib/export";
+import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
 
 const KATEGORI_OPTIONS = ["Quiz", "Tugas", "UTS", "UAS", "Project", "Tubes"] as const;
 
@@ -89,28 +90,24 @@ export default function NilaiPage() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [mRes, sRes, uRes] = await Promise.all([
-        fetch("/api/matkul"),
-        fetch("/api/semester"),
-        fetch("/api/user/profile"),
+      const [mData, sData, uData] = await Promise.all([
+        fetchWithCache("/api/matkul"),
+        fetchWithCache("/api/semester"),
+        fetchWithCache("/api/user/profile"),
       ]);
-      const mData = await mRes.json();
-      const sData = await sRes.json();
-      const uData = await uRes.json();
 
-      if (uData.user) {
+      if (uData?.user) {
         setUserProfile(uData.user);
       }
 
-      if (mData.matkul) {
+      if (mData?.matkul) {
         setMatkulList(mData.matkul);
         if (mData.matkul.length > 0 && !selectedMatkulId) {
           setSelectedMatkulId(mData.matkul[0].id);
         }
       }
 
-      if (sData.semesters) {
+      if (sData?.semesters) {
         setSemestersList(sData.semesters);
       }
     } catch (err) {

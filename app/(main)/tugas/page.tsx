@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo, getDaysRemaining, cn } from "@/lib/utils";
 import { TugasDeadline, Matkul } from "@/types";
+import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
 
 export default function TugasPage() {
   const [tugasList, setTugasList] = useState<TugasDeadline[]>([]);
@@ -75,16 +76,13 @@ export default function TugasPage() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [tugasRes, matkulRes] = await Promise.all([
-        fetch("/api/tugas"),
-        fetch("/api/matkul"),
+      const [tData, mData] = await Promise.all([
+        fetchWithCache("/api/tugas"),
+        fetchWithCache("/api/matkul"),
       ]);
-      const tData = await tugasRes.json();
-      const mData = await matkulRes.json();
 
-      if (tData.tugas) setTugasList(tData.tugas);
-      if (mData.matkul) {
+      if (tData?.tugas) setTugasList(tData.tugas);
+      if (mData?.matkul) {
         setMatkulList(mData.matkul);
         if (mData.matkul.length > 0 && !matkulId) {
           setMatkulId(mData.matkul[0].id);

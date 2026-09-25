@@ -33,11 +33,12 @@ import {
   calculateAttentionScore,
 } from "@/lib/utils";
 import { Matkul, TugasDeadline } from "@/types";
+import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
 
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
 export default function DashboardPage() {
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [matkulList, setMatkulList] = useState<Matkul[]>([]);
   const [tugasList, setTugasList] = useState<TugasDeadline[]>([]);
   const [allTugasList, setAllTugasList] = useState<TugasDeadline[]>([]);
@@ -80,30 +81,24 @@ export default function DashboardPage() {
 
   const fetchData = async () => {
     try {
-      setLoading(true);
-      const [matkulRes, semRes, tugasRes, userRes] = await Promise.all([
-        fetch("/api/matkul"),
-        fetch("/api/semester"),
-        fetch("/api/tugas"),
-        fetch("/api/user/profile"),
+      const [matkulData, semData, tugasData, userData] = await Promise.all([
+        fetchWithCache("/api/matkul"),
+        fetchWithCache("/api/semester"),
+        fetchWithCache("/api/tugas"),
+        fetchWithCache("/api/user/profile"),
       ]);
 
-      const matkulData = await matkulRes.json();
-      const semData = await semRes.json();
-      const tugasData = await tugasRes.json();
-      const userData = await userRes.json();
-
-      if (userData.user) setUserProfile(userData.user);
-      if (matkulData.matkul) setMatkulList(matkulData.matkul);
-      if (semData.activeSemester) setSemesterInfo(semData.activeSemester);
-      if (tugasData.tugas) {
+      if (userData?.user) setUserProfile(userData.user);
+      if (matkulData?.matkul) setMatkulList(matkulData.matkul);
+      if (semData?.activeSemester) setSemesterInfo(semData.activeSemester);
+      if (tugasData?.tugas) {
         setAllTugasList(tugasData.tugas);
         // Active (uncompleted) tasks
         const activeOnly = tugasData.tugas.filter((t: TugasDeadline) => t.status !== "selesai");
         setTugasList(activeOnly);
       }
 
-      if (matkulData.matkul && matkulData.matkul.length > 0) {
+      if (matkulData?.matkul && matkulData.matkul.length > 0) {
         setSelectedMatkulId(matkulData.matkul[0].id);
         setTugasMatkulId(matkulData.matkul[0].id);
       }
@@ -198,6 +193,7 @@ export default function DashboardPage() {
         setIsProgressSheetOpen(false);
         setMateriDipelajari("");
         setCatatanProgress("");
+        invalidateClientCache("/api/matkul");
         fetchData();
       }
     } catch (err) {
@@ -229,6 +225,7 @@ export default function DashboardPage() {
         setIsTugasSheetOpen(false);
         setTugasJudul("");
         setTugasDeadline("");
+        invalidateClientCache("/api/tugas");
         fetchData();
       }
     } catch (err) {
