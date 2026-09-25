@@ -25,6 +25,10 @@ import {
   Sparkles,
   GraduationCap,
   X,
+  UploadCloud,
+  FileCheck,
+  FileText,
+  Link as LinkIcon,
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo, getDaysRemaining, cn } from "@/lib/utils";
 import { TugasDeadline, Matkul } from "@/types";
@@ -59,9 +63,14 @@ export default function TugasPage() {
 
   // LMS CeLOE Sync States
   const [isLmsModalOpen, setIsLmsModalOpen] = useState(false);
+  const [lmsSyncMode, setLmsSyncMode] = useState<"url" | "file">("url");
   const [lmsUrl, setLmsUrl] = useState("");
   const [isSyncingLms, setIsSyncingLms] = useState(false);
   const [syncFeedback, setSyncFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
+  const [fileContent, setFileContent] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [lmsStatus, setLmsStatus] = useState<{
     hasIcalUrl?: boolean;
     lastSync?: string | null;
@@ -100,15 +109,17 @@ export default function TugasPage() {
     }
   };
 
-  const handleSyncLms = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSyncWithContent = async (content: string, fileName?: string) => {
     try {
       setIsSyncingLms(true);
       setSyncFeedback(null);
       const res = await fetch("/api/lms/sync", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ icalUrl: lmsUrl.trim() || undefined }),
+        body: JSON.stringify({
+          icsContent: content,
+          icalUrl: lmsUrl.trim() || undefined,
+        }),
       });
       const data = await res.json();
       if (res.ok && data.success) {
@@ -116,10 +127,84 @@ export default function TugasPage() {
         fetchData();
         fetchLmsStatus();
       } else {
-        setSyncFeedback({ type: "error", text: data.error || "Gagal melakukan sinkronisasi CeLOE." });
+        setSyncFeedback({
+          type: "error",
+          text: data.error || "Gagal sinkronisasi data kalender.",
+        });
       }
     } catch (err: any) {
-      setSyncFeedback({ type: "error", text: "Terjadi kesalahan koneksi saat sinkronisasi." });
+      setSyncFeedback({
+        type: "error",
+        text: "Terjadi kesalahan koneksi saat memproses data kalender.",
+      });
+    } finally {
+      setIsSyncingLms(false);
+    }
+  };
+
+  const handleFileChange = (file: File) => {
+    if (!file.name.toLowerCase().endsWith(".ics") && !file.name.toLowerCase().endsWith(".txt")) {
+      setSyncFeedback({
+        type: "error",
+        text: "File harus berformat .ics (iCalendar) dari CeLOE Moodle.",
+      });
+      return;
+    }
+    setSelectedFileName(file.name);
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const text = e.target?.result as string;
+      setFileContent(text);
+      handleSyncWithContent(text, file.name);
+    };
+    reader.readAsText(file);
+  };
+
+  const handleSyncLms = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (lmsSyncMode === "file") {
+      if (fileContent) {
+        return handleSyncWithContent(fileContent, selectedFileName || undefined);
+      }
+      fileInputRef.current?.click();
+      return;
+    }
+
+    if (!lmsUrl.trim()) {
+      setSyncFeedback({
+        type: "error",
+        text: "Silakan masukkan URL kalender iCal CeLOE Anda.",
+      });
+      return;
+    }
+
+    try {
+      setIsSyncingLms(true);
+      setSyncFeedback(null);
+      const res = await fetch("/api/lms/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ icalUrl: lmsUrl.trim() }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSyncFeedback({ type: "success", text: data.message });
+        fetchData();
+        fetchLmsStatus();
+      } else {
+        if (data.cloudflareBlocked) {
+          setLmsSyncMode("file");
+        }
+        setSyncFeedback({
+          type: "error",
+          text: data.error || "Gagal melakukan sinkronisasi CeLOE.",
+        });
+      }
+    } catch (err: any) {
+      setSyncFeedback({
+        type: "error",
+        text: "Terjadi kesalahan koneksi saat sinkronisasi.",
+      });
     } finally {
       setIsSyncingLms(false);
     }
@@ -719,18 +804,61 @@ export default function TugasPage() {
               )}
             </div>
 
-            {/* How-to Guide */}
-            <div className="p-3.5 rounded-2xl bg-ios-surfaceSecondary/50 border border-ios-border text-[11.5px] text-ios-textSecondary leading-relaxed space-y-1.5">
-              <p className="font-bold text-ios-textPrimary">
-                Cara Mengambil Link iCal Kalender CeLOE:
-              </p>
-              <ol className="list-decimal list-inside space-y-1">
-                <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; buka menu <strong>Calendar</strong>.</li>
-                <li>Gulir ke bawah, klik tombol <strong>Export calendar</strong>.</li>
-                <li>Pilih opsi <em>"All events"</em> dan <em>"Recent and next 60 days"</em>, lalu klik <strong>Get calendar URL</strong>.</li>
-                <li>Salin link URL kalender tersebut dan tempelkan pada kolom di bawah.</li>
-              </ol>
+            {/* Method Tab Switcher */}
+            <div className="flex p-1 bg-ios-surfaceSecondary border border-ios-border rounded-2xl gap-1">
+              <button
+                type="button"
+                onClick={() => setLmsSyncMode("file")}
+                className={cn(
+                  "flex-1 py-1.5 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
+                  lmsSyncMode === "file"
+                    ? "bg-ios-surface text-ios-textPrimary shadow-sm"
+                    : "text-ios-textSecondary hover:text-ios-textPrimary"
+                )}
+              >
+                <UploadCloud className="w-3.5 h-3.5" />
+                <span>Unggah File .ics</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">100% Berhasil</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setLmsSyncMode("url")}
+                className={cn(
+                  "flex-1 py-1.5 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
+                  lmsSyncMode === "url"
+                    ? "bg-ios-surface text-ios-textPrimary shadow-sm"
+                    : "text-ios-textSecondary hover:text-ios-textPrimary"
+                )}
+              >
+                <LinkIcon className="w-3.5 h-3.5" />
+                <span>Tautan URL Kalender</span>
+              </button>
             </div>
+
+            {/* How-to Guide based on Mode */}
+            {lmsSyncMode === "file" ? (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[11.5px] text-ios-textPrimary leading-relaxed space-y-1">
+                <p className="font-bold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                  <FileCheck className="w-4 h-4" />
+                  Cara Paling Cepat &amp; Bebas Blokir Firewall:
+                </p>
+                <p className="text-ios-textSecondary">
+                  Di halaman <strong className="text-ios-textPrimary">Export calendar</strong> CeLOE Anda (seperti screenshot Anda), cukup klik tombol merah <strong className="text-rose-500">"Export"</strong> di samping <em>"Get calendar URL"</em>. File <code className="bg-ios-surface px-1 py-0.5 rounded border border-ios-border text-[11px]">icalexport.ics</code> akan langsung terunduh ke laptop/HP Anda. Seret atau pilih file tersebut di bawah.
+                </p>
+              </div>
+            ) : (
+              <div className="p-3.5 rounded-2xl bg-ios-surfaceSecondary/50 border border-ios-border text-[11.5px] text-ios-textSecondary leading-relaxed space-y-1.5">
+                <p className="font-bold text-ios-textPrimary">
+                  Cara Mengambil Link iCal Kalender CeLOE:
+                </p>
+                <ol className="list-decimal list-inside space-y-1">
+                  <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; menu <strong>Calendar</strong>.</li>
+                  <li>Gulir ke bawah, klik <strong>Export calendar</strong>.</li>
+                  <li>Pilih <em>"All events"</em> dan <em>"Recent and next 60 days"</em>, lalu klik <strong>Get calendar URL</strong>.</li>
+                  <li>Salin link URL dan tempelkan di bawah.</li>
+                </ol>
+              </div>
+            )}
 
             {syncFeedback && (
               <div
@@ -745,44 +873,128 @@ export default function TugasPage() {
               </div>
             )}
 
-            <form onSubmit={handleSyncLms} className="space-y-3 pt-1">
-              <div>
-                <label className="block text-[12px] font-semibold text-ios-textPrimary mb-1">
-                  URL Kalender iCal CeLOE (.ics)
-                </label>
+            {lmsSyncMode === "file" ? (
+              <div className="space-y-3 pt-1">
                 <input
-                  type="url"
-                  placeholder="https://lms.telkomuniversity.ac.id/calendar/export_execute.php?..."
-                  value={lmsUrl}
-                  onChange={(e) => setLmsUrl(e.target.value)}
-                  className="w-full p-2.5 text-[12px] bg-ios-surfaceSecondary border border-ios-border rounded-xl focus:outline-none focus:ring-1 focus:ring-ios-accent"
+                  type="file"
+                  ref={fileInputRef}
+                  accept=".ics,.txt"
+                  className="hidden"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileChange(file);
+                  }}
                 />
-              </div>
 
-              <div className="flex gap-2 pt-1">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  onClick={() => setIsLmsModalOpen(false)}
-                  className="flex-1"
-                >
-                  Tutup
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  disabled={isSyncingLms}
-                  className="flex-1 gap-1.5 shadow-sm"
-                >
-                  {isSyncingLms ? (
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-3.5 h-3.5" />
+                <div
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    setIsDraggingFile(true);
+                  }}
+                  onDragLeave={() => setIsDraggingFile(false)}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    setIsDraggingFile(false);
+                    const file = e.dataTransfer.files?.[0];
+                    if (file) handleFileChange(file);
+                  }}
+                  onClick={() => fileInputRef.current?.click()}
+                  className={cn(
+                    "cursor-pointer border-2 border-dashed rounded-2xl p-6 text-center transition-all flex flex-col items-center justify-center gap-2",
+                    isDraggingFile
+                      ? "border-ios-accent bg-ios-accent/5 scale-[1.01]"
+                      : "border-ios-border hover:border-ios-accent/50 bg-ios-surfaceSecondary/40"
                   )}
-                  <span>{isSyncingLms ? "Menyinkronkan..." : "Sinkronkan Sekarang"}</span>
-                </Button>
+                >
+                  <div className="p-3 rounded-2xl bg-ios-surface shadow-sm border border-ios-border text-ios-accent">
+                    <UploadCloud className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <p className="text-[13px] font-bold text-ios-textPrimary">
+                      {selectedFileName ? selectedFileName : "Klik untuk Pilih File atau Seret File ke Sini"}
+                    </p>
+                    <p className="text-[11.5px] text-ios-textSecondary mt-0.5">
+                      Mendukung file kalender CeLOE (<code className="font-semibold text-ios-textPrimary">.ics</code>)
+                    </p>
+                  </div>
+                  {selectedFileName && (
+                    <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/20">
+                      File siap diproses
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsLmsModalOpen(false)}
+                    className="flex-1"
+                  >
+                    Tutup
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="primary"
+                    disabled={isSyncingLms}
+                    onClick={() => {
+                      if (fileContent) {
+                        handleSyncWithContent(fileContent, selectedFileName || undefined);
+                      } else {
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    className="flex-1 gap-1.5 shadow-sm"
+                  >
+                    {isSyncingLms ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isSyncingLms ? "Memproses File..." : "Impor File Kalender"}</span>
+                  </Button>
+                </div>
               </div>
-            </form>
+            ) : (
+              <form onSubmit={handleSyncLms} className="space-y-3 pt-1">
+                <div>
+                  <label className="block text-[12px] font-semibold text-ios-textPrimary mb-1">
+                    URL Kalender iCal CeLOE (.ics)
+                  </label>
+                  <input
+                    type="url"
+                    placeholder="https://lms.telkomuniversity.ac.id/calendar/export_execute.php?..."
+                    value={lmsUrl}
+                    onChange={(e) => setLmsUrl(e.target.value)}
+                    className="w-full p-2.5 text-[12px] bg-ios-surfaceSecondary border border-ios-border rounded-xl focus:outline-none focus:ring-1 focus:ring-ios-accent"
+                  />
+                </div>
+
+                <div className="flex gap-2 pt-1">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={() => setIsLmsModalOpen(false)}
+                    className="flex-1"
+                  >
+                    Tutup
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    disabled={isSyncingLms}
+                    className="flex-1 gap-1.5 shadow-sm"
+                  >
+                    {isSyncingLms ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <RefreshCw className="w-3.5 h-3.5" />
+                    )}
+                    <span>{isSyncingLms ? "Menyinkronkan..." : "Sinkronkan Sekarang"}</span>
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
         </div>
       )}

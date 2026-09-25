@@ -53,53 +53,79 @@ export async function POST(req: Request) {
     const userId = (session.user as any).id;
     const body = await req.json().catch(() => ({}));
     let icalUrl = body.icalUrl?.trim();
+    let icsContent = body.icsContent?.trim();
 
-    // If URL not provided in body, load existing one from user profile
-    if (!icalUrl) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { lms_ical_url: true },
-      });
-      icalUrl = user?.lms_ical_url;
+    // If icsContent is not provided, fetch from icalUrl
+    if (!icsContent) {
+      if (!icalUrl) {
+        const user = await prisma.user.findUnique({
+          where: { id: userId },
+          select: { lms_ical_url: true },
+        });
+        icalUrl = user?.lms_ical_url;
+      }
+
+      if (!icalUrl) {
+        return NextResponse.json(
+          { error: "URL iCal atau file kalender belum diisi. Masukkan URL atau unggah file .ics dari CeLOE Moodle Anda." },
+          { status: 400 }
+        );
+      }
+
+      // Validate URL scheme
+      if (!icalUrl.startsWith("http://") && !icalUrl.startsWith("https://") && !icalUrl.startsWith("webcal://")) {
+        return NextResponse.json(
+          { error: "Format URL kalender tidak valid. Harus diawali dengan https:// atau webcal://" },
+          { status: 400 }
+        );
+      }
+
+      const fetchUrl = icalUrl.replace(/^webcal:\/\//i, "https://");
+
+      try {
+        const icsRes = await fetch(fetchUrl, {
+          headers: {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "Accept": "text/calendar,text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Cache-Control": "no-cache",
+            "Pragma": "no-cache",
+          },
+          next: { revalidate: 0 },
+        });
+
+        if (!icsRes.ok) {
+          if (icsRes.status === 403) {
+            return NextResponse.json(
+              {
+                error: "Server CeLOE memblokir permintaan otomatis dari cloud (Status: 403 Forbidden Cloudflare). Silakan unduh file kalender langsung dengan klik tombol merah 'Export' di CeLOE, lalu unggah file icalexport.ics pada tab 'Unggah File .ics' di bawah.",
+                cloudflareBlocked: true,
+              },
+              { status: 400 }
+            );
+          }
+
+          return NextResponse.json(
+            { error: `Gagal mengunduh kalender dari CeLOE (Status: ${icsRes.status}). Pastikan token kalender masih aktif atau unggah file .ics secara langsung.` },
+            { status: 400 }
+          );
+        }
+
+        icsContent = await icsRes.text();
+      } catch (fetchErr: any) {
+        return NextResponse.json(
+          {
+            error: "Tidak dapat menghubungi server CeLOE dari cloud. Silakan klik tombol 'Export' di halaman CeLOE Anda dan unggah file .ics tersebut ke Studia.",
+            cloudflareBlocked: true,
+          },
+          { status: 400 }
+        );
+      }
     }
 
-    if (!icalUrl) {
+    if (!icsContent || !icsContent.includes("BEGIN:VCALENDAR")) {
       return NextResponse.json(
-        { error: "URL iCal CeLOE belum diisi. Masukkan link ekspor kalender dari CeLOE Moodle Anda." },
-        { status: 400 }
-      );
-    }
-
-    // Validate URL scheme
-    if (!icalUrl.startsWith("http://") && !icalUrl.startsWith("https://") && !icalUrl.startsWith("webcal://")) {
-      return NextResponse.json(
-        { error: "Format URL kalender tidak valid. Harus diawali dengan https:// atau webcal://" },
-        { status: 400 }
-      );
-    }
-
-    // Convert webcal:// to https://
-    const fetchUrl = icalUrl.replace(/^webcal:\/\//i, "https://");
-
-    // Fetch the .ics calendar data
-    const icsRes = await fetch(fetchUrl, {
-      headers: {
-        "User-Agent": "Studia-Academic-OS/2.0 (Telkom University Companion)",
-      },
-      next: { revalidate: 0 },
-    });
-
-    if (!icsRes.ok) {
-      return NextResponse.json(
-        { error: `Gagal mengunduh kalender dari CeLOE (Status: ${icsRes.status}). Pastikan link masih aktif.` },
-        { status: 400 }
-      );
-    }
-
-    const icsContent = await icsRes.text();
-    if (!icsContent.includes("BEGIN:VCALENDAR")) {
-      return NextResponse.json(
-        { error: "Konten yang diunduh bukan format iCalendar (.ics) valid dari CeLOE." },
+        { error: "Konten kalender tidak valid atau tidak memiliki format iCalendar (BEGIN:VCALENDAR)." },
         { status: 400 }
       );
     }
@@ -111,7 +137,7 @@ export async function POST(req: Request) {
     await prisma.user.update({
       where: { id: userId },
       data: {
-        lms_ical_url: icalUrl,
+        ...(icalUrl ? { lms_ical_url: icalUrl } : {}),
         lms_last_sync: new Date(),
       },
     });
@@ -153,7 +179,7 @@ export async function POST(req: Request) {
       });
     }
 
-    const matkulList = activeSemester.matkul.length > 0 ? activeSemester.matkul : [defaultMatkul];
+    const matkulList = [...(activeSemester.matkul.length > 0 ? activeSemester.matkul : [defaultMatkul])];
 
     let createdCount = 0;
     let updatedCount = 0;
@@ -163,12 +189,46 @@ export async function POST(req: Request) {
       let targetMatkulId = defaultMatkul.id;
 
       if (evt.courseName) {
+        const cleanCourseCode = evt.courseName.split("-")[0].trim();
         const found = matkulList.find((m: any) => {
           const mNama = m.nama.toLowerCase();
           const cNama = evt.courseName!.toLowerCase();
-          return mNama.includes(cNama) || cNama.includes(mNama) || (m.kode && cNama.includes(m.kode.toLowerCase()));
+          const mKode = (m.kode || "").toLowerCase();
+          const cKode = cleanCourseCode.toLowerCase();
+          return (
+            mNama.includes(cNama) ||
+            cNama.includes(mNama) ||
+            (mKode && (cKode.includes(mKode) || mKode.includes(cKode)))
+          );
         });
-        if (found) targetMatkulId = found.id;
+
+        if (found) {
+          targetMatkulId = found.id;
+        } else {
+          // Auto create course from CeLOE course name/code
+          try {
+            const newMatkul = await prisma.matkul.create({
+              data: {
+                semester_id: activeSemester.id,
+                nama: evt.courseName,
+                kode: cleanCourseCode || "CELOE",
+                dosen: "Dosen CeLOE",
+                sks: 3,
+                hari: "Senin",
+                jam_mulai: "08:00",
+                jam_selesai: "10:30",
+                ruang: "Online CeLOE",
+                warna: ["#007AFF", "#5856D6", "#AF52DE", "#FF2D55", "#FF9500", "#34C759"][
+                  matkulList.length % 6
+                ],
+              },
+            });
+            matkulList.push(newMatkul);
+            targetMatkulId = newMatkul.id;
+          } catch {
+            targetMatkulId = defaultMatkul.id;
+          }
+        }
       }
 
       // Check if already exists by lms_uid

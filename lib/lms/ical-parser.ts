@@ -85,6 +85,8 @@ export function parseMoodleIcs(icsText: string): ParsedLmsEvent[] {
           .replace(/ is due$/i, "")
           .replace(/ must be completed$/i, "")
           .replace(/ closes$/i, "")
+          .replace(/ opens$/i, "")
+          .replace(/ is open$/i, "")
           .trim();
 
         let description = (currentEvent.DESCRIPTION || "")
