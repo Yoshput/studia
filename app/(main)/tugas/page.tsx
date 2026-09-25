@@ -28,12 +28,16 @@ import {
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo, getDaysRemaining, cn } from "@/lib/utils";
 import { TugasDeadline, Matkul } from "@/types";
-import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
+import { fetchWithCache, getCachedData, invalidateClientCache } from "@/lib/client-cache";
 
 export default function TugasPage() {
-  const [tugasList, setTugasList] = useState<TugasDeadline[]>([]);
-  const [matkulList, setMatkulList] = useState<Matkul[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [tugasList, setTugasList] = useState<TugasDeadline[]>(() => {
+    return getCachedData("/api/tugas")?.tugas || [];
+  });
+  const [matkulList, setMatkulList] = useState<Matkul[]>(() => {
+    return getCachedData("/api/matkul")?.matkul || [];
+  });
+  const [loading, setLoading] = useState(() => !getCachedData("/api/tugas"));
 
   // View state: list or calendar
   const [viewMode, setViewMode] = useState<"list" | "kalender">("list");

@@ -6,7 +6,6 @@ import { BottomTabBar } from "@/components/BottomTabBar";
 import { MascotWidget } from "@/components/assistant/MascotWidget";
 import { ReminderOverlay } from "@/components/reminders/ReminderOverlay";
 import { NavigationProgress } from "@/components/ui/NavigationProgress";
-import { PageTransition } from "@/components/ui/PageTransition";
 import { db } from "@/lib/db";
 import { getDaysRemaining } from "@/lib/utils";
 import { getServerSession } from "next-auth";
@@ -79,9 +78,7 @@ export default async function MainLayout({
             Mobile: max-w-[640px] centered, pb-28 for bottom bar 
             Desktop: max-w-7xl wide CMS canvas with professional spacing */}
         <main className="flex-1 w-full max-w-[640px] md:max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 pb-28 md:pb-12">
-          <PageTransition>
-            {children}
-          </PageTransition>
+          {children}
         </main>
       </div>
 

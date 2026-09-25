@@ -33,20 +33,29 @@ import {
   calculateAttentionScore,
 } from "@/lib/utils";
 import { Matkul, TugasDeadline } from "@/types";
-import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
+import { fetchWithCache, getCachedData, invalidateClientCache } from "@/lib/client-cache";
 
 const DAYS_ID = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
 
 export default function DashboardPage() {
   const [loading, setLoading] = useState(false);
-  const [matkulList, setMatkulList] = useState<Matkul[]>([]);
-  const [tugasList, setTugasList] = useState<TugasDeadline[]>([]);
-  const [allTugasList, setAllTugasList] = useState<TugasDeadline[]>([]);
+  const [matkulList, setMatkulList] = useState<Matkul[]>(() => {
+    return getCachedData("/api/matkul")?.matkul || [];
+  });
+  const [allTugasList, setAllTugasList] = useState<TugasDeadline[]>(() => {
+    return getCachedData("/api/tugas")?.tugas || [];
+  });
+  const [tugasList, setTugasList] = useState<TugasDeadline[]>(() => {
+    const cached = getCachedData("/api/tugas")?.tugas || [];
+    return cached.filter((t: TugasDeadline) => t.status !== "selesai");
+  });
   const [semesterInfo, setSemesterInfo] = useState<{
     nama_semester: string;
     tahun_ajaran: string;
     ipk: number | null;
-  } | null>(null);
+  } | null>(() => {
+    return getCachedData("/api/semester")?.activeSemester || null;
+  });
 
   // Quick action sheets
   const [isProgressSheetOpen, setIsProgressSheetOpen] = useState(false);

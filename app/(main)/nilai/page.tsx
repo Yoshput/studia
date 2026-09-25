@@ -36,7 +36,7 @@ import { formatShortDateIndo, calculateEstimatedGrade, getGradeLetter } from "@/
 import { Matkul, Nilai } from "@/types";
 import { GpaOptimizerModal } from "@/components/pro/GpaOptimizerModal";
 import { exportKhsToCsv } from "@/lib/export";
-import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
+import { fetchWithCache, getCachedData, invalidateClientCache } from "@/lib/client-cache";
 
 const KATEGORI_OPTIONS = ["Quiz", "Tugas", "UTS", "UAS", "Project", "Tubes"] as const;
 
@@ -60,11 +60,18 @@ interface SemesterData {
 
 export default function NilaiPage() {
   const [tabView, setTabView] = useState<"aktif" | "khs" | "tren">("aktif");
-  const [matkulList, setMatkulList] = useState<Matkul[]>([]);
-  const [semestersList, setSemestersList] = useState<SemesterData[]>([]);
-  const [selectedMatkulId, setSelectedMatkulId] = useState<string>("");
+  const [matkulList, setMatkulList] = useState<Matkul[]>(() => {
+    return getCachedData("/api/matkul")?.matkul || [];
+  });
+  const [semestersList, setSemestersList] = useState<SemesterData[]>(() => {
+    return getCachedData("/api/semester")?.semesters || [];
+  });
+  const [selectedMatkulId, setSelectedMatkulId] = useState<string>(() => {
+    const cachedMatkul = getCachedData("/api/matkul")?.matkul;
+    return cachedMatkul?.[0]?.id || "";
+  });
   const [selectedKhsSemester, setSelectedKhsSemester] = useState<string>("Semester 1");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(() => !getCachedData("/api/matkul"));
 
   // Sheet states
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);

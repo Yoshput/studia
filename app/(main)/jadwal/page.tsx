@@ -26,7 +26,7 @@ import { AttendanceRadarCard } from "@/components/pro/AttendanceRadarCard";
 import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
 import { IgraciasScheduleGrid } from "@/components/jadwal/IgraciasScheduleGrid";
 import { exportJadwalToCsv } from "@/lib/export";
-import { fetchWithCache, invalidateClientCache } from "@/lib/client-cache";
+import { fetchWithCache, getCachedData, invalidateClientCache } from "@/lib/client-cache";
 
 const HARI_OPTIONS = [
   { value: "Senin", label: "Senin" },
@@ -40,8 +40,10 @@ const HARI_OPTIONS = [
 ];
 
 export default function JadwalPage() {
-  const [matkulList, setMatkulList] = useState<Matkul[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [matkulList, setMatkulList] = useState<Matkul[]>(() => {
+    return getCachedData("/api/matkul")?.matkul || [];
+  });
+  const [loading, setLoading] = useState(() => !getCachedData("/api/matkul"));
   const [selectedHari, setSelectedHari] = useState("Senin");
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
@@ -50,7 +52,9 @@ export default function JadwalPage() {
   const [isProModalOpen, setIsProModalOpen] = useState(false);
 
   const [scheduleViewMode, setScheduleViewMode] = useState<"grid" | "hari">("grid");
-  const [activeSemester, setActiveSemester] = useState<{ nama_semester: string; tahun_ajaran: string } | null>(null);
+  const [activeSemester, setActiveSemester] = useState<{ nama_semester: string; tahun_ajaran: string } | null>(() => {
+    return getCachedData("/api/semester")?.activeSemester || null;
+  });
 
   // Form states
   const [nama, setNama] = useState("");

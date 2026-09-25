@@ -47,6 +47,11 @@ export async function fetchWithCache<T = any>(
   return data;
 }
 
+export function getCachedData<T = any>(url: string): T | null {
+  const cached = memoryCache.get(url);
+  return cached ? cached.data : null;
+}
+
 export function invalidateClientCache(urlPrefix?: string) {
   if (!urlPrefix) {
     memoryCache.clear();
@@ -58,3 +63,4 @@ export function invalidateClientCache(urlPrefix?: string) {
     }
   }
 }
+
