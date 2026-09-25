@@ -20,9 +20,14 @@ model User {
   is_pro             Boolean            @default(false)
   pro_plan           String             @default("free")
   pro_expires_at     DateTime?
+  lms_ical_url       String?            @db.Text
+  lms_last_sync      DateTime?
   semesters          Semester[]
   presensi           Presensi[]
   push_subscriptions PushSubscription[]
+  catatan            CatatanKuliah[]
+  roadmaps           StudyRoadmap[]
+  ppt_summaries      PptSummary[]
   createdAt          DateTime           @default(now())
   updatedAt          DateTime           @updatedAt
 
@@ -78,6 +83,9 @@ model Matkul {
   nilai       Nilai[]
   tugas       TugasDeadline[]
   presensi    Presensi[]
+  catatan     CatatanKuliah[]
+  roadmaps    StudyRoadmap[]
+  ppt_summaries PptSummary[]
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -135,6 +143,9 @@ model TugasDeadline {
   deadline  DateTime
   status    String   @default("belum")
   prioritas String   @default("sedang")
+  source    String   @default("manual") // "manual" | "lms_celoe"
+  lms_uid   String?  // unique event id from iCal VEVENT UID
+  url       String?  @db.Text // Link langsung ke LMS CeLOE
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -171,3 +182,58 @@ model PushSubscription {
 
   @@map("push_subscriptions")
 }
+
+model CatatanKuliah {
+  id          String   @id @default(cuid())
+  user_id     String
+  user        User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  matkul_id   String?
+  matkul      Matkul?  @relation(fields: [matkul_id], references: [id], onDelete: SetNull)
+  judul       String
+  konten      String   @db.LongText
+  tags        String?
+  is_favorite Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([user_id])
+  @@map("catatan_kuliah")
+}
+
+model StudyRoadmap {
+  id               String    @id @default(cuid())
+  user_id          String
+  user             User      @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  matkul_id        String?
+  matkul           Matkul?   @relation(fields: [matkul_id], references: [id], onDelete: SetNull)
+  judul            String
+  topik            String
+  target_selesai   DateTime?
+  steps_json       String    @db.LongText
+  progress_percent Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([user_id])
+  @@map("study_roadmap")
+}
+
+model PptSummary {
+  id               String   @id @default(cuid())
+  user_id          String
+  user             User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  matkul_id        String?
+  matkul           Matkul?  @relation(fields: [matkul_id], references: [id], onDelete: SetNull)
+  judul_materi     String
+  nama_file        String
+  total_slides     Int      @default(0)
+  summary_markdown String   @db.LongText
+  key_points_json  String?  @db.LongText
+  flashcards_json  String?  @db.LongText
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([user_id])
+  @@map("ppt_summaries")
+}
+

@@ -20,6 +20,8 @@ import {
   Download,
   Crown,
   Clock,
+  FileText,
+  Route,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "./ThemeToggle";
@@ -175,6 +177,8 @@ export function DesktopSidebar({
           icon: GraduationCap,
           badge: counts.ipk && counts.ipk > 0 ? `IPK ${counts.ipk.toFixed(2)}` : null,
         },
+        { href: "/catatan", label: "Smart Notes", icon: FileText, badge: "AI .md" },
+        { href: "/roadmap", label: "Roadmap & PPT", icon: Route, badge: "Alur" },
         { href: "/progress", label: "Progress Belajar", icon: BookOpenCheck, badge: null },
       ],
     },

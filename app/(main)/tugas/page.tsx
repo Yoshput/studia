@@ -20,8 +20,13 @@ import {
   Circle,
   AlertCircle,
   ExternalLink,
+  RefreshCw,
+  Loader2,
+  Sparkles,
+  GraduationCap,
+  X,
 } from "lucide-react";
-import { formatDateIndo, formatShortDateIndo, getDaysRemaining } from "@/lib/utils";
+import { formatDateIndo, formatShortDateIndo, getDaysRemaining, cn } from "@/lib/utils";
 import { TugasDeadline, Matkul } from "@/types";
 
 export default function TugasPage() {
@@ -47,6 +52,27 @@ export default function TugasPage() {
   const [status, setStatus] = useState<"belum" | "proses" | "selesai">("belum");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // LMS CeLOE Sync States
+  const [isLmsModalOpen, setIsLmsModalOpen] = useState(false);
+  const [lmsUrl, setLmsUrl] = useState("");
+  const [isSyncingLms, setIsSyncingLms] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [lmsStatus, setLmsStatus] = useState<{
+    hasIcalUrl?: boolean;
+    lastSync?: string | null;
+    lmsTaskCount?: number;
+  }>({});
+
+  const fetchLmsStatus = async () => {
+    try {
+      const res = await fetch("/api/lms/sync");
+      if (res.ok) {
+        const data = await res.json();
+        setLmsStatus(data);
+      }
+    } catch {}
+  };
+
   const fetchData = async () => {
     try {
       setLoading(true);
@@ -64,10 +90,36 @@ export default function TugasPage() {
           setMatkulId(mData.matkul[0].id);
         }
       }
+      fetchLmsStatus();
     } catch (err) {
       console.error("Failed to load tugas:", err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSyncLms = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setIsSyncingLms(true);
+      setSyncFeedback(null);
+      const res = await fetch("/api/lms/sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ icalUrl: lmsUrl.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setSyncFeedback({ type: "success", text: data.message });
+        fetchData();
+        fetchLmsStatus();
+      } else {
+        setSyncFeedback({ type: "error", text: data.error || "Gagal melakukan sinkronisasi CeLOE." });
+      }
+    } catch (err: any) {
+      setSyncFeedback({ type: "error", text: "Terjadi kesalahan koneksi saat sinkronisasi." });
+    } finally {
+      setIsSyncingLms(false);
     }
   };
 
@@ -223,10 +275,21 @@ export default function TugasPage() {
             {pendingCount} tugas aktif menanti penyelesaian
           </p>
         </div>
-        <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5">
-          <Plus className="w-4 h-4" />
-          <span>Tambah</span>
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsLmsModalOpen(true)}
+            className="gap-1.5 text-ios-accent border-ios-accent/30 bg-ios-accent/10 hover:bg-ios-accent/20"
+          >
+            <RefreshCw className={cn("w-3.5 h-3.5", isSyncingLms && "animate-spin")} />
+            <span>Sinkron CeLOE</span>
+          </Button>
+          <Button variant="primary" size="sm" onClick={handleOpenAdd} className="gap-1.5 shadow-sm">
+            <Plus className="w-4 h-4" />
+            <span>Tambah</span>
+          </Button>
+        </div>
       </div>
 
       {/* Controls: View Mode & Status Filter */}
@@ -597,6 +660,130 @@ export default function TugasPage() {
           </div>
         </form>
       </Sheet>
+
+      {/* Modal Sinkronisasi CeLOE (Moodle LMS) */}
+      {isLmsModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+          <div className="w-full max-w-lg bg-ios-surface rounded-3xl p-6 border border-ios-border shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500 border border-rose-500/20">
+                  <GraduationCap className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-[16px] font-bold text-ios-textPrimary">
+                    Sinkronisasi LMS CeLOE Tel-U
+                  </h3>
+                  <p className="text-[11.5px] text-ios-textSecondary">
+                    Tarik otomatis deadline tugas &amp; kuis dari Moodle kampus
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLmsModalOpen(false)}
+                className="text-ios-textSecondary hover:text-ios-textPrimary p-1"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Status Sync Info */}
+            <div className="p-3.5 rounded-2xl bg-ios-surfaceSecondary border border-ios-border text-[12px] space-y-1">
+              <div className="flex justify-between">
+                <span className="text-ios-textSecondary">Status Kalender:</span>
+                <span className="font-semibold text-ios-textPrimary">
+                  {lmsStatus.hasIcalUrl ? "Terhubung" : "Belum terhubung"}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-ios-textSecondary">Tugas CeLOE Tersinkron:</span>
+                <span className="font-semibold text-ios-accent">
+                  {lmsStatus.lmsTaskCount || 0} Tugas
+                </span>
+              </div>
+              {lmsStatus.lastSync && (
+                <div className="flex justify-between">
+                  <span className="text-ios-textSecondary">Terakhir Disinkron:</span>
+                  <span className="text-ios-textPrimary">
+                    {new Date(lmsStatus.lastSync).toLocaleString("id-ID", {
+                      day: "numeric",
+                      month: "short",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })} WIB
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {/* How-to Guide */}
+            <div className="p-3.5 rounded-2xl bg-ios-surfaceSecondary/50 border border-ios-border text-[11.5px] text-ios-textSecondary leading-relaxed space-y-1.5">
+              <p className="font-bold text-ios-textPrimary">
+                Cara Mengambil Link iCal Kalender CeLOE:
+              </p>
+              <ol className="list-decimal list-inside space-y-1">
+                <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; buka menu <strong>Calendar</strong>.</li>
+                <li>Gulir ke bawah, klik tombol <strong>Export calendar</strong>.</li>
+                <li>Pilih opsi <em>"All events"</em> dan <em>"Recent and next 60 days"</em>, lalu klik <strong>Get calendar URL</strong>.</li>
+                <li>Salin link URL kalender tersebut dan tempelkan pada kolom di bawah.</li>
+              </ol>
+            </div>
+
+            {syncFeedback && (
+              <div
+                className={cn(
+                  "p-3 rounded-xl text-[12px] font-medium border leading-snug",
+                  syncFeedback.type === "success"
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                    : "bg-red-500/10 border-red-500/20 text-red-500"
+                )}
+              >
+                {syncFeedback.text}
+              </div>
+            )}
+
+            <form onSubmit={handleSyncLms} className="space-y-3 pt-1">
+              <div>
+                <label className="block text-[12px] font-semibold text-ios-textPrimary mb-1">
+                  URL Kalender iCal CeLOE (.ics)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://lms.telkomuniversity.ac.id/calendar/export_execute.php?..."
+                  value={lmsUrl}
+                  onChange={(e) => setLmsUrl(e.target.value)}
+                  className="w-full p-2.5 text-[12px] bg-ios-surfaceSecondary border border-ios-border rounded-xl focus:outline-none focus:ring-1 focus:ring-ios-accent"
+                />
+              </div>
+
+              <div className="flex gap-2 pt-1">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={() => setIsLmsModalOpen(false)}
+                  className="flex-1"
+                >
+                  Tutup
+                </Button>
+                <Button
+                  type="submit"
+                  variant="primary"
+                  disabled={isSyncingLms}
+                  className="flex-1 gap-1.5 shadow-sm"
+                >
+                  {isSyncingLms ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <RefreshCw className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isSyncingLms ? "Menyinkronkan..." : "Sinkronkan Sekarang"}</span>
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
