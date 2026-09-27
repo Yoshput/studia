@@ -35,6 +35,7 @@ import {
 import { formatShortDateIndo, calculateEstimatedGrade, getGradeLetter } from "@/lib/utils";
 import { Matkul, Nilai } from "@/types";
 import { GpaOptimizerModal } from "@/components/pro/GpaOptimizerModal";
+import { IgraciasSyncModal } from "@/components/igracias/IgraciasSyncModal";
 import { exportKhsToCsv } from "@/lib/export";
 import { fetchWithCache, getCachedData, invalidateClientCache } from "@/lib/client-cache";
 
@@ -77,6 +78,7 @@ export default function NilaiPage() {
   const [isAddSheetOpen, setIsAddSheetOpen] = useState(false);
   const [isBobotSheetOpen, setIsBobotSheetOpen] = useState(false);
   const [isGpaModalOpen, setIsGpaModalOpen] = useState(false);
+  const [isIgraciasModalOpen, setIsIgraciasModalOpen] = useState(false);
 
   // Form add nilai
   const [kategori, setKategori] = useState<string>("Quiz");
@@ -285,6 +287,17 @@ export default function NilaiPage() {
         </div>
 
         <div className="flex items-center gap-2">
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => setIsIgraciasModalOpen(true)}
+            className="gap-1.5 border-[#B6252A]/30 text-[#B6252A] dark:text-[#f87171] bg-[#B6252A]/10 hover:bg-[#B6252A]/20 font-semibold"
+            title="Sinkronkan KHS, IPS, dan IPK dari iGracias Telkom University"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Sinkron iGracias</span>
+          </Button>
+
           <Button
             variant="secondary"
             size="sm"
@@ -504,25 +517,48 @@ export default function NilaiPage() {
       {/* VIEW 2: HISTORICAL KHS TELKOM UNIVERSITY */}
       {tabView === "khs" && (
         <div className="space-y-4">
-          {/* Semester Selector */}
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {semestersList
-              .filter((s) => s.khs_items && s.khs_items.length > 0)
-              .map((s) => (
-                <button
-                  key={s.id}
-                  type="button"
-                  onClick={() => setSelectedKhsSemester(s.nama_semester)}
-                  className={`px-3.5 py-1.5 rounded-full text-[13px] font-bold flex-shrink-0 transition-all border ${
-                    selectedKhsSemester === s.nama_semester
-                      ? "bg-ios-accent text-white border-ios-accent shadow-sm"
-                      : "bg-ios-surfaceSecondary text-ios-textSecondary border-ios-border hover:bg-ios-surface"
-                  }`}
+          {semestersList.filter((s) => s.khs_items && s.khs_items.length > 0).length === 0 ? (
+            <Card className="p-8 text-center bg-ios-surface space-y-3">
+              <div className="w-12 h-12 rounded-2xl bg-[#B6252A]/10 text-[#B6252A] flex items-center justify-center mx-auto">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <h3 className="text-[16px] font-bold text-ios-textPrimary">Belum Ada Catatan KHS Semester Sebelumnya</h3>
+              <p className="text-[13px] text-ios-textSecondary max-w-md mx-auto leading-relaxed">
+                Tarik seluruh data KHS, nilai mata kuliah, IPS tiap semester, dan IPK Kumulatif resmi Anda dari website iGracias Telkom University dalam 1 klik!
+              </p>
+              <div className="pt-1">
+                <Button
+                  variant="primary"
+                  size="sm"
+                  className="gap-1.5 bg-[#B6252A] hover:bg-[#a01f24] text-white font-semibold py-2 px-4 rounded-xl shadow-md"
+                  onClick={() => setIsIgraciasModalOpen(true)}
                 >
-                  {s.nama_semester} ({s.ipk ? `IPS ${s.ipk.toFixed(2)}` : ""})
-                </button>
-              ))}
-          </div>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span>Sinkronkan Nilai &amp; IPK dari iGracias</span>
+                </Button>
+              </div>
+            </Card>
+          ) : (
+            <>
+              {/* Semester Selector */}
+              <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                {semestersList
+                  .filter((s) => s.khs_items && s.khs_items.length > 0)
+                  .map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setSelectedKhsSemester(s.nama_semester)}
+                      className={`px-3.5 py-1.5 rounded-full text-[13px] font-bold flex-shrink-0 transition-all border ${
+                        selectedKhsSemester === s.nama_semester
+                          ? "bg-ios-accent text-white border-ios-accent shadow-sm"
+                          : "bg-ios-surfaceSecondary text-ios-textSecondary border-ios-border hover:bg-ios-surface"
+                      }`}
+                    >
+                      {s.nama_semester} ({s.ipk ? `IPS ${s.ipk.toFixed(2)}` : ""})
+                    </button>
+                  ))}
+              </div>
 
           {currentKhsSemester && (
             <Card className="p-4 space-y-3">
@@ -609,6 +645,8 @@ export default function NilaiPage() {
               </div>
             </Card>
           )}
+          </>
+        )}
         </div>
       )}
 
@@ -957,6 +995,16 @@ export default function NilaiPage() {
         isOpen={isGpaModalOpen}
         onClose={() => setIsGpaModalOpen(false)}
         matkulList={matkulList}
+      />
+
+      <IgraciasSyncModal
+        isOpen={isIgraciasModalOpen}
+        onClose={() => setIsIgraciasModalOpen(false)}
+        onSyncSuccess={() => {
+          invalidateClientCache();
+          fetchData();
+        }}
+        userEmail={userProfile?.nim || undefined}
       />
     </div>
   );
