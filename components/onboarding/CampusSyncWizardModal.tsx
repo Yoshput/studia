@@ -32,7 +32,7 @@ export function CampusSyncWizardModal({
   onSyncSuccess,
   userName,
 }: CampusSyncWizardModalProps) {
-  const [syncMode, setSyncMode] = useState<"file" | "url">("file");
+  const [syncMode, setSyncMode] = useState<"url" | "file">("url");
   const [lmsUrl, setLmsUrl] = useState("");
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
@@ -212,57 +212,61 @@ export function CampusSyncWizardModal({
             <div className="flex p-1 bg-ios-surfaceSecondary border border-ios-border rounded-2xl gap-1">
               <button
                 type="button"
+                onClick={() => setSyncMode("url")}
+                className={cn(
+                  "flex-1 py-2 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
+                  syncMode === "url"
+                    ? "bg-white dark:bg-ios-card text-ios-textPrimary shadow-sm"
+                    : "text-ios-textSecondary hover:text-ios-textPrimary"
+                )}
+              >
+                <LinkIcon className="w-3.5 h-3.5 text-blue-500" />
+                <span>Link URL CeLOE</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold">1x Pasang (Auto-Sync)</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setSyncMode("file")}
                 className={cn(
-                  "flex-1 py-1.5 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
+                  "flex-1 py-2 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
                   syncMode === "file"
                     ? "bg-white dark:bg-ios-card text-ios-textPrimary shadow-sm"
                     : "text-ios-textSecondary hover:text-ios-textPrimary"
                 )}
               >
                 <UploadCloud className="w-3.5 h-3.5" />
-                <span>Unggah File .ics</span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">100% Cepat</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSyncMode("url")}
-                className={cn(
-                  "flex-1 py-1.5 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
-                  syncMode === "url"
-                    ? "bg-white dark:bg-ios-card text-ios-textPrimary shadow-sm"
-                    : "text-ios-textSecondary hover:text-ios-textPrimary"
-                )}
-              >
-                <LinkIcon className="w-3.5 h-3.5" />
-                <span>Link URL Kalender</span>
+                <span>File .ics</span>
               </button>
             </div>
 
             {/* Guide Step */}
-            {syncMode === "file" ? (
+            {syncMode === "url" ? (
+              <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-[11.5px] text-ios-textPrimary leading-relaxed space-y-1.5">
+                <p className="font-bold flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
+                  <Sparkles className="w-4 h-4" />
+                  Keunggulan: Cukup 1x Pasang, Auto-Sync Terus Menerus!
+                </p>
+                <p className="text-ios-textSecondary text-[11px]">
+                  Tautan kalender CeLOE Anda memiliki token akses live. Sekali Anda tempelkan di sini, Studia akan <strong>otomatis menyinkronkan tugas dan kuis baru di background</strong> setiap Anda membuka aplikasi tanpa perlu ekspor lagi!
+                </p>
+                <ol className="list-decimal list-inside space-y-1 text-ios-textSecondary pt-0.5">
+                  <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; <strong>Calendar</strong> &rarr; <strong>Export calendar</strong>.</li>
+                  <li>Pilih <em>"All events"</em> dan <em>"Recent and next 60 days"</em>, lalu klik <strong>Get calendar URL</strong>.</li>
+                  <li>Salin link URL dan tempelkan pada kolom di bawah.</li>
+                </ol>
+              </div>
+            ) : (
               <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[11.5px] text-ios-textPrimary leading-relaxed space-y-1">
                 <p className="font-bold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
                   <FileCheck className="w-4 h-4" />
-                  Cara Termudah &amp; Bebas Blokir:
+                  Unggah File .ics Langsung (Impor Cepat Sekali Jalan):
                 </p>
                 <ol className="list-decimal list-inside space-y-1 text-ios-textSecondary">
                   <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; menu <strong>Calendar</strong>.</li>
                   <li>Gulir ke bawah, klik <strong>Export calendar</strong>.</li>
                   <li>Klik tombol merah <strong className="text-rose-500">"Export"</strong> (file <code className="bg-ios-surface px-1 py-0.5 rounded text-[11px]">icalexport.ics</code> otomatis terunduh).</li>
                   <li>Seret atau pilih file tersebut ke kotak di bawah.</li>
-                </ol>
-              </div>
-            ) : (
-              <div className="p-3.5 rounded-2xl bg-ios-surfaceSecondary/60 border border-ios-border text-[11.5px] text-ios-textSecondary leading-relaxed space-y-1">
-                <p className="font-bold text-ios-textPrimary">
-                  Cara Mengambil Link iCal Kalender CeLOE:
-                </p>
-                <ol className="list-decimal list-inside space-y-1">
-                  <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; <strong>Calendar</strong> &rarr; <strong>Export calendar</strong>.</li>
-                  <li>Pilih <em>"All events"</em> dan <em>"Recent and next 60 days"</em>, lalu klik <strong>Get calendar URL</strong>.</li>
-                  <li>Salin link URL dan tempelkan pada kolom di bawah.</li>
                 </ol>
               </div>
             )}
@@ -361,7 +365,7 @@ export function CampusSyncWizardModal({
               <form onSubmit={handleUrlSubmit} className="space-y-3 pt-1">
                 <div>
                   <label className="block text-[12px] font-semibold text-ios-textPrimary mb-1">
-                    URL Kalender iCal CeLOE
+                    URL Kalender iCal CeLOE (Live Token)
                   </label>
                   <input
                     type="url"
@@ -370,6 +374,10 @@ export function CampusSyncWizardModal({
                     onChange={(e) => setLmsUrl(e.target.value)}
                     className="w-full p-2.5 text-[12px] bg-ios-surfaceSecondary border border-ios-border rounded-xl focus:outline-none focus:ring-1 focus:ring-ios-accent text-ios-textPrimary"
                   />
+                  <p className="text-[11px] text-ios-textSecondary mt-1.5 flex items-center gap-1">
+                    <span>🔒</span>
+                    <span>Cukup masukkan sekali. Studia akan otomatis menyinkronkan tugas baru secara berkala tanpa input manual lagi.</span>
+                  </p>
                 </div>
 
                 <div className="flex gap-2 pt-1">
@@ -385,14 +393,14 @@ export function CampusSyncWizardModal({
                     type="submit"
                     variant="primary"
                     disabled={isLoading}
-                    className="flex-1 gap-1.5 shadow-sm"
+                    className="flex-1 gap-1.5 shadow-sm bg-blue-600 hover:bg-blue-700 text-white"
                   >
                     {isLoading ? (
                       <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     ) : (
                       <Sparkles className="w-3.5 h-3.5" />
                     )}
-                    <span>{isLoading ? "Menyinkronkan..." : "Tarik Matkul & Tugas"}</span>
+                    <span>{isLoading ? "Menyinkronkan..." : "Simpan & Auto-Sync"}</span>
                   </Button>
                 </div>
               </form>

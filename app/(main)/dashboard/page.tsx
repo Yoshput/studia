@@ -121,12 +121,38 @@ export default function DashboardPage() {
     }
   };
 
+  const triggerBackgroundLmsSync = async () => {
+    try {
+      const syncStatus = await fetch("/api/lms/sync").then((r) => r.json());
+      if (syncStatus?.hasIcalUrl) {
+        const lastSync = syncStatus.lastSync ? new Date(syncStatus.lastSync).getTime() : 0;
+        const now = Date.now();
+        // If never synced or last sync was > 15 minutes ago, run silent background sync
+        if (now - lastSync > 15 * 60 * 1000) {
+          const res = await fetch("/api/lms/sync", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({}),
+          });
+          const syncRes = await res.json();
+          if (syncRes.success && (syncRes.createdCount > 0 || syncRes.updatedCount > 0)) {
+            invalidateClientCache();
+            fetchData();
+          }
+        }
+      }
+    } catch {
+      // Non-blocking silent background check
+    }
+  };
+
   useEffect(() => {
     try {
       localStorage.removeItem("semestr-user-avatar");
     } catch {}
 
     fetchData();
+    triggerBackgroundLmsSync();
 
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
