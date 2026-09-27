@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { parseMoodleIcs } from "@/lib/lms/ical-parser";
+import { resolveCourseMeta, CLASS_TEMPLATES } from "@/lib/lms/telkom-courses";
 
 export async function GET() {
   try {
@@ -161,8 +162,89 @@ export async function POST(req: Request) {
       });
     }
 
-    const matkulList = [...activeSemester.matkul];
+    let matkulList = [...activeSemester.matkul];
     let defaultMatkul = matkulList[0] || null;
+
+    // Detect user class from profile or calendar events
+    const userProfile = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { kelas: true },
+    });
+
+    let detectedClass = userProfile?.kelas || "";
+    for (const evt of parsedEvents) {
+      if (evt.courseName) {
+        const match = evt.courseName.match(/S1IF-[\w-]+/i);
+        if (match) {
+          detectedClass = match[0].toUpperCase();
+          break;
+        }
+      }
+    }
+
+    if (detectedClass && (!userProfile?.kelas || userProfile.kelas.toLowerCase().includes("s1f-"))) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { kelas: detectedClass },
+      });
+    }
+
+    // Auto-populate / heal standard class schedule if template exists
+    const normalizedClass = (detectedClass || "").toUpperCase().replace(/\s+/g, "");
+    if (normalizedClass && CLASS_TEMPLATES[normalizedClass]) {
+      const templateCourses = CLASS_TEMPLATES[normalizedClass];
+      for (const tc of templateCourses) {
+        const found = matkulList.find(
+          (m: any) =>
+            (m.kode && m.kode.toUpperCase() === tc.kode.toUpperCase()) ||
+            m.nama.toLowerCase().includes(tc.nama.toLowerCase()) ||
+            tc.nama.toLowerCase().includes(m.nama.toLowerCase())
+        );
+
+        if (!found) {
+          const created = await prisma.matkul.create({
+            data: {
+              semester_id: activeSemester.id,
+              nama: tc.nama,
+              kode: tc.kode,
+              dosen: tc.dosen,
+              sks: tc.sks,
+              hari: tc.hari,
+              jam_mulai: tc.jam_mulai,
+              jam_selesai: tc.jam_selesai,
+              ruang: tc.ruang,
+              warna: tc.warna,
+            },
+          });
+          matkulList.push(created);
+        } else {
+          // Heal existing course if it has raw code as name or placeholder lecturer
+          if (
+            found.nama.includes("S1IF-") ||
+            found.nama === found.kode ||
+            found.dosen === "Dosen Pengampu" ||
+            found.dosen === "Dosen CeLOE"
+          ) {
+            const updated = await prisma.matkul.update({
+              where: { id: found.id },
+              data: {
+                nama: tc.nama,
+                kode: tc.kode,
+                dosen: tc.dosen,
+                sks: tc.sks,
+                hari: tc.hari,
+                jam_mulai: tc.jam_mulai,
+                jam_selesai: tc.jam_selesai,
+                ruang: tc.ruang,
+                warna: tc.warna,
+              },
+            });
+            const idx = matkulList.findIndex((m: any) => m.id === found.id);
+            if (idx !== -1) matkulList[idx] = updated;
+          }
+        }
+      }
+    }
 
     const getDefaultMatkul = async () => {
       if (defaultMatkul) return defaultMatkul;
@@ -193,46 +275,73 @@ export async function POST(req: Request) {
       let targetMatkulId: string;
 
       if (evt.courseName) {
-        const cleanCourseCode = evt.courseName.split("-")[0].trim();
+        const resolved = resolveCourseMeta(evt.courseName, detectedClass);
+        const cleanCourseCode = resolved.kode || evt.courseName.split("-")[0].trim();
+
         const found = matkulList.find((m: any) => {
           const mNama = m.nama.toLowerCase();
-          const cNama = evt.courseName!.toLowerCase();
+          const cNama = resolved.nama.toLowerCase();
           const mKode = (m.kode || "").toLowerCase();
           const cKode = cleanCourseCode.toLowerCase();
           return (
+            (mKode && cKode && (mKode === cKode || cKode.includes(mKode) || mKode.includes(cKode))) ||
             mNama.includes(cNama) ||
-            cNama.includes(mNama) ||
-            (mKode && (cKode.includes(mKode) || mKode.includes(cKode)))
+            cNama.includes(mNama)
           );
         });
 
         if (found) {
+          // If found has raw course code name or placeholder dosen, heal it
+          if (
+            found.nama.includes("S1IF-") ||
+            found.dosen === "Dosen Pengampu" ||
+            found.dosen === "Dosen CeLOE"
+          ) {
+            const updated = await prisma.matkul.update({
+              where: { id: found.id },
+              data: {
+                nama: resolved.nama,
+                kode: resolved.kode,
+                dosen: resolved.dosen !== "Dosen Pengampu" ? resolved.dosen : found.dosen,
+                sks: resolved.sks,
+                ruang: resolved.ruang,
+                warna: resolved.warna,
+                ...(resolved.hari ? { hari: resolved.hari } : {}),
+                ...(resolved.jam_mulai ? { jam_mulai: resolved.jam_mulai } : {}),
+                ...(resolved.jam_selesai ? { jam_selesai: resolved.jam_selesai } : {}),
+              },
+            });
+            const idx = matkulList.findIndex((m: any) => m.id === found.id);
+            if (idx !== -1) matkulList[idx] = updated;
+          }
           targetMatkulId = found.id;
         } else {
-          // Auto create course with balanced weekday and timeslot
+          // Auto create course with intelligent metadata
           const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
           const TIMES = [
             { start: "07:30", end: "10:30" },
             { start: "10:30", end: "13:30" },
             { start: "13:30", end: "16:30" },
           ];
-          const day = DAYS[matkulList.length % DAYS.length];
-          const time = TIMES[Math.floor(matkulList.length / DAYS.length) % TIMES.length];
-          const COLORS = ["#007AFF", "#5856D6", "#AF52DE", "#FF2D55", "#FF9500", "#34C759", "#00C7BE"];
+          const day = resolved.hari || DAYS[matkulList.length % DAYS.length];
+          const time =
+            resolved.jam_mulai && resolved.jam_selesai
+              ? { start: resolved.jam_mulai, end: resolved.jam_selesai }
+              : TIMES[Math.floor(matkulList.length / DAYS.length) % TIMES.length];
 
           try {
             const newMatkul = await prisma.matkul.create({
               data: {
                 semester_id: activeSemester.id,
-                nama: evt.courseName,
-                kode: cleanCourseCode || "CELOE",
-                dosen: "Dosen Pengampu",
-                sks: 3,
+                nama: resolved.nama,
+                kode: resolved.kode,
+                dosen: resolved.dosen,
+                sks: resolved.sks,
                 hari: day,
                 jam_mulai: time.start,
                 jam_selesai: time.end,
-                ruang: "Ruang Kuliah",
-                warna: COLORS[matkulList.length % COLORS.length],
+                ruang: resolved.ruang,
+                warna: resolved.warna,
               },
             });
             matkulList.push(newMatkul);

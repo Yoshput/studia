@@ -32,7 +32,7 @@ export function CampusSyncWizardModal({
   onSyncSuccess,
   userName,
 }: CampusSyncWizardModalProps) {
-  const [syncMode, setSyncMode] = useState<"url" | "file">("url");
+  const [syncMode, setSyncMode] = useState<"url" | "file">("file");
   const [lmsUrl, setLmsUrl] = useState("");
   const [selectedFileName, setSelectedFileName] = useState<string | null>(null);
   const [fileContent, setFileContent] = useState<string | null>(null);
@@ -212,6 +212,21 @@ export function CampusSyncWizardModal({
             <div className="flex p-1 bg-ios-surfaceSecondary border border-ios-border rounded-2xl gap-1">
               <button
                 type="button"
+                onClick={() => setSyncMode("file")}
+                className={cn(
+                  "flex-1 py-2 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
+                  syncMode === "file"
+                    ? "bg-white dark:bg-ios-card text-ios-textPrimary shadow-sm"
+                    : "text-ios-textSecondary hover:text-ios-textPrimary"
+                )}
+              >
+                <UploadCloud className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Unggah File .ics</span>
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">100% Berhasil</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => setSyncMode("url")}
                 className={cn(
                   "flex-1 py-2 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
@@ -222,51 +237,37 @@ export function CampusSyncWizardModal({
               >
                 <LinkIcon className="w-3.5 h-3.5 text-blue-500" />
                 <span>Link URL CeLOE</span>
-                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-blue-500/15 text-blue-600 dark:text-blue-400 font-bold">1x Pasang (Auto-Sync)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setSyncMode("file")}
-                className={cn(
-                  "flex-1 py-2 px-3 rounded-xl text-[12px] font-semibold flex items-center justify-center gap-1.5 transition-all",
-                  syncMode === "file"
-                    ? "bg-white dark:bg-ios-card text-ios-textPrimary shadow-sm"
-                    : "text-ios-textSecondary hover:text-ios-textPrimary"
-                )}
-              >
-                <UploadCloud className="w-3.5 h-3.5" />
-                <span>File .ics</span>
               </button>
             </div>
 
             {/* Guide Step */}
-            {syncMode === "url" ? (
+            {syncMode === "file" ? (
+              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[11.5px] text-ios-textPrimary leading-relaxed space-y-1.5">
+                <p className="font-bold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+                  <FileCheck className="w-4 h-4" />
+                  Metode Paling Cepat & Aman (Bypass Keamanan Cloudflare CeLOE):
+                </p>
+                <ol className="list-decimal list-inside space-y-1 text-ios-textSecondary">
+                  <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; menu <strong>Calendar</strong>.</li>
+                  <li>Gulir ke bagian bawah, klik <strong>Export calendar</strong>.</li>
+                  <li>Pastikan opsi <em>"All events"</em> dan rentang waktu aktif dipilih.</li>
+                  <li>Klik tombol merah <strong className="text-rose-500">"Export"</strong> (file <code className="bg-ios-surface px-1 py-0.5 rounded text-[11px]">icalexport.ics</code> otomatis terunduh).</li>
+                  <li>Seret atau klik kotak di bawah untuk mengunggah file tersebut. Studia akan otomatis menyusun matkul, jadwal kelas resmi, dan tugas Anda!</li>
+                </ol>
+              </div>
+            ) : (
               <div className="p-3.5 rounded-2xl bg-blue-500/10 border border-blue-500/20 text-[11.5px] text-ios-textPrimary leading-relaxed space-y-1.5">
                 <p className="font-bold flex items-center gap-1.5 text-blue-600 dark:text-blue-400">
                   <Sparkles className="w-4 h-4" />
-                  Keunggulan: Cukup 1x Pasang, Auto-Sync Terus Menerus!
+                  Sinkronisasi Lewat URL Kalender Live CeLOE
                 </p>
                 <p className="text-ios-textSecondary text-[11px]">
-                  Tautan kalender CeLOE Anda memiliki token akses live. Sekali Anda tempelkan di sini, Studia akan <strong>otomatis menyinkronkan tugas dan kuis baru di background</strong> setiap Anda membuka aplikasi tanpa perlu ekspor lagi!
+                  Catatan: Server CeLOE Telkom University memiliki sistem proteksi bot / Cloudflare yang dapat memblokir permintaan server cloud. Jika muncul kendala akses, gunakan tab <strong>"Unggah File .ics"</strong> di sebelah kiri.
                 </p>
                 <ol className="list-decimal list-inside space-y-1 text-ios-textSecondary pt-0.5">
                   <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; <strong>Calendar</strong> &rarr; <strong>Export calendar</strong>.</li>
                   <li>Pilih <em>"All events"</em> dan <em>"Recent and next 60 days"</em>, lalu klik <strong>Get calendar URL</strong>.</li>
                   <li>Salin link URL dan tempelkan pada kolom di bawah.</li>
-                </ol>
-              </div>
-            ) : (
-              <div className="p-3.5 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-[11.5px] text-ios-textPrimary leading-relaxed space-y-1">
-                <p className="font-bold flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
-                  <FileCheck className="w-4 h-4" />
-                  Unggah File .ics Langsung (Impor Cepat Sekali Jalan):
-                </p>
-                <ol className="list-decimal list-inside space-y-1 text-ios-textSecondary">
-                  <li>Buka <strong className="text-ios-textPrimary">lms.telkomuniversity.ac.id</strong> &rarr; menu <strong>Calendar</strong>.</li>
-                  <li>Gulir ke bawah, klik <strong>Export calendar</strong>.</li>
-                  <li>Klik tombol merah <strong className="text-rose-500">"Export"</strong> (file <code className="bg-ios-surface px-1 py-0.5 rounded text-[11px]">icalexport.ics</code> otomatis terunduh).</li>
-                  <li>Seret atau pilih file tersebut ke kotak di bawah.</li>
                 </ol>
               </div>
             )}
