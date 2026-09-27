@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock,
   CheckCircle2,
@@ -16,6 +17,38 @@ import {
 } from "lucide-react";
 import { TugasDeadline } from "@/types";
 import { cn } from "@/lib/utils";
+
+function playCompletionChime() {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(1046.5, now);
+    gain1.gain.setValueAtTime(0.09, now);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.36);
+
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(1567.98, now + 0.08);
+    gain2.gain.setValueAtTime(0.07, now + 0.08);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.08);
+    osc2.stop(now + 0.46);
+  } catch {}
+}
 
 interface TaskDeadlineWidgetProps {
   tasks: TugasDeadline[];
@@ -32,11 +65,12 @@ export function TaskDeadlineWidget({
 }: TaskDeadlineWidgetProps) {
   const [filter, setFilter] = useState<"semua" | "mendesak">("semua");
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  const [recentlyCompletedIds, setRecentlyCompletedIds] = useState<Set<string>>(new Set());
   const [showGuideModal, setShowGuideModal] = useState(false);
 
   // Filter tasks based on status and urgency
-  const activeTasks = tasks.filter((t) => t.status !== "selesai");
-  const completedTasks = tasks.filter((t) => t.status === "selesai");
+  const activeTasks = tasks.filter((t) => t.status !== "selesai" || recentlyCompletedIds.has(t.id));
+  const completedTasks = tasks.filter((t) => t.status === "selesai" && !recentlyCompletedIds.has(t.id));
   const totalTasks = tasks.length;
   const progressPercent = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 100;
 
@@ -53,6 +87,17 @@ export function TaskDeadlineWidget({
     setUpdatingId(t.id);
     const nextStatus = t.status === "selesai" ? "belum" : "selesai";
 
+    if (nextStatus === "selesai") {
+      playCompletionChime();
+      setRecentlyCompletedIds((prev) => new Set(prev).add(t.id));
+    } else {
+      setRecentlyCompletedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(t.id);
+        return next;
+      });
+    }
+
     try {
       const res = await fetch("/api/tugas", {
         method: "PUT",
@@ -65,8 +110,15 @@ export function TaskDeadlineWidget({
         }),
       });
 
-      if (res.ok && onTaskUpdated) {
-        onTaskUpdated();
+      if (res.ok) {
+        setTimeout(() => {
+          if (onTaskUpdated) onTaskUpdated();
+          setRecentlyCompletedIds((prev) => {
+            const next = new Set(prev);
+            next.delete(t.id);
+            return next;
+          });
+        }, 500);
       }
     } catch (e) {
       console.error("Gagal mengupdate status tugas:", e);
@@ -211,59 +263,106 @@ export function TaskDeadlineWidget({
             </p>
           </div>
         ) : (
-          displayedTasks.map((t) => {
-            const rem = getRemainingDays(t.deadline);
-            const isUpdating = updatingId === t.id;
+          <AnimatePresence mode="popLayout">
+            {displayedTasks.map((t) => {
+              const rem = getRemainingDays(t.deadline);
+              const isUpdating = updatingId === t.id;
+              const isChecked = recentlyCompletedIds.has(t.id);
 
-            return (
-              <div
-                key={t.id}
-                className="group p-3 rounded-2xl bg-ios-surfaceSecondary/60 hover:bg-ios-surfaceSecondary border border-ios-border/80 transition-all flex items-start gap-3 shadow-xs"
-              >
-                {/* Fast Checklist Button */}
-                <button
-                  type="button"
-                  disabled={isUpdating}
-                  onClick={() => handleToggleComplete(t)}
-                  className="mt-0.5 text-ios-textSecondary/60 hover:text-emerald-500 transition-colors flex-shrink-0"
-                  title="Tandai selesai"
+              return (
+                <motion.div
+                  key={t.id}
+                  layout
+                  initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                  animate={{
+                    opacity: isChecked ? 0.6 : 1,
+                    y: 0,
+                    scale: 1,
+                    transition: { duration: 0.22 },
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.9,
+                    x: 20,
+                    transition: { duration: 0.3 },
+                  }}
+                  className="w-full"
                 >
-                  {isUpdating ? (
-                    <div className="w-4 h-4 rounded-full border-2 border-ios-accent border-t-transparent animate-spin" />
-                  ) : (
-                    <Circle className="w-4 h-4" />
-                  )}
-                </button>
-
-                {/* Task Details */}
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between gap-1.5 mb-0.5">
-                    <span className="text-[10px] font-semibold font-mono text-ios-textSecondary truncate">
-                      {t.matkul?.nama || "Mata Kuliah"}
-                    </span>
-                    <span
+                  <div
+                    className={cn(
+                      "group p-3 rounded-2xl transition-all flex items-start gap-3 shadow-xs border",
+                      isChecked
+                        ? "bg-emerald-500/5 border-emerald-500/20"
+                        : "bg-ios-surfaceSecondary/60 hover:bg-ios-surfaceSecondary border-ios-border/80"
+                    )}
+                  >
+                    {/* Fast Checklist Button with Spring Pop */}
+                    <motion.button
+                      type="button"
+                      whileTap={{ scale: 0.78 }}
+                      disabled={isUpdating}
+                      onClick={() => handleToggleComplete(t)}
                       className={cn(
-                        "text-[9.5px] font-bold px-2 py-0.2 rounded-full border whitespace-nowrap",
-                        rem.color
+                        "mt-0.5 rounded-full p-0.5 transition-all flex items-center justify-center flex-shrink-0",
+                        isChecked
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                          : "text-ios-textSecondary/60 hover:text-emerald-500 hover:bg-emerald-500/10"
                       )}
+                      title="Tandai selesai"
                     >
-                      {rem.label}
-                    </span>
+                      {isUpdating ? (
+                        <div className="w-4 h-4 rounded-full border-2 border-ios-accent border-t-transparent animate-spin" />
+                      ) : isChecked ? (
+                        <motion.div
+                          initial={{ scale: 0.3, rotate: -45 }}
+                          animate={{ scale: 1, rotate: 0 }}
+                          transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                        >
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                        </motion.div>
+                      ) : (
+                        <Circle className="w-4 h-4 transition-transform group-hover:scale-105" />
+                      )}
+                    </motion.button>
+
+                    {/* Task Details */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-1.5 mb-0.5">
+                        <span className="text-[10px] font-semibold font-mono text-ios-textSecondary truncate">
+                          {t.matkul?.nama || "Mata Kuliah"}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[9.5px] font-bold px-2 py-0.2 rounded-full border whitespace-nowrap",
+                            rem.color
+                          )}
+                        >
+                          {rem.label}
+                        </span>
+                      </div>
+
+                      <h4
+                        className={cn(
+                          "text-[12.5px] font-bold leading-snug line-clamp-2 transition-all",
+                          isChecked
+                            ? "line-through text-ios-textSecondary decoration-emerald-500 decoration-2"
+                            : "text-ios-textPrimary"
+                        )}
+                      >
+                        {t.judul}
+                      </h4>
+
+                      {t.deskripsi && (
+                        <p className="text-[11px] text-ios-textSecondary line-clamp-1 mt-0.5">
+                          {t.deskripsi}
+                        </p>
+                      )}
+                    </div>
                   </div>
-
-                  <h4 className="text-[12.5px] font-bold text-ios-textPrimary leading-snug line-clamp-2">
-                    {t.judul}
-                  </h4>
-
-                  {t.deskripsi && (
-                    <p className="text-[11px] text-ios-textSecondary line-clamp-1 mt-0.5">
-                      {t.deskripsi}
-                    </p>
-                  )}
-                </div>
-              </div>
-            );
-          })
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         )}
       </div>
 

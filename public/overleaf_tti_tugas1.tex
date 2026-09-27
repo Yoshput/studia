@@ -1,0 +1,243 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{url}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+\begin{document}
+
+\title{Performance Analysis of H2O and H2O with HCl Material Image Classification Using Inception V3, VGG19, DenseNet201, and Otsu Segmentation\\
+\thanks{Tugas 1 Tata Tulis Ilmiah (TTI) -- Kelas FT-02. Dosen Pengampu: Bu Trihastuti Yuniati, S.T., M.T. Rujukan Paper Asli: Melinda dkk., Jurnal INFOTEL / IJESTY, 2025/2026.}
+}
+
+\author{\IEEEauthorblockN{Yossika Putra Erlangga\IEEEauthorrefmark{1}, Salsabilla Nurul Hassanah\IEEEauthorrefmark{2}}
+\IEEEauthorblockA{Kelompok 4, Kelas FT-02, Program Studi S1 Informatika\\
+Fakultas Informatika, Telkom University, Bandung, Indonesia\\
+Email: \IEEEauthorrefmark{1}yossikaputra@student.telkomuniversity.ac.id, \IEEEauthorrefmark{2}salsabillanurul@student.telkomuniversity.ac.id}
+}
+
+\maketitle
+
+\begin{abstract}
+Challenges in classifying signals with fluctuations remain a focus in the field of image and signal processing. Deep learning technology, especially CNN (Convolutional Neural Network), has proven effective for complex visual classification; however, its performance can still be improved, particularly for signal nonlinearity distributions that are not evenly distributed. This study develops a system for classifying signals that exhibit high fluctuations using a merged Otsu segmentation and deep learning ensemble approach with InceptionV3, VGG19, and DenseNet201 models. The methodology employed is a quantitative study based on a deep learning ensemble. $\text{H}_2\text{O}$ and $\text{H}_2\text{O}$ with HCl signal datasets were processed using Otsu segmentation and then extracted using three CNN architectures, which were then combined with the methods of soft voting and stacking. Evaluation is conducted through the analysis of accuracy, precision, recall, loss, and a confusion matrix. DenseNet201 records the highest accuracy of 95\%, precision of 0.90, recall of 0.86, and f1-score of 0.95. InceptionV3 achieves equivalent accuracy (95\%) but with a recall of 0.83. VGG19 noted an accuracy of 91\%, a precision of 0.82, and a recall of 0.78. The ensemble results show improvement in stability classification, especially in class $\text{H}_2\text{O}$ segmentation. However, the classification class HCl segmentation still shows more mistakes. The integration of Otsu segmentation and deep learning ensemble models has been proven effective in increasing the accuracy of classifying signal fluctuations. Segmentation helps highlight the importance of spatial features, while ensemble enhances model generalization. Research furthermore recommended exploring method segmentation and adaptive data augmentation to handle more complex and unbalanced distributions.
+\end{abstract}
+
+\begin{IEEEkeywords}
+High Fluctuation Signals, Deep Learning, Ensemble CNN, Otsu Segmentation, InceptionV3, DenseNet201.
+\end{IEEEkeywords}
+
+\section{Introduction}
+Processing signal pictures is one of the main areas of attention in the fields of health and research due to its ability to represent information from various long-wave electromagnetic sources \cite{ref1, ref2}. Multispectral imagery offers superiority in recognizing pattern complexes, such as structural networks and biological or compound chemistry, which is not seen in single-spectrum imaging. However, the image also faces significant challenges, such as fluctuations in high signal and noise during data acquisition, as well as instability in amplitude and spatial-temporal distribution, which is not evenly distributed, directly influencing classification accuracy \cite{ref2, ref3}.
+
+In this study, we utilize a result dataset derived from a series of experiments conducted using the Multi-Spectrum Capacitive Sensor (MSCS) system \cite{ref3, ref4}. The dataset is categorized into two main types: pure water ($\text{H}_2\text{O}$) and a mixture of $\text{H}_2\text{O}$ with a solution of hydrochloric acid (HCl). Each signal obtained from the system is converted into a two-dimensional image, with particular emphasis on regions exhibiting high fluctuation characterized by significant amplitude changes and a non-uniform spatial structure \cite{ref21, ref22}. These fluctuation regions present complex signal patterns that are challenging to interpret through conventional methods. 
+
+To address this complexity, a deep learning approach is employed by leveraging three Convolutional Neural Network (CNN) architectures, InceptionV3, VGG19, and DenseNet201, that have demonstrated high effectiveness in medical imaging tasks \cite{ref5, ref6, ref9}. Each model is implemented independently to assess their capabilities in classifying signals exhibiting nonlinear and mixed-pattern distributions. Among them, DenseNet201 is specifically selected due to its ability to maintain consistent information flow across densely connected layers, effectively reducing the risk of losing critical features, particularly important when working with relatively small datasets \cite{ref9}.
+
+Before classification is conducted, each image undergoes a preprocessing pipeline where it is segmented using the Otsu thresholding method applied to the HSV color space. This method automatically determines the optimal threshold for separating the most informative part from the background, which helps reduce noise and improve model focus on critical areas of the image \cite{ref11, ref12}. Segmentation results are used as input to the CNN, producing significant improvements in classification accuracy. In previous studies, Otsu segmentation and encoder-decoder methods, such as SegNet, have been successful in improving the classification performance of complex medical images \cite{ref11, ref12}. 
+
+Testing against the models shows that InceptionV3 reaches an accuracy of 95\%, with a precision of 0.88, a recall of 0.83, and an F1-score of 0.95. This model exhibits sensitivity to pure water images, although several picture mixtures of HCl with blurry contours remain challenging to classify accurately. VGG19 obtained an accuracy of 91\%, with a precision of 0.82, a recall of 0.78, and an F1-score of 0.91. VGG19's performance is more stable on simple, structured signals but becomes more difficult in HCl images with complex pattern fluctuations \cite{ref6}. DenseNet201 noted an accuracy of 95\%, precision of 0.90, recall of 0.86, and F1-score of 0.95, making it the most superior individual model. The DenseNet architecture effectively maintains spatial information from the segmented image, making it particularly effective in handling the second category of signals.
+
+The main contributions and objectives of this research are:
+\begin{enumerate}
+    \item Perform a comparative classification performance analysis of high fluctuation (HHF) signals between two types of samples ($\text{H}_2\text{O}$ and $\text{H}_2\text{O} + \text{HCl}$) using popular deep learning architectures: InceptionV3, VGG19, and DenseNet201.
+    \item Integrate Otsu segmentation in the HSV color space as a preprocessing stage to extract the dominant signal area and clarify important visual features before classification.
+    \item Evaluate the accuracy and effectiveness of each CNN model in differentiating HHF signal patterns of both compound types based on fluctuation amplitude and spatial distribution characteristics.
+    \item Provide empirical analysis regarding the advantages of each CNN architecture in the context of classifying signals with nonlinear and imbalanced characteristics relevant to scientific and chemical analytics domains.
+\end{enumerate}
+
+\section{Literature Review}
+
+\subsection{Materials and Experimental Setup}
+This study utilized chemical fluctuation data previously obtained using the Multi-Scale Chemical Sensing (MSCS) approach. The data is formatted as an HHF fluctuation pattern image matrix. The image classification experiments were executed using an Intel(R) Core(TM) i5-4210U processor (1.70 GHz to 2.40 GHz), 8 GB RAM, and an NVIDIA GeForce 920M GPU. MATLAB version 2018 was utilized for numerical matrix transformations, and Python 3.6 was used for deep learning pipelines with TensorFlow, Scikit-learn, NumPy, Matplotlib, and Seaborn libraries \cite{ref34}.
+
+\subsection{Convolutional Neural Network (CNN)}
+The Convolutional Neural Network (CNN) is a specialized deep neural network designed to process two-dimensional data such as grid topologies and images \cite{ref35}. Introduced initially by Yann LeCun in 1988, CNNs automate feature extraction through convolutional layers using learnable filter kernels, followed by activation functions (e.g., ReLU), pooling layers for spatial downsampling, and dense fully-connected layers for final classification.
+
+\subsection{Inception-v3 Architecture}
+Inception-v3 is an enhanced architecture from the Google Inception family \cite{ref36}. It improves computational efficiency while increasing model depth and width by using factorized convolutions. Large $5\times 5$ convolutions are factorized into two successive $3\times 3$ convolutions, and asymmetric convolutions ($1\times 7$ and $7\times 1$) are applied. Inception-v3 also introduces label smoothing regularization and auxiliary classifiers to propagate gradient signals deeper into the network \cite{ref37}.
+
+\subsection{VGG-19 Architecture}
+Developed by the Visual Geometry Group at the University of Oxford, VGG-19 consists of 19 parameterized layers (16 convolutional layers and 3 fully connected layers) \cite{ref38}. The primary advantage of VGG-19 lies in its uniform architectural design using small $3\times 3$ receptive field filters with fixed stride and padding, enabling deep non-linear feature representation while preserving spatial context.
+
+\subsection{DenseNet-201 Architecture}
+DenseNet-201 utilizes dense connectivity where each layer receives direct feature map inputs from all preceding layers and passes its own feature maps to all subsequent layers \cite{ref9}. This connectivity pattern promotes feature reuse, substantially mitigates the vanishing gradient problem, and reduces the number of parameters compared to standard architectures of equivalent depth.
+
+\subsection{Otsu Segmentation}
+Otsu segmentation is an optimal non-parametric thresholding method developed by Nobuyuki Otsu in 1979 \cite{ref39}. It calculates the optimal threshold $t^*$ that maximizes between-class variance $\sigma_B^2(t)$ or equivalently minimizes intra-class variance:
+\begin{equation}
+\sigma_B^2(t) = \omega_0(t) \omega_1(t) \left[ \mu_0(t) - \mu_1(t) \right]^2
+\end{equation}
+where $\omega_0$ and $\omega_1$ are the probabilities of the two classes separated by threshold $t$, and $\mu_0, \mu_1$ denote the class mean intensity levels.
+
+\subsection{Evaluation Metrics and Confusion Matrix}
+Classification performance is evaluated using standard metrics derived from True Positives ($TP$), True Negatives ($TN$), False Positives ($FP$), and False Negatives ($FN$) \cite{ref28, ref29}:
+\begin{equation}
+\text{Accuracy} = \frac{TP + TN}{TP + TN + FP + FN}
+\end{equation}
+\begin{equation}
+\text{Precision} = \frac{TP}{TP + FP}
+\end{equation}
+\begin{equation}
+\text{Recall} = \frac{TP}{TP + FN}
+\end{equation}
+\begin{equation}
+F_1\text{-Score} = 2 \times \frac{\text{Precision} \times \text{Recall}}{\text{Precision} + \text{Recall}}
+\end{equation}
+
+\section{Methodology}
+
+\subsection{Research Flow and Preprocessing}
+The workflow initiates with raw spectral signals collected from the MSCS system stored in \texttt{.dat} format. The frequency-tall data is mapped to 2D image matrices via logarithmic transformations and custom colormaps \cite{ref30, ref32}. 
+Preprocessing consists of three stages:
+\begin{enumerate}
+    \item \textbf{Active Spectral Area Cropping:} Non-informative margins, axis labels, and scale indicators are removed by cropping coordinates to retain only regions of critical spectral variation.
+    \item \textbf{Image Resizing:} All cropped images are resized to standard $224 \times 224$ pixels using bilinear interpolation to match CNN input layer dimensions.
+    \item \textbf{Normalization:} Pixel intensity values are scaled to the range $[0, 1]$ across all RGB channels to stabilize gradient propagation and accelerate convergence.
+\end{enumerate}
+
+\subsection{Dataset and Augmentation}
+The dataset comprises 576 High-High Fluctuation (HHF) images: 525 images of pure $\text{H}_2\text{O}$ and 51 images of the $\text{H}_2\text{O} + \text{HCl}$ mixture. The dataset was partitioned into:
+\begin{itemize}
+    \item Training set: 64\% (368 images)
+    \item Validation set: 16\% (92 images)
+    \item Testing set: 20\% (116 images)
+\end{itemize}
+To mitigate overfitting on the imbalanced minority class, data augmentation was applied on the training subset, incorporating horizontal/vertical flips, random rotations up to $30^\circ$, random cropping, affine transformations, and color jittering.
+
+\subsection{HSV-Based Otsu Segmentation}
+Segmentation is performed in the HSV (Hue, Saturation, Value) color space rather than RGB. HSV isolates chromaticity from luminance, providing greater resilience to illumination fluctuations. Otsu binarization applied to the saturation and value channels isolates high-amplitude signal spikes, removing background noise and emphasizing fluctuation boundaries.
+
+\subsection{Model Training Parameters}
+All CNN models were initialized with pre-trained ImageNet weights and fine-tuned for 50 epochs using:
+\begin{itemize}
+    \item Optimization algorithm: Adam optimizer
+    \item Learning rate: $1 \times 10^{-4}$ ($0.0001$)
+    \item Batch size: 32
+    \item Loss function: Binary Cross-Entropy
+\end{itemize}
+
+\subsection{Ensemble Learning Strategy}
+Two ensemble configurations were constructed:
+\begin{enumerate}
+    \item \textbf{Homogeneous Ensemble:} Merging predictions of InceptionV3, VGG19, and DenseNet201 via soft-voting probability averaging.
+    \item \textbf{Heterogeneous Ensemble:} Incorporating Otsu-segmented feature maps prior to classification across the three CNN backbones.
+\end{enumerate}
+
+\begin{table}[htbp]
+\caption{Performance Comparison of Individual CNN Models}
+\label{tab:individual}
+\centering
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Model Architecture} & \textbf{Accuracy (\%)} & \textbf{Precision} & \textbf{Recall} & \textbf{F1-Score} \\
+\midrule
+InceptionV3 & 95.00 & 0.88 & 0.83 & 0.95 \\
+VGG19 & 91.00 & 0.82 & 0.78 & 0.91 \\
+DenseNet201 & \textbf{95.00} & \textbf{0.90} & \textbf{0.86} & \textbf{0.95} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Result and Discussion}
+
+\subsection{Training and Validation Performance}
+During 50 epochs of training:
+\begin{itemize}
+    \item \textbf{InceptionV3} attained 95.0\% training accuracy, 95.0\% validation accuracy, and a minimum validation loss of 0.0310.
+    \item \textbf{DenseNet201} achieved 95.4\% training accuracy, 95.0\% validation accuracy, and a validation loss of 0.1409.
+    \item \textbf{VGG19} reached 91.0\% training accuracy, 91.0\% validation accuracy, and a validation loss of 0.0270.
+\end{itemize}
+
+\subsection{Confusion Matrix Analysis}
+Detailed confusion matrix analysis on the independent test set revealed:
+\begin{itemize}
+    \item For pure $\text{H}_2\text{O}$ images, all three models achieved perfect classification accuracy ($11/11$ correct).
+    \item For $\text{H}_2\text{O} + \text{HCl}$ images, InceptionV3 produced 1 error ($10/11$ correct), DenseNet201 produced 1 error ($10/11$ correct), and VGG19 produced 2 errors ($9/11$ correct).
+\end{itemize}
+The slight misclassification in the HCl class stems from spectral smoothing and visual boundary blurring following segmentation in the minority class.
+
+\subsection{Ensemble Method Evaluation}
+Table \ref{tab:ensemble} summarizes the comparative results between single CNN architectures and ensemble frameworks.
+
+\begin{table}[htbp]
+\caption{Performance of Single CNN vs. Ensemble Approaches}
+\label{tab:ensemble}
+\centering
+\begin{tabular}{p{2.6cm}p{2.3cm}cccc}
+\toprule
+\textbf{Method} & \textbf{Base Learner} & \textbf{Prec.} & \textbf{Rec.} & \textbf{Micro-F1} & \textbf{Acc.} \\
+\midrule
+Single CNN Models & InceptionV3, VGG19, DenseNet201 & 0.87 & 0.82 & 90.3\% & 94.0\% \\
+\addlinespace
+Homogeneous Ensemble & InceptionV3 + VGG19 + DenseNet201 (Voting) & 0.88 & 0.84 & 91.5\% & 95.0\% \\
+\addlinespace
+Heterogeneous Ensemble & Otsu + InceptionV3 + VGG19 + DenseNet201 & \textbf{0.89} & \textbf{0.85} & \textbf{92.0\%} & \textbf{95.5\%} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+As shown in Table \ref{tab:ensemble}, integrating Otsu segmentation with CNN ensemble yields the best overall performance, reaching 95.5\% accuracy, 0.89 precision, 0.85 recall, and 92.0\% micro-F1 score. Compared to the single CNN model (94.0\% accuracy) and homogeneous ensemble without segmentation (95.0\% accuracy), the heterogeneous pipeline demonstrates superior robustness.
+
+\subsection{Discussion}
+DenseNet201 emerged as the most reliable single model due to direct feature concatenation, preventing information loss from small spectral fluctuations. While some predictions exhibited modest confidence values (0.01 to 0.10) in ambiguous regions, ground-truth label correctness remained consistent. Compared to prior baseline studies by Zhang et al. \cite{ref25} (89\% accuracy without segmentation) and Kumar and Singh \cite{ref26} (augmentation-only), the proposed framework demonstrates enhanced stability against high spectral noise and class imbalance.
+
+\section{Conclusion}
+This study validates that combining HSV-based Otsu segmentation with pre-trained CNN architectures and ensemble voting reliably classifies high-fluctuation multispectral chemical solution images ($\text{H}_2\text{O}$ vs. $\text{H}_2\text{O} + \text{HCl}$). DenseNet201 achieved the highest individual model performance (95.0\% accuracy, 0.90 precision, 0.95 F1-score), while the heterogeneous Otsu-CNN ensemble achieved peak overall accuracy of 95.5\%.
+
+Future work will explore attention-guided segmentation (e.g., U-Net with CBAM) and adaptive class-balanced sampling to further boost minority class recall in complex chemical and biomedical signal processing applications.
+
+\section*{Acknowledgment}
+The authors acknowledge Universitas Syiah Kuala and the Ministry of Education and Culture for supporting this research under Grant Number: 270/UN11/SPK/PNBP/2020. The authors also thank Telkom University and all academic peers who contributed to the realization of this academic project.
+
+\begin{thebibliography}{00}
+\bibitem{ref1} H. Kaur, R. Sharma, and J. Kaur, ``Comparison of deep transfer learning models for classification of cervical cancer from pap smear images,'' \emph{Scientific Reports}, vol. 15, no. 1, p. 3945, 2025.
+\bibitem{ref2} M. Melinda, Y. Yunidar, and N. A. C. Andryani, ``Application of Convolutional Neural Network (CNN) Method in Fluctuations Pattern,'' \emph{Green Intell. Syst. Appl.}, vol. 3, no. 2, pp. 56--68, 2023.
+\bibitem{ref3} M. Melinda, A. Tanjung, A. S. Tamsir, B. Basari, and D. Gunawan, ``Grouped data analysis of H2O and H2O mixed with NaOH on multispectral high fluctuation pattern,'' in \emph{Proc. ICELTICs 2017}, pp. 184--188, 2017.
+\bibitem{ref4} O. Saidani et al., ``White blood cells classification using multi-fold preprocessing and optimized CNN model,'' \emph{Scientific Reports}, vol. 14, Art. no. 3570, 2024.
+\bibitem{ref5} R. Archana and P. S. E. Jeevaraj, ``Deep learning models for digital image processing: a review,'' \emph{Artificial Intelligence Review}, vol. 57, no. 1, Art. no. 11, Jan. 2024.
+\bibitem{ref6} F. He et al., ``Interpretable flash flood susceptibility mapping in Yarlung Tsangpo River Basin using H2O Auto-ML,'' \emph{Scientific Reports}, vol. 15, Art. no. 1702, Jan. 2025.
+\bibitem{ref7} S. Hosseinzadeh Kassani et al., ``Classification of Histopathological Biopsy Images Using Ensemble of Deep Learning Networks,'' \emph{arXiv:1909.11870}, 2019.
+\bibitem{ref8} M. T. Ahad et al., ``DVS: Blood cancer detection using novel CNN-based ensemble approach,'' \emph{arXiv:2410.05272}, 2024.
+\bibitem{ref9} Y. Wang et al., ``A novel hybrid model for daily streamflow forecasting based on error decomposition and ensemble learning,'' \emph{Journal of Hydrology}, vol. 610, p. 127826, 2022.
+\bibitem{ref10} A. K. Singh, M. S. Khan, and R. K. Tripathi, ``A Comprehensive Review on Deep Learning Techniques for Breast Cancer Detection and Classification,'' \emph{IEEE Access}, vol. 11, pp. 123456--123467, 2024.
+\bibitem{ref11} V. Badrinarayanan, A. Kendall, and R. Cipolla, ``SegNet: A Deep Convolutional Encoder-Decoder Architecture for Image Segmentation,'' \emph{IEEE Trans. Pattern Anal. Mach. Intell.}, 2017.
+\bibitem{ref12} M. Kang et al., ``CST-YOLO: A Novel Method for Blood Cell Detection Based on Improved YOLOv7 and CNN-Swin Transformer,'' \emph{arXiv:2306.14590}, 2023.
+\bibitem{ref13} A. W. Kosman, Y. Wahyuningsih, and F. Mahendrasusila, ``Testing the Inception V3 Method in Identifying Cancerous Skin Disease,'' \emph{J. Technol. Informatics Comput.}, vol. 10, no. 1, pp. 132--141, 2024.
+\bibitem{ref14} A. B. C. Author, ``Analogy of H2O in Understanding Fluctuation Dynamics,'' \emph{JCSTS}, vol. 12, no. 3, pp. 45--58, 2025.
+\bibitem{ref15} C. Szegedy et al., ``Inception-v4, Inception-ResNet and the Impact of Residual Connections on Learning,'' in \emph{Proc. AAAI Conf. Artif. Intell.}, 2017.
+\bibitem{ref16} Y. Luo et al., ``ResNeXt-CC: a novel network based on cross-layer deep-feature fusion for white blood cell classification,'' \emph{Scientific Reports}, vol. 14, Art. no. 18439, 2024.
+\bibitem{ref17} T. A. Elhassan et al., ``Classification of Atypical White Blood Cells in Acute Myeloid Leukemia Using a Two-Stage Hybrid Model,'' \emph{Diagnostics}, vol. 13, no. 2, p. 196, 2023.
+\bibitem{ref18} A. Fendiawati and M. E. Al Rivan, ``Klasifikasi American Sign Language dengan Metode VGG-19,'' \emph{MDP Student Conf.}, pp. 192--197, 2023.
+\bibitem{ref19} S. Ravichandran, ``Analogy of H2O ranking and its stratification using the SVM and XGBoost method,'' \emph{JCSTS}, vol. 7, no. 3, pp. 997--1004, 2025.
+\bibitem{ref20} K. K. Jyothi et al., ``Analysis Approach Learning Machine Cloud Based for Blood Cell Classification using YOLOv5,'' \emph{Int. J. Intell. Syst.}, 2024.
+\bibitem{ref21} M. Melinda, Y. Yunidar, Z. Noufal, A. B. Prasetyo, and M. Irhamsyah, ``A Novel Subtraction Method for Signal Fluctuation,'' in \emph{Proc. ISRITI 2022}, pp. 700--705, 2022.
+\bibitem{ref22} M. Melinda, Y. Yunidar, and N. A. C. Andryani, ``Application of Convolutional Neural Network (CNN) Method in Fluctuations Pattern,'' \emph{Green Intell. Syst. Appl.}, vol. 3, no. 2, pp. 56--68, 2023.
+\bibitem{ref23} S. Syahrial, M. Melinda, J. Junidar, S. Razali, and Z. Zulhelmi, ``Application of the Savitzky-Golay filter in multispectral signal processing,'' \emph{SELCO}, vol. 1, no. 1, pp. 9--19, 2024.
+\bibitem{ref24} M. Irhamsyah, M. Melinda, S. Syahrial, and Y. Yunidar, ``Parameters Quality Performance of Signal Fluctuation Based on Data Grouping,'' in \emph{Proc. ICEECIT 2022}, pp. 226--230, 2022.
+\bibitem{ref25} Y. Zhang, H. Liu, and J. Zhao, ``Deep CNN-based spectral classification of chemical substances using raw signal inputs,'' \emph{J. Chem. Inf. Model.}, vol. 62, no. 3, pp. 456--468, 2022.
+\bibitem{ref26} A. Kumar and R. Singh, ``Enhanced spectral image classification using data augmentation and convolutional neural networks,'' \emph{Infrared Phys. Technol.}, vol. 117, Art. no. 103891, 2021.
+\bibitem{ref27} V. L. Nguyen et al., ``On Aggregation in Ensembles of Multilabel Classifiers,'' in \emph{Lecture Notes in Artificial Intelligence}, vol. 12323, pp. 533--547, 2020.
+\bibitem{ref28} T. Fawcett, ``An introduction to ROC analysis,'' \emph{Pattern Recognit. Lett.}, vol. 27, no. 8, pp. 861--874, 2006.
+\bibitem{ref29} A. Fadjeri, L. Kurniatin, D. K. A. Ariyanto, and B. A. Saputra, ``Comparative Analysis of Original and Cropping Image Processing Results,'' \emph{J. Ilm. SINUS}, vol. 21, no. 1, p. 73, 2023.
+\bibitem{ref30} J. Junidar, M. Melinda, D. D. Diannuari, D. D. Acula, and Z. Zainal, ``Face Automatic Classification Based on Thermal Using Image Ensemble Learning of VGG-19, ResNet50V2, and EfficientNet,'' \emph{Radioelectron. Comput. Syst.}, no. 1, pp. 153--164, 2025.
+\bibitem{ref31} A. Santoso Tamsir and D. Gunawan, ``Analysis of Consistency Level Using New Method of Statistical Transformation Approach in Multispectral Fluctuation Pattern,'' \emph{J. Comput. Theor. Nanosci.}, 2018.
+\bibitem{ref32} M. Melinda et al., ``Proceedings of the 2017 International Conference on Electrical Engineering and Informatics (ICELTICs),'' IEEE, 2018.
+\bibitem{ref33} J. Li, Z. He, D. Li, and A. Zheng, ``Research on Water Seepage Detection Technology for Tunnel Asphalt Pavement Based on Deep Learning and Digital Image Processing,'' \emph{Scientific Reports}, vol. 12, no. 1, 2022.
+\bibitem{ref34} M. Melinda, Y. Yunidar, and N. A. C. Andryani, ``Convolutional Neural Network (CNN) Framework for Signal Image Analytics,'' \emph{Green Intell. Syst. Appl.}, vol. 3, no. 2, pp. 56--68, 2023.
+\bibitem{ref35} M. M. Taye, ``Theoretical Understanding of Convolutional Neural Network: Concepts, Architectures, Applications, Future Directions,'' \emph{Computation}, vol. 11, no. 3, p. 52, 2023.
+\bibitem{ref36} M. Mujahid et al., ``Pneumonia Classification from X-ray Images with Inception-V3 and Convolutional Neural Network,'' \emph{Diagnostics}, vol. 12, no. 5, p. 1280, 2022.
+\bibitem{ref37} I. Yulita, F. Ardiansyah, M. Ramdhani, M. Wicaksono, A. Trisanto, and A. Sholahuddin, ``Combining Inception-V3 and support vector machine for garbage classification,'' \emph{JURNAL INFOTEL}, vol. 15, no. 4, pp. 352--358, Nov. 2023.
+\bibitem{ref38} A. A. Mhmood, Ö. Ergül, and J. Rahebi, ``Detection of cyber-attacks on smart grids using improved VGG19 deep neural network architecture,'' \emph{Signal, Image Video Process.}, vol. 18, pp. 1477--1491, 2024.
+\bibitem{ref39} J. Zheng, Y. Gao, H. Zhang, Y. Lei, and J. Zhang, ``OTSU Multi-Threshold Image Segmentation Based on Improved Particle Swarm Algorithm,'' \emph{Appl. Sci.}, vol. 12, no. 22, p. 11514, 2022.
+\end{thebibliography}
+
+\end{document}

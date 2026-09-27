@@ -231,19 +231,23 @@ export async function POST(req: Request) {
         }
       }
 
-      // Check if already exists by lms_uid
+      // Check if already exists by lms_uid OR by exact title in the user's active semester
       const existing = await prisma.tugasDeadline.findFirst({
         where: {
-          lms_uid: evt.uid,
           matkul: {
             semester: {
               user_id: userId,
             },
           },
+          OR: [
+            { lms_uid: evt.uid },
+            { judul: evt.judul },
+          ],
         },
       });
 
       if (existing) {
+        // PRESERVE user completion status! Never revert completed tasks or duplicate them.
         await prisma.tugasDeadline.update({
           where: { id: existing.id },
           data: {
@@ -252,6 +256,8 @@ export async function POST(req: Request) {
             deadline: evt.deadline,
             url: evt.url || existing.url,
             prioritas: evt.prioritas,
+            lms_uid: evt.uid,
+            status: existing.status, // Strictly keep user's current status
           },
         });
         updatedCount++;

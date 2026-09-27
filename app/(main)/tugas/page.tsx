@@ -30,14 +30,49 @@ import {
   FileText,
   Link as LinkIcon,
 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import { formatDateIndo, formatShortDateIndo, getDaysRemaining, cn } from "@/lib/utils";
 import { TugasDeadline, Matkul } from "@/types";
 import { fetchWithCache, getCachedData, invalidateClientCache } from "@/lib/client-cache";
+
+function playCompletionChime() {
+  if (typeof window === "undefined") return;
+  try {
+    const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioCtx) return;
+    const ctx = new AudioCtx();
+    const now = ctx.currentTime;
+
+    // Harmonic twin chime (Microsoft To-Do style C6 -> G6)
+    const osc1 = ctx.createOscillator();
+    const gain1 = ctx.createGain();
+    osc1.type = "sine";
+    osc1.frequency.setValueAtTime(1046.5, now);
+    gain1.gain.setValueAtTime(0.09, now);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    osc1.connect(gain1);
+    gain1.connect(ctx.destination);
+    osc1.start(now);
+    osc1.stop(now + 0.36);
+
+    const osc2 = ctx.createOscillator();
+    const gain2 = ctx.createGain();
+    osc2.type = "triangle";
+    osc2.frequency.setValueAtTime(1567.98, now + 0.08);
+    gain2.gain.setValueAtTime(0.07, now + 0.08);
+    gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+    osc2.connect(gain2);
+    gain2.connect(ctx.destination);
+    osc2.start(now + 0.08);
+    osc2.stop(now + 0.46);
+  } catch {}
+}
 
 export default function TugasPage() {
   const [tugasList, setTugasList] = useState<TugasDeadline[]>(() => {
     return getCachedData("/api/tugas")?.tugas || [];
   });
+  const [recentlyCompletedIds, setRecentlyCompletedIds] = useState<Set<string>>(new Set());
   const [matkulList, setMatkulList] = useState<Matkul[]>(() => {
     return getCachedData("/api/matkul")?.matkul || [];
   });
@@ -311,8 +346,34 @@ export default function TugasPage() {
 
   const handleToggleStatus = async (t: TugasDeadline) => {
     const nextStatus = t.status === "selesai" ? "belum" : "selesai";
+
+    if (nextStatus === "selesai") {
+      playCompletionChime();
+      setRecentlyCompletedIds((prev) => new Set(prev).add(t.id));
+
+      // After 550ms, remove from recently completed so it gracefully animates out if filtering active
+      setTimeout(() => {
+        setRecentlyCompletedIds((prev) => {
+          const next = new Set(prev);
+          next.delete(t.id);
+          return next;
+        });
+      }, 550);
+    } else {
+      setRecentlyCompletedIds((prev) => {
+        const next = new Set(prev);
+        next.delete(t.id);
+        return next;
+      });
+    }
+
+    // Instant optimistic update (0ms response)
+    setTugasList((prev) =>
+      prev.map((item) => (item.id === t.id ? { ...item, status: nextStatus } : item))
+    );
+
     try {
-      const res = await fetch("/api/tugas", {
+      await fetch("/api/tugas", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -320,11 +381,10 @@ export default function TugasPage() {
           status: nextStatus,
         }),
       });
-      if (res.ok) {
-        fetchData();
-      }
+      invalidateClientCache("/api/tugas");
     } catch (err) {
       console.error("Toggle error:", err);
+      fetchData();
     }
   };
 
@@ -334,6 +394,7 @@ export default function TugasPage() {
     try {
       const res = await fetch(`/api/tugas?id=${id}`, { method: "DELETE" });
       if (res.ok) {
+        invalidateClientCache("/api/tugas");
         fetchData();
       }
     } catch (err) {
@@ -343,7 +404,10 @@ export default function TugasPage() {
 
   // Filter tugas
   const filteredTugas = tugasList.filter((t) => {
-    if (filterStatus === "aktif") return t.status !== "selesai";
+    if (filterStatus === "aktif") {
+      if (recentlyCompletedIds.has(t.id)) return true;
+      return t.status !== "selesai";
+    }
     if (filterStatus === "selesai") return t.status === "selesai";
     return true;
   });
@@ -421,59 +485,97 @@ export default function TugasPage() {
               </p>
             </Card>
           ) : (
-            filteredTugas.map((t) => {
+            <AnimatePresence mode="popLayout">
+            {filteredTugas.map((t) => {
               const remaining = getDaysRemaining(t.deadline);
               const isDone = t.status === "selesai";
 
               return (
-                <Card
+                <motion.div
                   key={t.id}
-                  className={`p-4 transition-all duration-200 ${
-                    isDone ? "opacity-60 bg-ios-surfaceSecondary/50" : ""
-                  }`}
+                  layout
+                  initial={{ opacity: 0, y: 10, scale: 0.98 }}
+                  animate={{
+                    opacity: isDone ? 0.65 : 1,
+                    y: 0,
+                    scale: 1,
+                    transition: { duration: 0.25, ease: [0.22, 1, 0.36, 1] },
+                  }}
+                  exit={{
+                    opacity: 0,
+                    scale: 0.92,
+                    x: 20,
+                    transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+                  }}
+                  className="w-full"
                 >
-                  <div className="flex items-start gap-3">
-                    {/* Status Toggle Checkbox */}
-                    <button
-                      type="button"
-                      onClick={() => handleToggleStatus(t)}
-                      className="mt-0.5 text-ios-textSecondary hover:text-ios-accent transition-colors"
-                      title={isDone ? "Tandai belum selesai" : "Tandai selesai"}
-                    >
-                      {isDone ? (
-                        <CheckCircle2 className="w-5 h-5 text-ios-success" />
-                      ) : (
-                        <Circle className="w-5 h-5" />
-                      )}
-                    </button>
-
-                    {/* Task Details */}
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-semibold text-ios-textSecondary truncate">
-                          {t.matkul?.nama || "Mata Kuliah"}
-                        </span>
-                        <BadgeStatus
-                          size="sm"
-                          variant={
-                            t.prioritas === "tinggi"
-                              ? "urgent"
-                              : t.prioritas === "sedang"
-                              ? "proses"
-                              : "neutral"
-                          }
-                        >
-                          {t.prioritas}
-                        </BadgeStatus>
-                      </div>
-
-                      <h3
-                        className={`text-[15px] font-semibold text-ios-textPrimary mt-0.5 ${
-                          isDone ? "line-through text-ios-textSecondary" : ""
-                        }`}
+                  <Card
+                    className={cn(
+                      "p-4 transition-all duration-300 relative overflow-hidden",
+                      isDone
+                        ? "bg-ios-surfaceSecondary/40 border-emerald-500/20 shadow-none"
+                        : "hover:shadow-md"
+                    )}
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Status Toggle Checkbox */}
+                      <motion.button
+                        type="button"
+                        whileTap={{ scale: 0.8 }}
+                        onClick={() => handleToggleStatus(t)}
+                        className={cn(
+                          "mt-0.5 rounded-full p-1 transition-all flex items-center justify-center relative",
+                          isDone
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                            : "text-ios-textSecondary hover:text-emerald-500 hover:bg-emerald-500/10"
+                        )}
+                        title={isDone ? "Tandai belum selesai" : "Tandai selesai"}
                       >
-                        {t.judul}
-                      </h3>
+                        {isDone ? (
+                          <motion.div
+                            initial={{ scale: 0.3, rotate: -45 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ type: "spring", stiffness: 600, damping: 18 }}
+                          >
+                            <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                          </motion.div>
+                        ) : (
+                          <Circle className="w-5 h-5 transition-transform hover:scale-110" />
+                        )}
+                      </motion.button>
+
+                      {/* Task Details */}
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-semibold text-ios-textSecondary truncate">
+                            {t.matkul?.nama || "Mata Kuliah"}
+                          </span>
+                          <BadgeStatus
+                            size="sm"
+                            variant={
+                              t.prioritas === "tinggi"
+                                ? "urgent"
+                                : t.prioritas === "sedang"
+                                ? "proses"
+                                : "neutral"
+                            }
+                          >
+                            {t.prioritas}
+                          </BadgeStatus>
+                        </div>
+
+                        <div className="relative inline-block mt-0.5">
+                          <h3
+                            className={cn(
+                              "text-[15px] font-semibold transition-all duration-300",
+                              isDone
+                                ? "line-through text-ios-textSecondary decoration-emerald-500/80 decoration-2"
+                                : "text-ios-textPrimary"
+                            )}
+                          >
+                            {t.judul}
+                          </h3>
+                        </div>
 
                       {t.deskripsi && (
                         <div className="mt-1.5 space-y-1.5">
@@ -540,10 +642,12 @@ export default function TugasPage() {
                     </div>
                   </div>
                 </Card>
-              );
-            })
-          )}
-        </div>
+              </motion.div>
+            );
+          })}
+        </AnimatePresence>
+      )}
+    </div>
       ) : (
         /* Calendar View Mode */
         <div className="space-y-3">
