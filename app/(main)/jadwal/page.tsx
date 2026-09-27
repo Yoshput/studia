@@ -20,7 +20,10 @@ import {
   LayoutGrid,
   List,
   Eye,
+  Sparkles,
+  GraduationCap,
 } from "lucide-react";
+import { CampusSyncWizardModal } from "@/components/onboarding/CampusSyncWizardModal";
 import { Matkul } from "@/types";
 import { AttendanceRadarCard } from "@/components/pro/AttendanceRadarCard";
 import { ProUpgradeModal } from "@/components/pro/ProUpgradeModal";
@@ -50,6 +53,7 @@ export default function JadwalPage() {
   const [editingMatkul, setEditingMatkul] = useState<Matkul | null>(null);
   const [isPro, setIsPro] = useState(false);
   const [isProModalOpen, setIsProModalOpen] = useState(false);
+  const [isSyncWizardOpen, setIsSyncWizardOpen] = useState(false);
 
   const [scheduleViewMode, setScheduleViewMode] = useState<"grid" | "hari">("grid");
   const [activeSemester, setActiveSemester] = useState<{ nama_semester: string; tahun_ajaran: string } | null>(() => {
@@ -268,6 +272,17 @@ export default function JadwalPage() {
           <Button
             variant="secondary"
             size="sm"
+            onClick={() => setIsSyncWizardOpen(true)}
+            className="gap-1.5 font-semibold text-[12px] text-red-600 dark:text-red-400 border-red-500/20 hover:bg-red-500/10"
+            title="Sinkronkan Kalender CeLOE LMS Telkom"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-red-600" />
+            <span className="hidden sm:inline">Sinkron CeLOE</span>
+            <span className="sm:hidden">CeLOE</span>
+          </Button>
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={() => exportJadwalToCsv(matkulList, "Semester 5")}
             className="gap-1.5 font-semibold text-[12px]"
           >
@@ -287,6 +302,33 @@ export default function JadwalPage() {
         isPro={isPro}
         onUpgradeClick={() => setIsProModalOpen(true)}
       />
+
+      {/* Auto-Sync Banner when no courses */}
+      {matkulList.length === 0 && !loading && (
+        <div className="p-6 rounded-3xl bg-gradient-to-r from-red-500/10 via-ios-accent/10 to-blue-500/10 border border-red-500/25 text-center space-y-3 shadow-sm animate-in fade-in duration-300">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-500 text-white flex items-center justify-center mx-auto shadow-md">
+            <GraduationCap className="w-6 h-6" />
+          </div>
+          <h3 className="text-base font-bold text-ios-textPrimary">Belum Ada Jadwal Kuliah</h3>
+          <p className="text-[13px] text-ios-textSecondary max-w-md mx-auto leading-relaxed">
+            Tidak perlu repot mengetik mata kuliah dan jam satu per satu. Cukup hubungkan akun CeLOE LMS Telkom University, jadwal Senin–Jumat dan seluruh tugas akan langsung tersusun rapi!
+          </p>
+          <div className="flex items-center justify-center gap-2 pt-1">
+            <Button
+              variant="primary"
+              size="sm"
+              className="gap-1.5 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-xl shadow-md"
+              onClick={() => setIsSyncWizardOpen(true)}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Sinkronkan Otomatis dari CeLOE</span>
+            </Button>
+            <Button variant="secondary" size="sm" onClick={handleOpenAdd} className="rounded-xl">
+              + Tambah Manual
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* View Switcher: Matriks iGracias vs Daftar Per Hari */}
       <div className="flex items-center justify-between gap-3">
@@ -640,6 +682,15 @@ export default function JadwalPage() {
         onClose={() => setIsProModalOpen(false)}
         currentPlan={isPro ? "PRO_SEMESTER" : "free"}
         onSuccess={() => setIsPro(true)}
+      />
+
+      <CampusSyncWizardModal
+        isOpen={isSyncWizardOpen}
+        onClose={() => setIsSyncWizardOpen(false)}
+        onSyncSuccess={() => {
+          invalidateClientCache();
+          fetchMatkul();
+        }}
       />
     </div>
   );

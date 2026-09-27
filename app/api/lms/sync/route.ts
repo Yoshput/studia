@@ -161,12 +161,15 @@ export async function POST(req: Request) {
       });
     }
 
-    let defaultMatkul = activeSemester.matkul[0];
-    if (!defaultMatkul) {
-      defaultMatkul = await prisma.matkul.create({
+    const matkulList = [...activeSemester.matkul];
+    let defaultMatkul = matkulList[0] || null;
+
+    const getDefaultMatkul = async () => {
+      if (defaultMatkul) return defaultMatkul;
+      const created = await prisma.matkul.create({
         data: {
           semester_id: activeSemester.id,
-          nama: "CeLOE LMS Moodle",
+          nama: "CeLOE LMS Umum",
           kode: "CELOE",
           dosen: "Dosen CeLOE",
           sks: 2,
@@ -177,16 +180,17 @@ export async function POST(req: Request) {
           warna: "#E11D48",
         },
       });
-    }
-
-    const matkulList = [...(activeSemester.matkul.length > 0 ? activeSemester.matkul : [defaultMatkul])];
+      defaultMatkul = created;
+      matkulList.push(created);
+      return created;
+    };
 
     let createdCount = 0;
     let updatedCount = 0;
 
     for (const evt of parsedEvents) {
       // Match course
-      let targetMatkulId = defaultMatkul.id;
+      let targetMatkulId: string;
 
       if (evt.courseName) {
         const cleanCourseCode = evt.courseName.split("-")[0].trim();
@@ -205,30 +209,42 @@ export async function POST(req: Request) {
         if (found) {
           targetMatkulId = found.id;
         } else {
-          // Auto create course from CeLOE course name/code
+          // Auto create course with balanced weekday and timeslot
+          const DAYS = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat"];
+          const TIMES = [
+            { start: "07:30", end: "10:30" },
+            { start: "10:30", end: "13:30" },
+            { start: "13:30", end: "16:30" },
+          ];
+          const day = DAYS[matkulList.length % DAYS.length];
+          const time = TIMES[Math.floor(matkulList.length / DAYS.length) % TIMES.length];
+          const COLORS = ["#007AFF", "#5856D6", "#AF52DE", "#FF2D55", "#FF9500", "#34C759", "#00C7BE"];
+
           try {
             const newMatkul = await prisma.matkul.create({
               data: {
                 semester_id: activeSemester.id,
                 nama: evt.courseName,
                 kode: cleanCourseCode || "CELOE",
-                dosen: "Dosen CeLOE",
+                dosen: "Dosen Pengampu",
                 sks: 3,
-                hari: "Senin",
-                jam_mulai: "08:00",
-                jam_selesai: "10:30",
-                ruang: "Online CeLOE",
-                warna: ["#007AFF", "#5856D6", "#AF52DE", "#FF2D55", "#FF9500", "#34C759"][
-                  matkulList.length % 6
-                ],
+                hari: day,
+                jam_mulai: time.start,
+                jam_selesai: time.end,
+                ruang: "Ruang Kuliah",
+                warna: COLORS[matkulList.length % COLORS.length],
               },
             });
             matkulList.push(newMatkul);
             targetMatkulId = newMatkul.id;
           } catch {
-            targetMatkulId = defaultMatkul.id;
+            const fallback = await getDefaultMatkul();
+            targetMatkulId = fallback.id;
           }
         }
+      } else {
+        const fallback = await getDefaultMatkul();
+        targetMatkulId = fallback.id;
       }
 
       // Check if already exists by lms_uid OR by exact title in the user's active semester

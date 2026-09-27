@@ -25,7 +25,9 @@ import {
   Sparkles,
   UserCheck,
   X,
+  GraduationCap,
 } from "lucide-react";
+import { CampusSyncWizardModal } from "@/components/onboarding/CampusSyncWizardModal";
 import {
   formatDateIndo,
   getDaysRemaining,
@@ -83,6 +85,7 @@ export default function DashboardPage() {
   } | null>(null);
 
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [isSyncWizardOpen, setIsSyncWizardOpen] = useState(false);
   const [isFullChatOpen, setIsFullChatOpen] = useState(false);
 
   const todayDate = new Date();
@@ -129,7 +132,11 @@ export default function DashboardPage() {
       const params = new URLSearchParams(window.location.search);
       if (params.get("welcome") === "1") {
         setShowWelcomeModal(true);
-        // Clean URL cleanly without triggering re-render
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      }
+      if (params.get("sync") === "1") {
+        setIsSyncWizardOpen(true);
         const cleanUrl = window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl);
       }
@@ -379,6 +386,17 @@ export default function DashboardPage() {
             <Button
               variant="secondary"
               size="sm"
+              onClick={() => setIsSyncWizardOpen(true)}
+              className="gap-1.5 text-red-600 dark:text-red-400 border-red-500/20 hover:bg-red-500/10 font-medium"
+              title="Sinkronisasi CeLOE LMS Telkom University"
+            >
+              <GraduationCap className="w-3.5 h-3.5 text-red-600" />
+              <span>Sinkron CeLOE</span>
+            </Button>
+
+            <Button
+              variant="secondary"
+              size="sm"
               onClick={() => setIsProgressSheetOpen(true)}
               className="hidden sm:flex gap-1.5"
             >
@@ -405,6 +423,39 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+
+      {/* Auto-Sync Onboarding Banner for New Users (No Courses) */}
+      {matkulList.length === 0 && !loading && (
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-red-500/10 via-ios-accent/10 to-blue-500/10 border border-red-500/25 shadow-sm relative overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 relative z-10">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-red-600 to-rose-500 text-white flex items-center justify-center shrink-0 shadow-md">
+                <GraduationCap className="w-6 h-6" />
+              </div>
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-red-600/15 text-red-600 dark:text-red-400 mb-1">
+                  <Sparkles className="w-3 h-3" />
+                  <span>Akun Baru Mahasiswa Telkom</span>
+                </div>
+                <h3 className="text-[16px] font-bold text-ios-textPrimary leading-snug">
+                  Hubungkan CeLOE LMS &amp; Isi Otomatis Semua Mata Kuliah!
+                </h3>
+                <p className="text-[12.5px] text-ios-textSecondary mt-0.5 max-w-xl leading-relaxed">
+                  Tidak perlu ketik manual satu per satu. Cukup unggah kalender CeLOE atau tempel link iCal, Studia akan otomatis menyusun mata kuliah, jam kuliah Senin–Jumat, dan seluruh deadline tugas kamu!
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="primary"
+              className="w-full md:w-auto shrink-0 gap-2 bg-red-600 hover:bg-red-700 text-white font-semibold py-2.5 px-5 rounded-2xl shadow-md transition-all active:scale-[0.98]"
+              onClick={() => setIsSyncWizardOpen(true)}
+            >
+              <Sparkles className="w-4 h-4" />
+              <span>Sinkronkan Sekarang</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Metrics Row: 4 Columns on Desktop CMS, 2 Columns on Mobile */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -812,6 +863,17 @@ export default function DashboardPage() {
       <ChatSheet
         isOpen={isFullChatOpen}
         onClose={() => setIsFullChatOpen(false)}
+      />
+
+      {/* Campus CeLOE LMS Sync Wizard Modal */}
+      <CampusSyncWizardModal
+        isOpen={isSyncWizardOpen}
+        onClose={() => setIsSyncWizardOpen(false)}
+        onSyncSuccess={() => {
+          invalidateClientCache();
+          fetchData();
+        }}
+        userName={userProfile?.nama}
       />
     </div>
   );

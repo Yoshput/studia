@@ -10,7 +10,7 @@ import { Input, Select } from "@/components/ui/Input";
 import { MascotIcon } from "@/components/assistant/MascotIcon";
 import { TelkomLogo } from "@/components/TelkomLogo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { ArrowRight, UserPlus, CheckCircle2, ArrowLeft, Eye, EyeOff, ShieldCheck } from "lucide-react";
+import { ArrowRight, UserPlus, CheckCircle2, ArrowLeft, Eye, EyeOff, ShieldCheck, Sparkles } from "lucide-react";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -121,6 +121,10 @@ export default function SignupPage() {
           <p className="text-[13px] text-ios-textSecondary mt-0.5">
             Daftarkan akun Semestr untuk mengelola agenda akademik Anda
           </p>
+          <div className="mt-2.5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-600 dark:text-red-400 text-[11.5px] font-semibold">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Terintegrasi Otomatis CeLOE LMS Telkom</span>
+          </div>
         </div>
 
         {/* Signup Form Card */}
