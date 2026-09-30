@@ -17,6 +17,10 @@ import {
   Globe,
   Building2,
   Trash2,
+  Download,
+  Eye,
+  Maximize2,
+  X,
 } from "lucide-react";
 import { formatDateIndo, formatShortDateIndo } from "@/lib/utils";
 import { Matkul } from "@/types";
@@ -62,6 +66,19 @@ export default function AbsenPage() {
   const [userProfile, setUserProfile] = useState<{ nama: string; nim: string | null } | null>(null);
   const [showConsentModal, setShowConsentModal] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [previewModalItem, setPreviewModalItem] = useState<{
+    foto_base64: string;
+    nama_matkul: string;
+    tanggal: string;
+    hari: string;
+    jam: string;
+    status: string;
+    ruang?: string;
+    isOnline?: boolean;
+    catatan?: string | null;
+    deteksi_info?: string | null;
+    id?: string;
+  } | null>(null);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -301,6 +318,31 @@ export default function AbsenPage() {
     }
   };
 
+  // Download presence photo to user device
+  const downloadPresensiPhoto = (base64Data: string, courseName?: string, dateStr?: string) => {
+    if (!base64Data) return;
+
+    try {
+      const cleanCourse = (courseName || currentSelectedCourse?.nama || "Presensi")
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .substring(0, 30);
+      const datePart = dateStr
+        ? new Date(dateStr).toISOString().slice(0, 10)
+        : new Date().toISOString().slice(0, 10);
+      const nimPart = userProfile?.nim ? `_${userProfile.nim}` : "";
+      const filename = `Presensi_${cleanCourse}${nimPart}_${datePart}.jpg`;
+
+      const link = document.createElement("a");
+      link.href = base64Data;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error("Gagal mengunduh foto presensi:", err);
+    }
+  };
+
   // Process attendance submission
   const processAttendance = async (photoBase64: string) => {
     if (!selectedMatkulId) return;
@@ -479,16 +521,44 @@ export default function AbsenPage() {
                 alt="Snapshot Presensi Wajah"
                 className="w-full h-full object-cover"
               />
-              {/* Quick Flip Button on top of snapshot */}
-              <button
-                type="button"
-                onClick={() => flipCapturedImage()}
-                className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/75 text-white text-[11px] font-semibold backdrop-blur-md border border-white/20 hover:bg-black/90 active:scale-95 transition-all shadow-lg"
-                title="Balik Foto (Flip Horizontal)"
-              >
-                <FlipHorizontal className="w-3.5 h-3.5 text-ios-accent" />
-                <span>Balik Foto (Flip)</span>
-              </button>
+              {/* Quick Actions on top of snapshot: Download, Flip, Preview */}
+              <div className="absolute top-3 right-3 z-30 flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => downloadPresensiPhoto(capturedImage, currentSelectedCourse?.nama)}
+                  className="flex items-center gap-1 px-3 py-1.5 rounded-full bg-emerald-600/90 text-white text-[11px] font-bold backdrop-blur-md border border-emerald-400/30 hover:bg-emerald-600 active:scale-95 transition-all shadow-lg"
+                  title="Unduh Foto Bukti Presensi Ini (JPG)"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Unduh Foto</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => flipCapturedImage()}
+                  className="p-1.5 rounded-full bg-black/75 text-white hover:bg-black/90 active:scale-95 transition-all backdrop-blur-md border border-white/20 shadow-lg"
+                  title="Balik Foto (Flip Horizontal)"
+                >
+                  <FlipHorizontal className="w-3.5 h-3.5 text-ios-accent" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewModalItem({
+                    foto_base64: capturedImage,
+                    nama_matkul: currentSelectedCourse?.nama || "Presensi Kuliah",
+                    tanggal: new Date().toISOString(),
+                    hari: todayDayName,
+                    jam: `${String(new Date().getHours()).padStart(2, "0")}:${String(new Date().getMinutes()).padStart(2, "0")} WIB`,
+                    status: kuliahMode === "online" ? "Hadir Kuliah Online (Daring)" : "Hadir Kuliah Offline (Tatap Muka)",
+                    ruang: currentSelectedCourse?.ruang,
+                    isOnline: kuliahMode === "online",
+                    id: lastSavedPresensiId || undefined,
+                  })}
+                  className="p-1.5 rounded-full bg-black/75 text-white hover:bg-black/90 active:scale-95 transition-all backdrop-blur-md border border-white/20 shadow-lg"
+                  title="Lihat Penuh (Preview)"
+                >
+                  <Maximize2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
           )}
 
@@ -562,15 +632,26 @@ export default function AbsenPage() {
                 <span>{capturedImage ? "Pindai Ulang Wajah" : "Nyalakan Kamera"}</span>
               </Button>
               {capturedImage && (
-                <Button
-                  variant="secondary"
-                  onClick={() => flipCapturedImage()}
-                  className="gap-2 px-4"
-                  title="Balik foto secara horizontal jika diperlukan"
-                >
-                  <FlipHorizontal className="w-4 h-4 text-ios-accent" />
-                  <span>Balik Foto (Flip)</span>
-                </Button>
+                <>
+                  <Button
+                    variant="secondary"
+                    onClick={() => downloadPresensiPhoto(capturedImage, currentSelectedCourse?.nama)}
+                    className="gap-2 px-4 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 font-semibold"
+                    title="Unduh foto bukti presensi ini ke perangkat (JPG)"
+                  >
+                    <Download className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span>Unduh Foto Presensi</span>
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    onClick={() => flipCapturedImage()}
+                    className="gap-2 px-4"
+                    title="Balik foto secara horizontal jika diperlukan"
+                  >
+                    <FlipHorizontal className="w-4 h-4 text-ios-accent" />
+                    <span>Balik Foto (Flip)</span>
+                  </Button>
+                </>
               )}
             </>
           ) : (
@@ -686,7 +767,25 @@ export default function AbsenPage() {
               return (
                 <Card key={item.id} className="p-3.5 space-y-2.5 overflow-hidden">
                   {/* Snapshot Image with Face & Clothing Condition */}
-                  <div className="aspect-[4/3] w-full rounded-xl overflow-hidden bg-ios-surfaceSecondary border border-ios-border relative group">
+                  <div
+                    onClick={() =>
+                      setPreviewModalItem({
+                        foto_base64: item.foto_base64,
+                        nama_matkul: item.matkul.nama,
+                        tanggal: item.tanggal,
+                        hari: item.hari,
+                        jam: item.jam,
+                        status: item.status,
+                        ruang: item.matkul.ruang,
+                        isOnline: isItemOnline,
+                        catatan: item.catatan,
+                        deteksi_info: item.deteksi_info,
+                        id: item.id,
+                      })
+                    }
+                    className="aspect-[4/3] w-full rounded-xl overflow-hidden bg-ios-surfaceSecondary border border-ios-border relative group cursor-pointer"
+                    title="Klik untuk melihat foto penuh"
+                  >
                     <img
                       src={item.foto_base64}
                       alt="Bukti Kehadiran Wajah"
@@ -694,7 +793,7 @@ export default function AbsenPage() {
                     />
 
                     {/* Top left badges: Date & Mode */}
-                    <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap max-w-[70%]">
+                    <div className="absolute top-2 left-2 flex items-center gap-1.5 flex-wrap max-w-[65%]">
                       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/65 text-white backdrop-blur-sm">
                         {item.hari}, {item.jam}
                       </span>
@@ -709,21 +808,61 @@ export default function AbsenPage() {
                       )}
                     </div>
 
-                    {/* Top right quick actions: Flip & Delete */}
+                    {/* Top right quick actions: Download, Preview, Flip, Delete */}
                     <div className="absolute top-2 right-2 flex items-center gap-1">
                       <button
                         type="button"
-                        onClick={() => flipHistoryRecord(item)}
-                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-black/90 active:scale-90 transition-all backdrop-blur-sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          downloadPresensiPhoto(item.foto_base64, item.matkul.nama, item.tanggal);
+                        }}
+                        className="p-1.5 rounded-full bg-emerald-600/90 text-white hover:bg-emerald-700 active:scale-90 transition-all backdrop-blur-sm shadow-sm"
+                        title="Unduh Foto Bukti Presensi Ini (JPG)"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPreviewModalItem({
+                            foto_base64: item.foto_base64,
+                            nama_matkul: item.matkul.nama,
+                            tanggal: item.tanggal,
+                            hari: item.hari,
+                            jam: item.jam,
+                            status: item.status,
+                            ruang: item.matkul.ruang,
+                            isOnline: isItemOnline,
+                            catatan: item.catatan,
+                            deteksi_info: item.deteksi_info,
+                            id: item.id,
+                          });
+                        }}
+                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-black/90 active:scale-90 transition-all backdrop-blur-sm shadow-sm"
+                        title="Lihat Foto Ukuran Penuh"
+                      >
+                        <Maximize2 className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          flipHistoryRecord(item);
+                        }}
+                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-black/90 active:scale-90 transition-all backdrop-blur-sm shadow-sm"
                         title="Balik Foto (Flip Horizontal)"
                       >
                         <FlipHorizontal className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDeletePresensi(item.id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePresensi(item.id);
+                        }}
                         disabled={deletingId === item.id}
-                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-red-600/90 active:scale-90 transition-all backdrop-blur-sm"
+                        className="p-1.5 rounded-full bg-black/65 text-white hover:bg-red-600/90 active:scale-90 transition-all backdrop-blur-sm shadow-sm"
                         title="Hapus Presensi"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -739,25 +878,63 @@ export default function AbsenPage() {
                   </div>
 
                   {/* Meta details */}
-                  <div>
-                    <h3 className="text-[14px] font-bold text-ios-textPrimary leading-snug">
-                      {item.matkul.nama}
-                    </h3>
-                    <p className="text-[12px] text-ios-textSecondary mt-0.5">
-                      {isItemOnline ? "Kuliah Daring (Online)" : item.matkul.ruang} • {formatShortDateIndo(item.tanggal)}
-                    </p>
+                  <div className="space-y-1.5">
+                    <div>
+                      <h3 className="text-[14px] font-bold text-ios-textPrimary leading-snug">
+                        {item.matkul.nama}
+                      </h3>
+                      <p className="text-[12px] text-ios-textSecondary mt-0.5">
+                        {isItemOnline ? "Kuliah Daring (Online)" : item.matkul.ruang} • {formatShortDateIndo(item.tanggal)}
+                      </p>
+                    </div>
 
                     {item.catatan && (
-                      <p className="text-[11.5px] text-ios-textSecondary mt-1 line-clamp-1">
+                      <p className="text-[11.5px] text-ios-textSecondary line-clamp-1">
                         {item.catatan}
                       </p>
                     )}
 
                     {item.deteksi_info && (
-                      <p className="text-[11px] text-ios-accent mt-1.5 p-1.5 rounded-md bg-ios-accent/10 border border-ios-accent/20">
+                      <p className="text-[11px] text-ios-accent p-1.5 rounded-md bg-ios-accent/10 border border-ios-accent/20">
                         {item.deteksi_info}
                       </p>
                     )}
+
+                    {/* Card Action Footer Bar */}
+                    <div className="pt-2 border-t border-ios-border/60 flex items-center justify-between gap-2">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setPreviewModalItem({
+                            foto_base64: item.foto_base64,
+                            nama_matkul: item.matkul.nama,
+                            tanggal: item.tanggal,
+                            hari: item.hari,
+                            jam: item.jam,
+                            status: item.status,
+                            ruang: item.matkul.ruang,
+                            isOnline: isItemOnline,
+                            catatan: item.catatan,
+                            deteksi_info: item.deteksi_info,
+                            id: item.id,
+                          })
+                        }
+                        className="text-[12px] font-semibold text-ios-textSecondary hover:text-ios-accent flex items-center gap-1 transition-colors"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>Lihat Penuh</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => downloadPresensiPhoto(item.foto_base64, item.matkul.nama, item.tanggal)}
+                        className="text-[12px] font-bold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 transition-all active:scale-95"
+                        title="Unduh foto bukti presensi ini (JPG)"
+                      >
+                        <Download className="w-3.5 h-3.5" />
+                        <span>Unduh Foto (JPG)</span>
+                      </button>
+                    </div>
                   </div>
                 </Card>
               );
@@ -765,6 +942,120 @@ export default function AbsenPage() {
           </div>
         )}
       </div>
+
+      {/* Lightbox / Fullscreen Modal for Presensi Photo */}
+      {previewModalItem && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in duration-200"
+          onClick={() => setPreviewModalItem(null)}
+        >
+          <div
+            className="w-full max-w-lg rounded-3xl bg-ios-surface border border-ios-border overflow-hidden shadow-2xl space-y-4 animate-in zoom-in-95 duration-200 p-5 text-left"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Modal Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/25">
+                    {previewModalItem.status}
+                  </span>
+                  <span className="text-[11px] text-ios-textSecondary">
+                    {previewModalItem.hari}, {previewModalItem.jam}
+                  </span>
+                </div>
+                <h3 className="text-[17px] font-bold text-ios-textPrimary mt-1">
+                  {previewModalItem.nama_matkul}
+                </h3>
+                <p className="text-[12px] text-ios-textSecondary">
+                  {previewModalItem.isOnline ? "Kuliah Daring (Online)" : `Tatap Muka • ${previewModalItem.ruang || "Ruang Kelas"}`} • {formatDateIndo(previewModalItem.tanggal)}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewModalItem(null)}
+                className="p-1.5 rounded-full text-ios-textSecondary hover:text-ios-textPrimary hover:bg-ios-surfaceSecondary transition-colors"
+                title="Tutup Pratinjau"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Photo Display */}
+            <div className="relative aspect-[4/3] w-full rounded-2xl overflow-hidden bg-black border border-ios-border shadow-inner flex items-center justify-center">
+              <img
+                src={previewModalItem.foto_base64}
+                alt={`Bukti Presensi ${previewModalItem.nama_matkul}`}
+                className="w-full h-full object-contain"
+              />
+            </div>
+
+            {/* Deteksi Info / Catatan */}
+            {previewModalItem.deteksi_info && (
+              <p className="text-[11.5px] text-ios-accent p-2.5 rounded-xl bg-ios-accent/10 border border-ios-accent/20">
+                {previewModalItem.deteksi_info}
+              </p>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-2 pt-1">
+              <Button
+                variant="primary"
+                onClick={() =>
+                  downloadPresensiPhoto(
+                    previewModalItem.foto_base64,
+                    previewModalItem.nama_matkul,
+                    previewModalItem.tanggal
+                  )
+                }
+                className="flex-1 gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 shadow-md"
+              >
+                <Download className="w-4 h-4" />
+                <span>Unduh Foto Presensi (JPG)</span>
+              </Button>
+
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  const targetId = previewModalItem.id;
+                  const cur = previewModalItem.foto_base64;
+                  const img = new Image();
+                  img.onload = async () => {
+                    const c = document.createElement("canvas");
+                    c.width = img.naturalWidth || img.width;
+                    c.height = img.naturalHeight || img.height;
+                    const ctx = c.getContext("2d");
+                    if (!ctx) return;
+                    ctx.translate(c.width, 0);
+                    ctx.scale(-1, 1);
+                    ctx.drawImage(img, 0, 0);
+                    const flipped = c.toDataURL("image/jpeg", 0.88);
+                    setPreviewModalItem((prev) => (prev ? { ...prev, foto_base64: flipped } : null));
+                    if (targetId) {
+                      try {
+                        await fetch("/api/presensi", {
+                          method: "PATCH",
+                          headers: { "Content-Type": "application/json" },
+                          body: JSON.stringify({ id: targetId, foto_base64: flipped }),
+                        });
+                        fetchData();
+                      } catch (err) {
+                        console.error("Flip error:", err);
+                      }
+                    }
+                  };
+                  img.src = cur;
+                }}
+                className="gap-1.5 py-2.5"
+                title="Balik foto secara horizontal"
+              >
+                <FlipHorizontal className="w-4 h-4 text-ios-accent" />
+                <span>Balik Foto</span>
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
