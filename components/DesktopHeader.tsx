@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Sparkles, Clock } from "lucide-react";
 import { TelkomLogo } from "./TelkomLogo";
+import { ProductByPill } from "./landing/ProductByPill";
 
 interface DesktopHeaderProps {
   onOpenAssistant?: () => void;
@@ -18,6 +19,8 @@ const PAGE_TITLES: Record<string, { title: string; subtitle: string }> = {
   "/nilai": { title: "Nilai & Transkrip", subtitle: "KHS kumulatif resmi dan grafik performa akademik" },
   "/progress": { title: "Progress Belajar", subtitle: "Catatan pemahaman materi dan log belajar mandiri" },
   "/profil": { title: "Profil Mahasiswa", subtitle: "Identitas dan biodata mahasiswa Telkom University" },
+  "/catatan": { title: "Smart Notes AI", subtitle: "Catatan pintar dan intisari materi kuliah" },
+  "/roadmap": { title: "Roadmap Belajar & PPT", subtitle: "Peta jalan kompetensi dan materi presentasi" },
 };
 
 export function DesktopHeader({
@@ -77,6 +80,9 @@ export function DesktopHeader({
         <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-ios-surfaceSecondary border border-ios-border/80 shadow-sm transition-all hover:border-ios-accent/30">
           <TelkomLogo size={22} withText={true} subtext="Purwokerto" />
         </div>
+
+        {/* Hak Paten Creator Attribution Badge (Product by Pill) - Persistent across all tabs */}
+        <ProductByPill variant="footer" className="flex-shrink-0" />
 
         {/* Aiko AI Assistant Quick Button */}
         {onOpenAssistant && (
